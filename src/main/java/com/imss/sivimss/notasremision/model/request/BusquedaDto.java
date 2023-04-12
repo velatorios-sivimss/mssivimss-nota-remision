@@ -14,6 +14,10 @@ import lombok.Setter;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BusquedaDto {
 
+	private Integer idOficina;
+	private Integer idNivel;
+	private Integer idDelegacion;
+	private Integer idVelatorio;
 	private String folioODS;
 	private String fecIniODS;
 	private String fecFinODS;

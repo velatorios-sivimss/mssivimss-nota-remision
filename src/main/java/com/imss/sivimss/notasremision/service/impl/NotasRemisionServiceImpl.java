@@ -44,9 +44,12 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 
 	@Override
 	public Response<?> consultarODS(DatosRequest request, Authentication authentication) throws IOException {
+		Gson gson = new Gson();
 		OrdenServicio ordenServicio = new OrdenServicio();
 		
-		return providerRestTemplate.consumirServicio(ordenServicio.obtenerODS(request).getDatos(), urlGenericoPaginado, 
+		String datosJson = String.valueOf(authentication.getPrincipal());
+		BusquedaDto busqueda = gson.fromJson(datosJson, BusquedaDto.class);
+		return providerRestTemplate.consumirServicio(ordenServicio.obtenerODS(request, busqueda).getDatos(), urlGenericoPaginado, 
 				authentication);
 		
 	}
