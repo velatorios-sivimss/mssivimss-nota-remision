@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-
 import com.google.gson.Gson;
 import com.imss.sivimss.notasremision.security.jwt.JwtTokenProvider;
 
@@ -31,7 +30,7 @@ public class ProviderServiceRestTemplate {
 	public Response<?> consumirServicio(Map<String, Object> dato, String url, Authentication authentication)
 			throws IOException {
 		try {
-			Response<?> respuestaGenerado = restTemplateUtil.sendPostRequestByteArrayToken(url,
+			Response respuestaGenerado = restTemplateUtil.sendPostRequestByteArrayToken(url,
 					new EnviarDatosRequest(dato), jwtTokenProvider.createToken((String) authentication.getPrincipal()),
 					Response.class);
 			return validarResponse(respuestaGenerado);
@@ -44,7 +43,7 @@ public class ProviderServiceRestTemplate {
 	public Response<?> consumirServicioReportes(Map<String, Object> dato, String nombreReporte, String tipoReporte,
 			String url, Authentication authentication) throws IOException {
 		try {
-			Response<?> respuestaGenerado = restTemplateUtil.sendPostRequestByteArrayReportesToken(url,
+			Response respuestaGenerado = restTemplateUtil.sendPostRequestByteArrayReportesToken(url,
 					new DatosReporteDTO(dato, nombreReporte, tipoReporte),
 					jwtTokenProvider.createToken((String) authentication.getPrincipal()), Response.class);
 			return validarResponse(respuestaGenerado);
@@ -54,7 +53,7 @@ public class ProviderServiceRestTemplate {
 		}
 	}
 
-	public Response<?> validarResponse(Response<?> respuestaGenerado) {
+	public Response<?> validarResponse(Response respuestaGenerado) {
 		String codigo = respuestaGenerado.getMensaje().substring(0, 3);
 		if (codigo.equals("500") || codigo.equals("404") || codigo.equals("400") || codigo.equals("403")) {
 			Gson gson = new Gson();
@@ -72,16 +71,14 @@ public class ProviderServiceRestTemplate {
 	public Response<?> respuestaProvider(String e) {
 		StringTokenizer exeception = new StringTokenizer(e, ":");
 		Gson gson = new Gson();
-		int totalToken = exeception.countTokens();
-		StringBuilder error = new StringBuilder("");
 		int i = 0;
+		int totalToken = exeception.countTokens();
+		StringBuilder mensaje = new StringBuilder("");
 		int codigoError = HttpStatus.INTERNAL_SERVER_ERROR.value();
-
 		int isExceptionResponseMs = 0;
 		while (exeception.hasMoreTokens()) {
 			String str = exeception.nextToken();
 			i++;
-
 			if (i == 2) {
 				String[] palabras = str.split("\\.");
 				for (String palabra : palabras) {
@@ -92,30 +89,37 @@ public class ProviderServiceRestTemplate {
 
 					}
 				}
-			}else if (i == 3) {
+			} else if (i == 3) {
 
 				if (str.trim().chars().allMatch( Character::isDigit )) {
 					isExceptionResponseMs = 1;
 				}
 
-				error.append(codigoError == HttpStatus.REQUEST_TIMEOUT.value() ? AppConstantes.CIRCUITBREAKER : str);
+				mensaje.append(codigoError == HttpStatus.REQUEST_TIMEOUT.value()
+						?AppConstantes.CIRCUITBREAKER
+						: str);
 
 			} else if (i >= 4 && isExceptionResponseMs == 1) {
 				if (i == 4) {
-					error.delete(0, error.length());
+					mensaje.delete(0, mensaje.length());
 				}
-				error.append(str).append(i != totalToken ? ":" : "");
+				mensaje.append(str).append(i != totalToken ? ":" : "");
 
 			}
 		}
-		Response<?> response;
+		
+		Response response;
 		try {
-			response = isExceptionResponseMs == 1 ? gson.fromJson(error.substring(2, error.length() - 1), Response.class)
-				: new Response<>(true, codigoError, error.toString().trim(), Collections.emptyList());
+			if(mensaje.length() < 3)
+				response = new Response<>(true, codigoError, mensaje.toString().trim(), Collections.emptyList());
+			else {
+			response = isExceptionResponseMs == 1 ? gson.fromJson(mensaje.substring(2, mensaje.length() - 1), Response.class)
+				: new Response<>(true, codigoError, mensaje.toString().trim(), Collections.emptyList());
+			}
 		} catch (Exception e2) {
 			return new Response<>(true, HttpStatus.REQUEST_TIMEOUT.value(), AppConstantes.CIRCUITBREAKER, Collections.emptyList());
 		}
-		 return MensajeResponseUtil.mensajeResponse(response, "");
+		
+		return response;
 	}
-
 }

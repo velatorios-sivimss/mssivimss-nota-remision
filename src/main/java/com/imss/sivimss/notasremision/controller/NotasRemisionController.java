@@ -24,7 +24,7 @@ import io.github.resilience4j.retry.annotation.Retry;
 import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 
 @RestController
-@RequestMapping("/notasremision")
+@RequestMapping("/notasrem")
 public class NotasRemisionController {
 	
 	@Autowired
@@ -49,9 +49,21 @@ public class NotasRemisionController {
 	@Retry(name = "msflujo", fallbackMethod = "fallbackGenerico")
 	@TimeLimiter(name = "msflujo")
 	@PostMapping("/buscar")
-	public CompletableFuture<?> buscar(@RequestBody DatosRequest request, Authentication authentication) throws IOException {
+	public CompletableFuture<?> listadoODS(@RequestBody DatosRequest request, Authentication authentication) throws IOException {
 		
 		Response<?> response = notasRemisionService.buscarODS(request, authentication);
+		return CompletableFuture
+				.supplyAsync(() -> new ResponseEntity<>(response, HttpStatus.valueOf(response.getCodigo())));
+		
+	}
+	
+	@CircuitBreaker(name = "msflujo", fallbackMethod = "fallbackGenerico")
+	@Retry(name = "msflujo", fallbackMethod = "fallbackGenerico")
+	@TimeLimiter(name = "msflujo")
+	@PostMapping("/listaODS")
+	public CompletableFuture<?> buscar(@RequestBody DatosRequest request, Authentication authentication) throws IOException {
+		
+		Response<?> response = notasRemisionService.listadoODS(request, authentication);
 		return CompletableFuture
 				.supplyAsync(() -> new ResponseEntity<>(response, HttpStatus.valueOf(response.getCodigo())));
 		

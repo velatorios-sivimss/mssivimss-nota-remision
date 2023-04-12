@@ -11,6 +11,8 @@ public interface NotasRemisionService {
 	
 	Response<?> consultarODS(DatosRequest request, Authentication authentication) throws IOException;
 	
+	Response<?> listadoODS(DatosRequest request, Authentication authentication) throws IOException;
+	
 	Response<?> buscarODS(DatosRequest request, Authentication authentication) throws IOException;
 	
 	Response<?> detalleODS(DatosRequest request, Authentication authentication) throws IOException;
