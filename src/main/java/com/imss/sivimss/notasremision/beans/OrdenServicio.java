@@ -86,7 +86,12 @@ public class OrdenServicio {
 	}
     
     public DatosRequest existeNotaRem(DatosRequest request) {
+    	String idODS = request.getDatos().get("id").toString();
+		String query = "SELECT COUNT(NUM_FOLIO) AS valor FROM SVT_NOTA_REMISION WHERE ID_ORDEN_SERVICIO = " + idODS;
 		
+		String encoded = DatatypeConverter.printBase64Binary(query.getBytes());
+		request.getDatos().remove("id");
+		request.getDatos().put(AppConstantes.QUERY, encoded);
   		return request;
   	}
     
@@ -102,7 +107,7 @@ public class OrdenServicio {
     
     private StringBuilder armaQuery() {
     	StringBuilder query = new StringBuilder("SELECT os.ID_ORDEN_SERVICIO AS id, os.CVE_FOLIO AS folioODS, " + fechaCotejo + " AS fechaODS, \n");
-		query.append("NULL AS folioConvenio, os.ID_CONTRATANTE AS idContratante, \n");
+		query.append("0 AS folioConvenio, os.ID_CONTRATANTE AS idContratante, \n");
 		query.append("CONCAT(prc.NOM_PERSONA,' ',prc.NOM_PRIMER_APELLIDO,' ',prc.NOM_SEGUNDO_APELLIDO) AS nomContratante, \n");
 		query.append("fin.ID_FINADO AS idFinado, CONCAT(prf.NOM_PERSONA,' ',prf.NOM_PRIMER_APELLIDO,' ',prf.NOM_SEGUNDO_APELLIDO) AS nomFinado, \n");
 		query.append("os.CVE_ESTATUS AS estatus, IFNULL(nr.ID_NOTA_REMISION,0) AS conNota \n");

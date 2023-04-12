@@ -88,8 +88,10 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 	
 	@Override
 	public Response<?> existeNotaRem(DatosRequest request, Authentication authentication) throws IOException {
-		// TODO Auto-generated method stub
-		return null;
+        OrdenServicio ordenServicio = new OrdenServicio();
+		
+		return providerRestTemplate.consumirServicio(ordenServicio.existeNotaRem(request).getDatos(), urlGenericoConsulta, 
+				authentication);
 	}
 
 	@Override

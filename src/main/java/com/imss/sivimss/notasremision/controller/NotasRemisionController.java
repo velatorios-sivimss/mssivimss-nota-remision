@@ -72,7 +72,7 @@ public class NotasRemisionController {
 	@CircuitBreaker(name = "msflujo", fallbackMethod = "fallbackGenerico")
 	@Retry(name = "msflujo", fallbackMethod = "fallbackGenerico")
 	@TimeLimiter(name = "msflujo")
-	@PostMapping("detalle")
+	@PostMapping("/detalle")
 	public CompletableFuture<?> detalle(@RequestBody DatosRequest request, Authentication authentication) throws IOException {
 		
 		Response<?> response = notasRemisionService.detalleODS(request, authentication);
@@ -84,7 +84,7 @@ public class NotasRemisionController {
 	@CircuitBreaker(name = "msflujo", fallbackMethod = "fallbackGenerico")
 	@Retry(name = "msflujo", fallbackMethod = "fallbackGenerico")
 	@TimeLimiter(name = "msflujo")
-	@PostMapping("existe-nota")
+	@PostMapping("/existe")
 	public CompletableFuture<?> existeNota(@RequestBody DatosRequest request, Authentication authentication) throws IOException {
 		
 		Response<?> response = notasRemisionService.existeNotaRem(request, authentication);
@@ -96,7 +96,7 @@ public class NotasRemisionController {
 	@CircuitBreaker(name = "msflujo", fallbackMethod = "fallbackGenerico")
 	@Retry(name = "msflujo", fallbackMethod = "fallbackGenerico")
 	@TimeLimiter(name = "msflujo")
-	@PostMapping("genera-nota")
+	@PostMapping("genera")
 	public CompletableFuture<?> generarNota(@RequestBody DatosRequest request, Authentication authentication) throws IOException {
 		
 		Response<?> response = notasRemisionService.generarNotaRem(request, authentication);
@@ -108,7 +108,7 @@ public class NotasRemisionController {
 	@CircuitBreaker(name = "msflujo", fallbackMethod = "fallbackGenerico")
 	@Retry(name = "msflujo", fallbackMethod = "fallbackGenerico")
 	@TimeLimiter(name = "msflujo")
-	@PostMapping("cancela-nota")
+	@PostMapping("cancela")
 	public CompletableFuture<?> cancelarNota(@RequestBody DatosRequest request, Authentication authentication) throws IOException {
 		
 		Response<?> response = notasRemisionService.cancelarNotaRem(request, authentication);
