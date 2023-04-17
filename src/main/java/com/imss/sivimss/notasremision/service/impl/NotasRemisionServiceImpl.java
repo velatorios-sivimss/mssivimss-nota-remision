@@ -1,12 +1,15 @@
 package com.imss.sivimss.notasremision.service.impl;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +18,11 @@ import com.google.gson.Gson;
 import com.imss.sivimss.notasremision.util.AppConstantes;
 import com.imss.sivimss.notasremision.util.ConvertirGenerico;
 import com.imss.sivimss.notasremision.beans.OrdenServicio;
+import com.imss.sivimss.notasremision.exception.BadRequestException;
+import com.imss.sivimss.notasremision.model.request.UsuarioDto;
+import com.imss.sivimss.notasremision.beans.NotaRemision;
 import com.imss.sivimss.notasremision.model.request.BusquedaDto;
+import com.imss.sivimss.notasremision.model.request.NotaRemisionDto;
 import com.imss.sivimss.notasremision.model.response.ODSGeneradaResponse;
 import com.imss.sivimss.notasremision.service.NotasRemisionService;
 import com.imss.sivimss.notasremision.util.DatosRequest;
@@ -99,14 +106,36 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 
 	@Override
 	public Response<?> generarNotaRem(DatosRequest request, Authentication authentication) throws IOException {
-		// TODO Auto-generated method stub
-		return null;
+		Gson gson = new Gson();
+
+		String datosJson = String.valueOf(request.getDatos().get(AppConstantes.DATOS));
+		NotaRemisionDto notaDto = gson.fromJson(datosJson, NotaRemisionDto.class);
+		UsuarioDto usuarioDto = gson.fromJson((String) authentication.getPrincipal(), UsuarioDto.class);
+		NotaRemision notaRemision  = new NotaRemision(0, notaDto.getIdOrden());
+		notaRemision.setIdUsuarioAlta(usuarioDto.getIdUsuario());
+		
+		Response<?> request1 = providerRestTemplate.consumirServicio(notaRemision.ultimoFolioNota(request).getDatos(), urlGenericoConsulta,
+				authentication);
+		ArrayList<LinkedHashMap> datos1 = (ArrayList) request1.getDatos();
+		String ultimoFolio = datos1.get(0).get("folio").toString();
+		
+		return providerRestTemplate.consumirServicio(notaRemision.generarNotaRem(ultimoFolio).getDatos(), urlGenericoCrear, authentication);
 	}
 
 	@Override
 	public Response<?> cancelarNotaRem(DatosRequest request, Authentication authentication) throws IOException {
-		// TODO Auto-generated method stub
-		return null;
+		Gson gson = new Gson();
+
+		String datosJson = String.valueOf(request.getDatos().get(AppConstantes.DATOS));
+		NotaRemisionDto notaDto = gson.fromJson(datosJson, NotaRemisionDto.class);
+		if (notaDto.getId() == null) {
+			throw new BadRequestException(HttpStatus.BAD_REQUEST, "Informacion incompleta");
+		}
+		UsuarioDto usuarioDto = gson.fromJson((String) authentication.getPrincipal(), UsuarioDto.class);
+		NotaRemision notaRemision  = new NotaRemision(notaDto.getId(), notaDto.getIdOrden());
+		notaRemision.setIdUsuarioModifica(usuarioDto.getIdUsuario());
+		
+		return providerRestTemplate.consumirServicio(notaRemision.cancelarNotaRem().getDatos(), urlGenericoActualizar, authentication);
 	}
 
 }
