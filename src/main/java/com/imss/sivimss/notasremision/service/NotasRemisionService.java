@@ -19,6 +19,10 @@ public interface NotasRemisionService {
 	
 	Response<?> existeNotaRem(DatosRequest request, Authentication authentication) throws IOException;
 	
+	Response<?> detalleNotaRem(DatosRequest request, Authentication authentication) throws IOException;
+	
+	Response<?> serviciosNotaRem(DatosRequest request, Authentication authentication) throws IOException;
+	
 	Response<?> generarNotaRem(DatosRequest request, Authentication authentication) throws IOException;
 	
 	Response<?> cancelarNotaRem(DatosRequest request, Authentication authentication) throws IOException;

@@ -96,6 +96,30 @@ public class NotasRemisionController {
 	@CircuitBreaker(name = "msflujo", fallbackMethod = "fallbackGenerico")
 	@Retry(name = "msflujo", fallbackMethod = "fallbackGenerico")
 	@TimeLimiter(name = "msflujo")
+	@PostMapping("/det-nota")
+	public CompletableFuture<?> detalleNota(@RequestBody DatosRequest request, Authentication authentication) throws IOException {
+		
+		Response<?> response = notasRemisionService.detalleNotaRem(request, authentication);
+		return CompletableFuture
+				.supplyAsync(() -> new ResponseEntity<>(response, HttpStatus.valueOf(response.getCodigo())));
+		
+	}
+	
+	@CircuitBreaker(name = "msflujo", fallbackMethod = "fallbackGenerico")
+	@Retry(name = "msflujo", fallbackMethod = "fallbackGenerico")
+	@TimeLimiter(name = "msflujo")
+	@PostMapping("/serv-nota")
+	public CompletableFuture<?> serviciosNota(@RequestBody DatosRequest request, Authentication authentication) throws IOException {
+		
+		Response<?> response = notasRemisionService.serviciosNotaRem(request, authentication);
+		return CompletableFuture
+				.supplyAsync(() -> new ResponseEntity<>(response, HttpStatus.valueOf(response.getCodigo())));
+		
+	}
+	
+	@CircuitBreaker(name = "msflujo", fallbackMethod = "fallbackGenerico")
+	@Retry(name = "msflujo", fallbackMethod = "fallbackGenerico")
+	@TimeLimiter(name = "msflujo")
 	@PostMapping("genera")
 	public CompletableFuture<?> generarNota(@RequestBody DatosRequest request, Authentication authentication) throws IOException {
 		

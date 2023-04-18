@@ -103,6 +103,36 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		return providerRestTemplate.consumirServicio(ordenServicio.existeNotaRem(request).getDatos(), urlGenericoConsulta, 
 				authentication);
 	}
+	
+	@Override
+	public Response<?> detalleNotaRem(DatosRequest request, Authentication authentication) throws IOException {
+		Gson gson = new Gson();
+
+		String datosJson = String.valueOf(request.getDatos().get(AppConstantes.DATOS));
+		NotaRemisionDto notaDto = gson.fromJson(datosJson, NotaRemisionDto.class);
+		if (notaDto.getIdNota() == null || notaDto.getIdOrden() == null) {
+			throw new BadRequestException(HttpStatus.BAD_REQUEST, "Informacion incompleta");
+		}
+		NotaRemision notaRemision  = new NotaRemision(notaDto.getIdNota(), notaDto.getIdOrden());
+		
+		return providerRestTemplate.consumirServicio(notaRemision.detalleNotaRem(request).getDatos(), urlGenericoConsulta, 
+				authentication);
+	}
+	
+	@Override
+	public Response<?> serviciosNotaRem(DatosRequest request, Authentication authentication) throws IOException {
+		Gson gson = new Gson();
+
+		String datosJson = String.valueOf(request.getDatos().get(AppConstantes.DATOS));
+		NotaRemisionDto notaDto = gson.fromJson(datosJson, NotaRemisionDto.class);
+		if (notaDto.getIdNota() == null || notaDto.getIdOrden() == null) {
+			throw new BadRequestException(HttpStatus.BAD_REQUEST, "Informacion incompleta");
+		}
+		NotaRemision notaRemision  = new NotaRemision(notaDto.getIdNota(), notaDto.getIdOrden());
+		
+		return providerRestTemplate.consumirServicio(notaRemision.serviciosNotaRem(request).getDatos(), urlGenericoConsulta, 
+				authentication);
+	}
 
 	@Override
 	public Response<?> generarNotaRem(DatosRequest request, Authentication authentication) throws IOException {
@@ -111,6 +141,9 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		String datosJson = String.valueOf(request.getDatos().get(AppConstantes.DATOS));
 		NotaRemisionDto notaDto = gson.fromJson(datosJson, NotaRemisionDto.class);
 		UsuarioDto usuarioDto = gson.fromJson((String) authentication.getPrincipal(), UsuarioDto.class);
+		if (notaDto.getIdNota() == null) {
+			throw new BadRequestException(HttpStatus.BAD_REQUEST, "Informacion incompleta");
+		}
 		NotaRemision notaRemision  = new NotaRemision(0, notaDto.getIdOrden());
 		notaRemision.setIdUsuarioAlta(usuarioDto.getIdUsuario());
 		
@@ -128,11 +161,12 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 
 		String datosJson = String.valueOf(request.getDatos().get(AppConstantes.DATOS));
 		NotaRemisionDto notaDto = gson.fromJson(datosJson, NotaRemisionDto.class);
-		if (notaDto.getId() == null) {
+		if (notaDto.getIdNota() == null) {
 			throw new BadRequestException(HttpStatus.BAD_REQUEST, "Informacion incompleta");
 		}
 		UsuarioDto usuarioDto = gson.fromJson((String) authentication.getPrincipal(), UsuarioDto.class);
-		NotaRemision notaRemision  = new NotaRemision(notaDto.getId(), notaDto.getIdOrden());
+		NotaRemision notaRemision  = new NotaRemision(notaDto.getIdNota(), notaDto.getIdOrden());
+		notaRemision.setMotivo(notaDto.getMotivo());
 		notaRemision.setIdUsuarioModifica(usuarioDto.getIdUsuario());
 		
 		return providerRestTemplate.consumirServicio(notaRemision.cancelarNotaRem().getDatos(), urlGenericoActualizar, authentication);
