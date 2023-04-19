@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.xml.bind.DatatypeConverter;
 
 import com.imss.sivimss.notasremision.util.QueryHelper;
+import com.imss.sivimss.notasremision.model.request.FormatoNotaDto;
 import com.imss.sivimss.notasremision.util.AppConstantes;
 import com.imss.sivimss.notasremision.util.DatosRequest;
 
@@ -123,5 +124,24 @@ public class NotaRemision {
 		request.setDatos(parametro);
 		return request;
 	}
+    
+    public Map<String, Object> generarReporte(FormatoNotaDto formatoDto,String nombrePdfNotaRem){
+		Map<String, Object> envioDatos = new HashMap<>();
+		
+		envioDatos.put("nomVelatorio", formatoDto.getNomVelatorio());
+		envioDatos.put("folioNota", formatoDto.getFolioNota());
+		envioDatos.put("dirVelatorio", formatoDto.getDirVelatorio());
+		envioDatos.put("nomSolicitante", formatoDto.getNomSolicitante());
+		envioDatos.put("curpSolicitante", formatoDto.getCurpSolicitante());
+		envioDatos.put("dirSolicitante", formatoDto.getDirSolicitante());
+		envioDatos.put("velatorioOrigen", formatoDto.getVelatorioOrigen());
+		envioDatos.put("nomFinado", formatoDto.getNomFinado());
+		envioDatos.put("parFinado", formatoDto.getParFinado());
+		envioDatos.put("folioODS", formatoDto.getFolioODS());
+		envioDatos.put("tipoReporte", "pdf");
+		envioDatos.put("rutaNombreReporte", nombrePdfNotaRem);
+		
+		return envioDatos;
+    }
     
 }

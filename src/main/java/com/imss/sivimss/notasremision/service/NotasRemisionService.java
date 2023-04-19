@@ -26,5 +26,7 @@ public interface NotasRemisionService {
 	Response<?> generarNotaRem(DatosRequest request, Authentication authentication) throws IOException;
 	
 	Response<?> cancelarNotaRem(DatosRequest request, Authentication authentication) throws IOException;
+	
+	Response<?> descargarNotaRem(DatosRequest request, Authentication authentication) throws IOException;
 
 }
