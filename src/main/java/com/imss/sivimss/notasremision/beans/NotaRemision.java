@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.xml.bind.DatatypeConverter;
 
 import com.imss.sivimss.notasremision.util.QueryHelper;
+import com.imss.sivimss.notasremision.model.request.BusquedaDto;
 import com.imss.sivimss.notasremision.model.request.FormatoNotaDto;
 import com.imss.sivimss.notasremision.util.AppConstantes;
 import com.imss.sivimss.notasremision.util.DatosRequest;
@@ -96,7 +97,7 @@ public class NotaRemision {
 		final QueryHelper q = new QueryHelper("INSERT INTO SVT_NOTA_REMISION");
 		q.agregarParametroValues("NUM_FOLIO",  "'" + String.format("%06d", Integer.parseInt(ultimoFolio) + 1) + "'");
 		q.agregarParametroValues("ID_ORDEN_SERVICIO","'" + this.idOrden + "'");
-		q.agregarParametroValues("ID_ESTATUS", "1");
+		q.agregarParametroValues("ID_ESTATUS", "2");
 		q.agregarParametroValues("FEC_ALTA", "CURRENT_TIMESTAMP()");
 		q.agregarParametroValues("ID_USUARIO_ALTA", "'" + this.idUsuarioAlta + "'");
 		
@@ -125,7 +126,7 @@ public class NotaRemision {
 		return request;
 	}
     
-    public Map<String, Object> generarReporte(FormatoNotaDto formatoDto,String nombrePdfNotaRem){
+    public Map<String, Object> generarNotaRem(FormatoNotaDto formatoDto,String nombrePdfNotaRem){
 		Map<String, Object> envioDatos = new HashMap<>();
 		
 		envioDatos.put("nomVelatorio", formatoDto.getNomVelatorio());
@@ -138,6 +139,7 @@ public class NotaRemision {
 		envioDatos.put("nomFinado", formatoDto.getNomFinado());
 		envioDatos.put("parFinado", formatoDto.getParFinado());
 		envioDatos.put("folioODS", formatoDto.getFolioODS());
+		envioDatos.put("condicion", " AND cp.ID_ORDEN_SERVICIO = " +  this.id);
 		envioDatos.put("tipoReporte", "pdf");
 		envioDatos.put("rutaNombreReporte", nombrePdfNotaRem);
 		

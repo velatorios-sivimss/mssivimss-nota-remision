@@ -3,6 +3,7 @@ package com.imss.sivimss.notasremision.service.impl;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +51,10 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 	
 	private static final String nombrePdfNotaRem = "reportes/generales/FormatoNotaRemision.jrxml";
 	
+	private static final String nombrePdfReportes = "reportes/generales/ReporteODSNotas.jrxml";
+	
+	private static final String infoNoEncontrada = "No se encontró información relacionada a tu búsqueda.";
+	
 	@Autowired
 	private ProviderServiceRestTemplate providerRestTemplate;
 
@@ -63,17 +68,20 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		
 		String datosJson = String.valueOf(authentication.getPrincipal());
 		BusquedaDto busqueda = gson.fromJson(datosJson, BusquedaDto.class);
+
 		return providerRestTemplate.consumirServicio(ordenServicio.obtenerODS(request, busqueda).getDatos(), urlGenericoPaginado, 
 				authentication);
-		
 	}
 	
 	@Override
 	public Response<?> listadoODS(DatosRequest request, Authentication authentication) throws IOException {
+		Gson gson = new Gson();
 		OrdenServicio ordenServicio = new OrdenServicio();
 		List<ODSGeneradaResponse> ODSResponse;
 		
-		Response<?> response = providerRestTemplate.consumirServicio(ordenServicio.listadoODS().getDatos(), urlGenericoConsulta, 
+		String datosJson = String.valueOf(authentication.getPrincipal());
+		BusquedaDto busqueda = gson.fromJson(datosJson, BusquedaDto.class);
+		Response<?> response = providerRestTemplate.consumirServicio(ordenServicio.listadoODS(busqueda).getDatos(), urlGenericoConsulta, 
 				authentication);
 		
 		if (response.getCodigo() == 200) {
@@ -91,8 +99,14 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		BusquedaDto busqueda = gson.fromJson(datosJson, BusquedaDto.class);
 		OrdenServicio ordenServicio = new OrdenServicio();
 		
-		return providerRestTemplate.consumirServicio(ordenServicio.buscarODS(request, busqueda).getDatos(), urlGenericoPaginado,
+		Response<?> response = providerRestTemplate.consumirServicio(ordenServicio.buscarODS(request, busqueda).getDatos(), urlGenericoPaginado,
 				authentication);
+		ArrayList datos1 = (ArrayList) ((LinkedHashMap) response.getDatos()).get("content");
+		if (datos1.isEmpty()) {
+			response.setMensaje(infoNoEncontrada);
+	    }
+		
+		return response;
 	}
 
 	@Override
@@ -148,7 +162,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		String datosJson = String.valueOf(request.getDatos().get(AppConstantes.DATOS));
 		NotaRemisionDto notaDto = gson.fromJson(datosJson, NotaRemisionDto.class);
 		UsuarioDto usuarioDto = gson.fromJson((String) authentication.getPrincipal(), UsuarioDto.class);
-		if (notaDto.getIdNota() == null) {
+		if (notaDto.getIdOrden() == null) {
 			throw new BadRequestException(HttpStatus.BAD_REQUEST, "Informacion incompleta");
 		}
 		NotaRemision notaRemision  = new NotaRemision(0, notaDto.getIdOrden());
@@ -198,7 +212,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		if (datos1.size() > 0) {
 			formatoNotaDto.setNomVelatorio(datos1.get(0).get("nomVelatorio").toString());
 			formatoNotaDto.setFolioNota(datos1.get(0).get("folioNota").toString());
-			formatoNotaDto.setDirVelatorio("ddgdg");
+			formatoNotaDto.setDirVelatorio(datos1.get(0).get("dirVelatorio").toString());
 			formatoNotaDto.setNomSolicitante(datos1.get(0).get("nomSolicitante").toString());
 			formatoNotaDto.setDirSolicitante(datos1.get(0).get("dirSolicitante").toString());
 			formatoNotaDto.setCurpSolicitante(datos1.get(0).get("curpSolicitante").toString());
@@ -207,7 +221,17 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 			formatoNotaDto.setParFinado(datos1.get(0).get("parFinado").toString());
 			formatoNotaDto.setFolioODS(datos1.get(0).get("folioODS").toString());
 		}
-		Map<String, Object> envioDatos = notaRemision.generarReporte(formatoNotaDto, nombrePdfNotaRem);
+		Map<String, Object> envioDatos = notaRemision.generarNotaRem(formatoNotaDto, nombrePdfNotaRem);
+		return providerRestTemplate.consumirServicioReportes(envioDatos, urlReportes, authentication);
+	}
+	
+	@Override
+	public Response<?> descargarDocumento(DatosRequest request, Authentication authentication) throws IOException {
+		Gson gson = new Gson();
+		String datosJson = String.valueOf(request.getDatos().get(AppConstantes.DATOS));
+		BusquedaDto reporteDto = gson.fromJson(datosJson, BusquedaDto.class);
+		
+		Map<String, Object> envioDatos = new OrdenServicio().generarReporte(reporteDto, nombrePdfReportes);
 		return providerRestTemplate.consumirServicioReportes(envioDatos, urlReportes, authentication);
 	}
 

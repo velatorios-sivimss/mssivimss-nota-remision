@@ -21,5 +21,6 @@ public class BusquedaDto {
 	private String folioODS;
 	private String fecIniODS;
 	private String fecFinODS;
+	private String tipoReporte;
 	
 }

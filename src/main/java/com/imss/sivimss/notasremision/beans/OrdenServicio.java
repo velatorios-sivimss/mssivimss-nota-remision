@@ -50,12 +50,23 @@ public class OrdenServicio {
 		return request;
 	}
 	
-	public DatosRequest listadoODS() {
+	public DatosRequest listadoODS(BusquedaDto busqueda) {
 		DatosRequest request = new DatosRequest();
 		Map<String, Object> parametro = new HashMap<>();
-		String query = "SELECT ID_ORDEN_SERVICIO, CVE_FOLIO FROM SVC_ORDEN_SERVICIO WHERE CVE_ESTATUS = 2";
+		StringBuilder query = new StringBuilder("SELECT os.ID_ORDEN_SERVICIO, os.CVE_FOLIO \n");
+		query.append("FROM svc_orden_servicio os \n");
+		query.append("JOIN svc_finado fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO) \n");
+		query.append("LEFT JOIN svc_velatorio vel ON (fin.ID_VELATORIO = vel.ID_VELATORIO) \n");
+		query.append("WHERE os.CVE_ESTATUS = 2 ");
+		if (busqueda.getIdOficina() > 1) {
+			query.append(" AND vel.ID_DELEGACION = ").append(busqueda.getIdDelegacion());
+			if (busqueda.getIdOficina() == 3) {
+				query.append(" AND fin.ID_VELATORIO = ").append(busqueda.getIdVelatorio());
+			}
+		} 
+		query.append(" ORDER BY os.ID_ORDEN_SERVICIO DESC");
 		
-		String encoded = DatatypeConverter.printBase64Binary(query.getBytes());
+		String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes());
 		parametro.put(AppConstantes.QUERY, encoded);
 		request.setDatos(parametro);
 		return request;
@@ -121,5 +132,26 @@ public class OrdenServicio {
 		
 		return query;
     }
+    
+    
+    public Map<String, Object> generarReporte(BusquedaDto reporteDto,String nombrePdfReportes){
+		Map<String, Object> envioDatos = new HashMap<>();
+		StringBuilder condicion = new StringBuilder(" ");
+		if (reporteDto.getIdVelatorio() != null) {
+			condicion.append(" AND fin.ID_VELATORIO = ").append(reporteDto.getIdVelatorio());
+		}
+		if (reporteDto.getFolioODS() != null) {
+    	    condicion.append(" AND os.CVE_FOLIO = '" + reporteDto.getFolioODS() +"' ");
+    	}
+    	if (reporteDto.getFecIniODS() != null) {
+    	    condicion.append(" AND " + fechaCotejo + " BETWEEN '" + reporteDto.getFecIniODS() + "' AND '" + reporteDto.getFecFinODS() + "' \n");
+    	}
+		
+		envioDatos.put("condicion", condicion.toString());
+		envioDatos.put("tipoReporte", reporteDto.getTipoReporte());
+		envioDatos.put("rutaNombreReporte", nombrePdfReportes);
+		
+		return envioDatos;
+	}
     
 }
