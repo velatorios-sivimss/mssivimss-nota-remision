@@ -8,6 +8,7 @@ import javax.xml.bind.DatatypeConverter;
 import com.imss.sivimss.notasremision.util.AppConstantes;
 import com.imss.sivimss.notasremision.model.request.BusquedaDto;
 import com.imss.sivimss.notasremision.util.DatosRequest;
+import com.imss.sivimss.notasremision.util.QueryHelper;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -54,9 +55,9 @@ public class OrdenServicio {
 		DatosRequest request = new DatosRequest();
 		Map<String, Object> parametro = new HashMap<>();
 		StringBuilder query = new StringBuilder("SELECT os.ID_ORDEN_SERVICIO, os.CVE_FOLIO \n");
-		query.append("FROM svc_orden_servicio os \n");
-		query.append("JOIN svc_finado fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO) \n");
-		query.append("LEFT JOIN svc_velatorio vel ON (fin.ID_VELATORIO = vel.ID_VELATORIO) \n");
+		query.append("FROM SVC_ORDEN_SERVICIO os \n");
+		query.append("JOIN SVC_FINADO fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO) \n");
+		query.append("LEFT JOIN SVC_VELATORIO vel ON (fin.ID_VELATORIO = vel.ID_VELATORIO) \n");
 		query.append("WHERE os.CVE_ESTATUS = 2 ");
 		if (busqueda.getIdOficina() > 1) {
 			query.append(" AND vel.ID_DELEGACION = ").append(busqueda.getIdDelegacion());
@@ -121,18 +122,31 @@ public class OrdenServicio {
 		query.append("CONCAT(prc.NOM_PERSONA,' ',prc.NOM_PRIMER_APELLIDO,' ',prc.NOM_SEGUNDO_APELLIDO) AS nomContratante, \n");
 		query.append("fin.ID_FINADO AS idFinado, CONCAT(prf.NOM_PERSONA,' ',prf.NOM_PRIMER_APELLIDO,' ',prf.NOM_SEGUNDO_APELLIDO) AS nomFinado, \n");
 		query.append("IFNULL(nr.ID_ESTATUS,1) AS estatus \n");
-		query.append("FROM svc_orden_servicio os \n");
-		query.append("LEFT JOIN svc_informacion_servicio inf ON (os.ID_ORDEN_SERVICIO = inf.ID_ORDEN_SERVICIO) \n");
-		query.append("JOIN svc_contratante con ON (os.ID_CONTRATANTE = con.ID_CONTRATANTE) \n");
-		query.append("JOIN svc_persona prc ON (con.ID_PERSONA = prc.ID_PERSONA) \n");
-		query.append("JOIN svc_finado fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO) \n");
-		query.append("JOIN svc_persona prf ON (fin.ID_PERSONA = prf.ID_PERSONA) \n");
-		query.append("LEFT JOIN svt_nota_remision nr ON (os.ID_ORDEN_SERVICIO = nr.ID_ORDEN_SERVICIO) \n");
-		query.append("LEFT JOIN svc_velatorio vel ON (fin.ID_VELATORIO = vel.ID_VELATORIO) \n");
+		query.append("FROM SVC_ORDEN_SERVICIO os \n");
+		query.append("LEFT JOIN SVC_INFORMACION_SERVICIO inf ON (os.ID_ORDEN_SERVICIO = inf.ID_ORDEN_SERVICIO) \n");
+		query.append("JOIN SVC_CONTRATANTE con ON (os.ID_CONTRATANTE = con.ID_CONTRATANTE) \n");
+		query.append("JOIN SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA) \n");
+		query.append("JOIN SVC_FINADO fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO) \n");
+		query.append("JOIN SVC_PERSONA prf ON (fin.ID_PERSONA = prf.ID_PERSONA) \n");
+		query.append("LEFT JOIN SVT_NOTA_REMISION nr ON (os.ID_ORDEN_SERVICIO = nr.ID_ORDEN_SERVICIO) \n");
+		query.append("LEFT JOIN SVC_VELATORIO vel ON (fin.ID_VELATORIO = vel.ID_VELATORIO) \n");
 		
 		return query;
     }
     
+    public DatosRequest actualizaEstatus(String estatus) {
+    	DatosRequest request = new DatosRequest();
+		Map<String, Object> parametro = new HashMap<>();
+		final QueryHelper q = new QueryHelper("UPDATE SVC_ORDEN_SERVICIO");
+		q.agregarParametroValues("CVE_ESTATUS", estatus);
+		q.addWhere("ID_ORDEN_SERVICIO = " + this.id);
+		
+		String query = q.obtenerQueryActualizar();
+		String encoded = DatatypeConverter.printBase64Binary(query.getBytes());
+		parametro.put(AppConstantes.QUERY, encoded);
+		request.setDatos(parametro);
+		return request;
+    }
     
     public Map<String, Object> generarReporte(BusquedaDto reporteDto,String nombrePdfReportes){
 		Map<String, Object> envioDatos = new HashMap<>();

@@ -41,6 +41,14 @@ public class JwtTokenProvider {
 				.signWith(SignatureAlgorithm.HS512, jwtSecretDominios).compact();
 	}
 	
+	public String createTokenTest(String subject) {
+		Map<String, Object> claims = Jwts.claims().setSubject(subject);
+		Date now = new Date();
+		Date exp = new Date(now.getTime() + Long.parseLong(expiration) * 1000);
+		return Jwts.builder().setHeaderParam("sistema", "sivimss").setClaims(claims)
+				.signWith(SignatureAlgorithm.HS512, jwtSecretDominios).compact();
+	}
+	
 	public Long getUserIdFromJWT(String token) {
 		Claims claims = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody();
 

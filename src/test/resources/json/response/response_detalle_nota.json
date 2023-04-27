@@ -1,0 +1,18 @@
+{
+    "error": false,
+    "codigo": 200,
+    "mensaje": "Exito",
+    "datos": [
+        {
+            "velatorioOrigen": "DOCTORES",
+            "folioNota": "000001",
+            "nomFinado": "MARIA HERNANDEZ GOMEZ",
+            "dirVelatorio": "CALLE 5 5 VIADUCTO",
+            "curpSolicitante": "CURP 1",
+            "folioODS": "987654321",
+            "nomVelatorio": "DOCTORES",
+            "nomSolicitante": "JUAN LOPEZ PEREZ",
+            "dirSolicitante": "CALLE 1 1 ERMITA"
+        }
+    ]
+}

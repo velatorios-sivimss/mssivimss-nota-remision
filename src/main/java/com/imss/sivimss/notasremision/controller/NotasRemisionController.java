@@ -24,7 +24,7 @@ import io.github.resilience4j.retry.annotation.Retry;
 import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 
 @RestController
-@RequestMapping("/notasrem")
+@RequestMapping("/v1/notasrem")
 public class NotasRemisionController {
 	
 	@Autowired
