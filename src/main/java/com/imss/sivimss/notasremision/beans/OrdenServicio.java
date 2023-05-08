@@ -60,7 +60,7 @@ public class OrdenServicio {
 		query.append("FROM SVC_ORDEN_SERVICIO os \n");
 		query.append("JOIN SVC_FINADO fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO) \n");
 		query.append("LEFT JOIN SVC_VELATORIO vel ON (fin.ID_VELATORIO = vel.ID_VELATORIO) \n");
-		query.append("WHERE os.CVE_ESTATUS = 2 ");
+		query.append("WHERE os.ID_ESTATUS_ORDEN_SERVICIO = 2 ");
 		if (busqueda.getIdOficina() > 1) {
 			query.append(" AND vel.ID_DELEGACION = ").append(busqueda.getIdDelegacion());
 			if (busqueda.getIdOficina() == 3) {
@@ -140,7 +140,7 @@ public class OrdenServicio {
     	DatosRequest request = new DatosRequest();
 		Map<String, Object> parametro = new HashMap<>();
 		final QueryHelper q = new QueryHelper("UPDATE SVC_ORDEN_SERVICIO");
-		q.agregarParametroValues("CVE_ESTATUS", estatus);
+		q.agregarParametroValues("ID_ESTATUS_ORDEN_SERVICIO", estatus);
 		q.addWhere("ID_ORDEN_SERVICIO = " + this.id);
 		
 		String query = q.obtenerQueryActualizar();
