@@ -33,7 +33,9 @@ public class OrdenServicio {
 	private String nomFinado;
 	private Integer estatus;
 	
-	private static final String fechaCotejo =  "DATE_FORMAT(inf.FEC_CORTEJO,'%d/%m/%Y')";
+	private static final String FECHA_COTEJO =  "DATE_FORMAT(inf.FEC_CORTEJO,'%d/%m/%Y')";
+	
+	private static final String ORDENAMIENTO = " ORDER BY os.ID_ORDEN_SERVICIO DESC";
 	
 	public DatosRequest obtenerODS(DatosRequest request, BusquedaDto busqueda) {
 		StringBuilder query = armaQuery();
@@ -43,7 +45,7 @@ public class OrdenServicio {
 				query.append(" AND fin.ID_VELATORIO = ").append(busqueda.getIdVelatorio());
 			}
 		} 
-		query.append(" ORDER BY os.ID_ORDEN_SERVICIO DESC");
+		query.append(ORDENAMIENTO);
         
 		String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes());
 		request.getDatos().put(AppConstantes.QUERY, encoded);
@@ -65,7 +67,7 @@ public class OrdenServicio {
 				query.append(" AND fin.ID_VELATORIO = ").append(busqueda.getIdVelatorio());
 			}
 		} 
-		query.append(" ORDER BY os.ID_ORDEN_SERVICIO DESC");
+		query.append(ORDENAMIENTO);
 		
 		String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes());
 		parametro.put(AppConstantes.QUERY, encoded);
@@ -85,9 +87,9 @@ public class OrdenServicio {
     	    query.append(" AND os.CVE_FOLIO = '" + busqueda.getFolioODS() +"' ");
     	}
     	if (busqueda.getFecIniODS() != null) {
-    	    query.append(" AND " + fechaCotejo + " BETWEEN '" + busqueda.getFecIniODS() + "' AND '" + busqueda.getFecFinODS() + "' \n");
+    	    query.append(" AND " + FECHA_COTEJO + " BETWEEN '" + busqueda.getFecIniODS() + "' AND '" + busqueda.getFecFinODS() + "' \n");
     	}
-    	query.append(" ORDER BY os.ID_ORDEN_SERVICIO DESC");
+    	query.append(ORDENAMIENTO);
     	
     	String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes());
 		request.getDatos().put(AppConstantes.QUERY, encoded);
@@ -117,7 +119,7 @@ public class OrdenServicio {
   	}
     
     private StringBuilder armaQuery() {
-    	StringBuilder query = new StringBuilder("SELECT os.ID_ORDEN_SERVICIO AS id, os.CVE_FOLIO AS folioODS, " + fechaCotejo + " AS fechaODS, \n");
+    	StringBuilder query = new StringBuilder("SELECT os.ID_ORDEN_SERVICIO AS id, os.CVE_FOLIO AS folioODS, " + FECHA_COTEJO + " AS fechaODS, \n");
 		query.append("0 AS folioConvenio, os.ID_CONTRATANTE AS idContratante, \n");
 		query.append("CONCAT(prc.NOM_PERSONA,' ',prc.NOM_PRIMER_APELLIDO,' ',prc.NOM_SEGUNDO_APELLIDO) AS nomContratante, \n");
 		query.append("fin.ID_FINADO AS idFinado, CONCAT(prf.NOM_PERSONA,' ',prf.NOM_PRIMER_APELLIDO,' ',prf.NOM_SEGUNDO_APELLIDO) AS nomFinado, \n");
@@ -158,7 +160,7 @@ public class OrdenServicio {
     	    condicion.append(" AND os.CVE_FOLIO = '" + reporteDto.getFolioODS() +"' ");
     	}
     	if (reporteDto.getFecIniODS() != null) {
-    	    condicion.append(" AND " + fechaCotejo + " BETWEEN '" + reporteDto.getFecIniODS() + "' AND '" + reporteDto.getFecFinODS() + "' \n");
+    	    condicion.append(" AND " + FECHA_COTEJO + " BETWEEN '" + reporteDto.getFecIniODS() + "' AND '" + reporteDto.getFecFinODS() + "' \n");
     	}
 		
 		envioDatos.put("condicion", condicion.toString());

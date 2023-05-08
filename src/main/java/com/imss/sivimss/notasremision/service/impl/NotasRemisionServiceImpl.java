@@ -49,11 +49,11 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 	@Value("${endpoints.generico-reportes}")
 	private String urlReportes;
 	
-	private static final String nombrePdfNotaRem = "reportes/generales/FormatoNotaRemision.jrxml";
+	private static final String NOMBREPDFNOTAREM = "reportes/generales/FormatoNotaRemision.jrxml";
 	
-	private static final String nombrePdfReportes = "reportes/generales/ReporteODSNotas.jrxml";
+	private static final String NOMBREPDFREPORTE = "reportes/generales/ReporteODSNotas.jrxml";
 	
-	private static final String infoNoEncontrada = "No se encontró información relacionada a tu búsqueda.";
+	private static final String INFONOENCONTRADA = "No se encontró información relacionada a tu búsqueda.";
 	
 	@Autowired
 	private ProviderServiceRestTemplate providerRestTemplate;
@@ -103,7 +103,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 				authentication);
 		ArrayList datos1 = (ArrayList) ((LinkedHashMap) response.getDatos()).get("content");
 		if (datos1.isEmpty()) {
-			response.setMensaje(infoNoEncontrada);
+			response.setMensaje(INFONOENCONTRADA);
 	    }
 		
 		return response;
@@ -228,7 +228,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 			formatoNotaDto.setParFinado(datos1.get(0).get("parFinado").toString());
 			formatoNotaDto.setFolioODS(datos1.get(0).get("folioODS").toString());
 		}
-		Map<String, Object> envioDatos = notaRemision.imprimirNotaRem(formatoNotaDto, nombrePdfNotaRem);
+		Map<String, Object> envioDatos = notaRemision.imprimirNotaRem(formatoNotaDto, NOMBREPDFNOTAREM);
 		return providerRestTemplate.consumirServicioReportes(envioDatos, urlReportes, authentication);
 	}
 	
@@ -238,7 +238,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		String datosJson = String.valueOf(request.getDatos().get(AppConstantes.DATOS));
 		BusquedaDto reporteDto = gson.fromJson(datosJson, BusquedaDto.class);
 		
-		Map<String, Object> envioDatos = new OrdenServicio().generarReporte(reporteDto, nombrePdfReportes);
+		Map<String, Object> envioDatos = new OrdenServicio().generarReporte(reporteDto, NOMBREPDFREPORTE);
 		return providerRestTemplate.consumirServicioReportes(envioDatos, urlReportes, authentication);
 	}
 
