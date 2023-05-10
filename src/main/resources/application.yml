@@ -26,11 +26,8 @@ logos:
   msit_logo_sistema: /sivimss_data/LOGOS/logoSistema.png
 
 endpoints:
-   dominio-consulta: http://localhost:8090/mssivimss-mod-catalogos/v1/generico/consulta
-   dominio-paginado: http://localhost:8090/mssivimss-mod-catalogos/v1/generico/paginado
-   dominio-crear: http://localhost:8090/mssivimss-mod-catalogos/v1/generico/crear
-   dominio-actualizar: http://localhost:8090/mssivimss-mod-catalogos/v1/generico/actualizar
-   generico-reportes: http://localhost:8088/mssivimss-reportes-jpr/v1/generales/generar-reporte
+   dominio: http://localhost:8090/mssivimss-mod-catalogos/v1/generico/
+   generico-reportes: http://localhost:8088/mssivimss-reportes-jpr/generales/generar-reporte
 
 jwt:
   secretkey-flujo: funcionamuybien

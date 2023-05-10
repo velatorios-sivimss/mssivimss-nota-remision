@@ -5,6 +5,8 @@ import java.util.Map;
 
 import javax.xml.bind.DatatypeConverter;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import com.imss.sivimss.notasremision.util.AppConstantes;
 import com.imss.sivimss.notasremision.model.request.BusquedaDto;
 import com.imss.sivimss.notasremision.util.DatosRequest;
@@ -33,7 +35,8 @@ public class OrdenServicio {
 	private String nomFinado;
 	private Integer estatus;
 	
-	private static final String FECHA_COTEJO =  "DATE_FORMAT(inf.FEC_CORTEJO,'%d/%m/%Y')";
+	@Value("${formato_fecha}")
+	private String formatoFecha;
 	
 	private static final String ORDENAMIENTO = " ORDER BY os.ID_ORDEN_SERVICIO DESC";
 	
@@ -87,7 +90,7 @@ public class OrdenServicio {
     	    query.append(" AND os.CVE_FOLIO = '" + busqueda.getFolioODS() +"' ");
     	}
     	if (busqueda.getFecIniODS() != null) {
-    	    query.append(" AND " + FECHA_COTEJO + " BETWEEN '" + busqueda.getFecIniODS() + "' AND '" + busqueda.getFecFinODS() + "' \n");
+    	    query.append(" AND DATE_FORMAT(inf.FEC_CORTEJO," + formatoFecha + ") BETWEEN '" + busqueda.getFecIniODS() + "' AND '" + busqueda.getFecFinODS() + "' \n");
     	}
     	query.append(ORDENAMIENTO);
     	
@@ -119,7 +122,7 @@ public class OrdenServicio {
   	}
     
     private StringBuilder armaQuery() {
-    	StringBuilder query = new StringBuilder("SELECT os.ID_ORDEN_SERVICIO AS id, os.CVE_FOLIO AS folioODS, " + FECHA_COTEJO + " AS fechaODS, \n");
+    	StringBuilder query = new StringBuilder("SELECT os.ID_ORDEN_SERVICIO AS id, os.CVE_FOLIO AS folioODS, DATE_FORMAT(inf.FEC_CORTEJO," + formatoFecha + ") AS fechaODS, \n");
 		query.append("0 AS folioConvenio, os.ID_CONTRATANTE AS idContratante, \n");
 		query.append("CONCAT(prc.NOM_PERSONA,' ',prc.NOM_PRIMER_APELLIDO,' ',prc.NOM_SEGUNDO_APELLIDO) AS nomContratante, \n");
 		query.append("fin.ID_FINADO AS idFinado, CONCAT(prf.NOM_PERSONA,' ',prf.NOM_PRIMER_APELLIDO,' ',prf.NOM_SEGUNDO_APELLIDO) AS nomFinado, \n");
@@ -160,7 +163,7 @@ public class OrdenServicio {
     	    condicion.append(" AND os.CVE_FOLIO = '" + reporteDto.getFolioODS() +"' ");
     	}
     	if (reporteDto.getFecIniODS() != null) {
-    	    condicion.append(" AND " + FECHA_COTEJO + " BETWEEN '" + reporteDto.getFecIniODS() + "' AND '" + reporteDto.getFecFinODS() + "' \n");
+    	    condicion.append(" AND DATE_FORMAT(inf.FEC_CORTEJO," + formatoFecha + ") BETWEEN '" + reporteDto.getFecIniODS() + "' AND '" + reporteDto.getFecFinODS() + "' \n");
     	}
 		
 		envioDatos.put("condicion", condicion.toString());

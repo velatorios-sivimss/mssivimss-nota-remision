@@ -24,7 +24,7 @@ import io.github.resilience4j.retry.annotation.Retry;
 import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 
 @RestController
-@RequestMapping("/notasrem")
+@RequestMapping("/notas-remision")
 public class NotasRemisionController {
 	
 	@Autowired
@@ -60,7 +60,7 @@ public class NotasRemisionController {
 	@CircuitBreaker(name = "msflujo", fallbackMethod = "fallbackGenerico")
 	@Retry(name = "msflujo", fallbackMethod = "fallbackGenerico")
 	@TimeLimiter(name = "msflujo")
-	@PostMapping("/listaODS")
+	@PostMapping("/lista-ods")
 	public CompletableFuture<?> buscar(@RequestBody DatosRequest request, Authentication authentication) throws IOException {
 		
 		Response<?> response = notasRemisionService.listadoODS(request, authentication);
@@ -96,7 +96,7 @@ public class NotasRemisionController {
 	@CircuitBreaker(name = "msflujo", fallbackMethod = "fallbackGenerico")
 	@Retry(name = "msflujo", fallbackMethod = "fallbackGenerico")
 	@TimeLimiter(name = "msflujo")
-	@PostMapping("/det-nota")
+	@PostMapping("/detalle-nota")
 	public CompletableFuture<?> detalleNota(@RequestBody DatosRequest request, Authentication authentication) throws IOException {
 		
 		Response<?> response = notasRemisionService.detalleNotaRem(request, authentication);
@@ -108,7 +108,7 @@ public class NotasRemisionController {
 	@CircuitBreaker(name = "msflujo", fallbackMethod = "fallbackGenerico")
 	@Retry(name = "msflujo", fallbackMethod = "fallbackGenerico")
 	@TimeLimiter(name = "msflujo")
-	@PostMapping("/serv-nota")
+	@PostMapping("/servicios")
 	public CompletableFuture<?> serviciosNota(@RequestBody DatosRequest request, Authentication authentication) throws IOException {
 		
 		Response<?> response = notasRemisionService.serviciosNotaRem(request, authentication);

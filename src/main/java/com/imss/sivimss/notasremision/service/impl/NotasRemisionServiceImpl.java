@@ -34,17 +34,14 @@ import com.imss.sivimss.notasremision.util.Response;
 @Service
 public class NotasRemisionServiceImpl implements NotasRemisionService {
 	
-	@Value("${endpoints.dominio-paginado}")
-	private String urlGenericoPaginado;
+	@Value("${endpoints.dominio}")
+	private String urlDominioGenerico;
 	
-	@Value("${endpoints.dominio-consulta}")
-	private String urlGenericoConsulta;
+	private static final String PAGINADO = "paginado";
 	
-	@Value("${endpoints.dominio-crear}")
-	private String urlGenericoCrear;
+	private static final String CONSULTA = "consulta";
 	
-	@Value("${endpoints.dominio-actualizar}")
-	private String urlGenericoActualizar;
+	private static final String ACTUALIZAR = "actualizar";
 	
 	@Value("${endpoints.generico-reportes}")
 	private String urlReportes;
@@ -69,7 +66,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		String datosJson = String.valueOf(authentication.getPrincipal());
 		BusquedaDto busqueda = gson.fromJson(datosJson, BusquedaDto.class);
 
-		return providerRestTemplate.consumirServicio(ordenServicio.obtenerODS(request, busqueda).getDatos(), urlGenericoPaginado, 
+		return providerRestTemplate.consumirServicio(ordenServicio.obtenerODS(request, busqueda).getDatos(), urlDominioGenerico + PAGINADO, 
 				authentication);
 	}
 	
@@ -81,7 +78,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		
 		String datosJson = String.valueOf(authentication.getPrincipal());
 		BusquedaDto busqueda = gson.fromJson(datosJson, BusquedaDto.class);
-		Response<?> response = providerRestTemplate.consumirServicio(ordenServicio.listadoODS(busqueda).getDatos(), urlGenericoConsulta, 
+		Response<?> response = providerRestTemplate.consumirServicio(ordenServicio.listadoODS(busqueda).getDatos(), urlDominioGenerico + CONSULTA, 
 				authentication);
 		
 		if (response.getCodigo() == 200) {
@@ -99,7 +96,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		BusquedaDto busqueda = gson.fromJson(datosJson, BusquedaDto.class);
 		OrdenServicio ordenServicio = new OrdenServicio();
 		
-		Response<?> response = providerRestTemplate.consumirServicio(ordenServicio.buscarODS(request, busqueda).getDatos(), urlGenericoPaginado,
+		Response<?> response = providerRestTemplate.consumirServicio(ordenServicio.buscarODS(request, busqueda).getDatos(), urlDominioGenerico + PAGINADO,
 				authentication);
 		ArrayList datos1 = (ArrayList) ((LinkedHashMap) response.getDatos()).get("content");
 		if (datos1.isEmpty()) {
@@ -113,7 +110,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 	public Response<?> detalleODS(DatosRequest request, Authentication authentication) throws IOException {
         OrdenServicio ordenServicio = new OrdenServicio();
 		
-		return providerRestTemplate.consumirServicio(ordenServicio.detalleODS(request).getDatos(), urlGenericoConsulta, 
+		return providerRestTemplate.consumirServicio(ordenServicio.detalleODS(request).getDatos(), urlDominioGenerico + CONSULTA, 
 				authentication);
 	}
 	
@@ -121,7 +118,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 	public Response<?> existeNotaRem(DatosRequest request, Authentication authentication) throws IOException {
         OrdenServicio ordenServicio = new OrdenServicio();
 		
-		return providerRestTemplate.consumirServicio(ordenServicio.existeNotaRem(request).getDatos(), urlGenericoConsulta, 
+		return providerRestTemplate.consumirServicio(ordenServicio.existeNotaRem(request).getDatos(), urlDominioGenerico + CONSULTA, 
 				authentication);
 	}
 	
@@ -136,7 +133,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		}
 		NotaRemision notaRemision  = new NotaRemision(notaDto.getIdNota(), notaDto.getIdOrden());
 		
-		return providerRestTemplate.consumirServicio(notaRemision.detalleNotaRem(request).getDatos(), urlGenericoConsulta, 
+		return providerRestTemplate.consumirServicio(notaRemision.detalleNotaRem(request).getDatos(), urlDominioGenerico + CONSULTA, 
 				authentication);
 	}
 	
@@ -151,7 +148,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		}
 		NotaRemision notaRemision  = new NotaRemision(notaDto.getIdNota(), notaDto.getIdOrden());
 		
-		return providerRestTemplate.consumirServicio(notaRemision.serviciosNotaRem(request).getDatos(), urlGenericoConsulta, 
+		return providerRestTemplate.consumirServicio(notaRemision.serviciosNotaRem(request).getDatos(), urlDominioGenerico + CONSULTA, 
 				authentication);
 	}
 
@@ -167,16 +164,16 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		}
 		OrdenServicio ordenServicio = new OrdenServicio();
 		ordenServicio.setId(notaDto.getIdOrden());
-		providerRestTemplate.consumirServicio(ordenServicio.actualizaEstatus("2").getDatos(), urlGenericoActualizar, authentication);
+		providerRestTemplate.consumirServicio(ordenServicio.actualizaEstatus("2").getDatos(), urlDominioGenerico + ACTUALIZAR, authentication);
 		
 		NotaRemision notaRemision  = new NotaRemision(0, notaDto.getIdOrden());
 		notaRemision.setIdUsuarioAlta(usuarioDto.getIdUsuario());
-		Response<?> request1 = providerRestTemplate.consumirServicio(notaRemision.ultimoFolioNota(request).getDatos(), urlGenericoConsulta,
+		Response<?> request1 = providerRestTemplate.consumirServicio(notaRemision.ultimoFolioNota(request).getDatos(), urlDominioGenerico + CONSULTA,
 				authentication);
 		ArrayList<LinkedHashMap> datos1 = (ArrayList) request1.getDatos();
 		String ultimoFolio = datos1.get(0).get("folio").toString();
 		
-		return providerRestTemplate.consumirServicio(notaRemision.generarNotaRem(ultimoFolio).getDatos(), urlGenericoCrear, authentication);
+		return providerRestTemplate.consumirServicio(notaRemision.generarNotaRem(ultimoFolio).getDatos(), urlDominioGenerico + "crear", authentication);
 	}
 
 	@Override
@@ -190,14 +187,14 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		}
 		OrdenServicio ordenServicio = new OrdenServicio();
 		ordenServicio.setId(notaDto.getIdOrden());
-		providerRestTemplate.consumirServicio(ordenServicio.actualizaEstatus("3").getDatos(), urlGenericoActualizar, authentication);
+		providerRestTemplate.consumirServicio(ordenServicio.actualizaEstatus("3").getDatos(), urlDominioGenerico + ACTUALIZAR, authentication);
 		
 		UsuarioDto usuarioDto = gson.fromJson((String) authentication.getPrincipal(), UsuarioDto.class);
 		NotaRemision notaRemision  = new NotaRemision(notaDto.getIdNota(), notaDto.getIdOrden());
 		notaRemision.setMotivo(notaDto.getMotivo());
 		notaRemision.setIdUsuarioModifica(usuarioDto.getIdUsuario());
 		
-		return providerRestTemplate.consumirServicio(notaRemision.cancelarNotaRem().getDatos(), urlGenericoActualizar, authentication);
+		return providerRestTemplate.consumirServicio(notaRemision.cancelarNotaRem().getDatos(), urlDominioGenerico + ACTUALIZAR, authentication);
 	}
 	
 	@Override
@@ -211,7 +208,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		}
 		NotaRemision notaRemision  = new NotaRemision(notaDto.getIdNota(), notaDto.getIdOrden());
 		
-		Response<?> response1 = providerRestTemplate.consumirServicio(notaRemision.detalleNotaRem(request).getDatos(), urlGenericoConsulta, 
+		Response<?> response1 = providerRestTemplate.consumirServicio(notaRemision.detalleNotaRem(request).getDatos(), urlDominioGenerico + CONSULTA, 
 				authentication);
 		ArrayList<LinkedHashMap> datos1 = (ArrayList) response1.getDatos();
 		
