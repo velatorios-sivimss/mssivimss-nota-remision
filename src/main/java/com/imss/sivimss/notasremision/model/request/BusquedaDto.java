@@ -13,7 +13,6 @@ import lombok.Setter;
 public class BusquedaDto {
 
 	private Integer idOficina;
-	private Integer idNivel;
 	private Integer idDelegacion;
 	private Integer idVelatorio;
 	private String folioODS;

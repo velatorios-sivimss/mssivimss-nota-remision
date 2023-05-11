@@ -82,9 +82,12 @@ public class OrdenServicio {
 		
     	StringBuilder query = armaQuery();
     	query.append("WHERE 1 = 1");
-    	if (busqueda.getIdNivel() > 1 && busqueda.getIdVelatorio() != null) {
+    	if (busqueda.getIdVelatorio() != null) {
 			query.append(" AND fin.ID_VELATORIO = ").append(busqueda.getIdVelatorio());
 		}
+    	if (busqueda.getIdDelegacion() != null) {
+    		query.append(" AND vel.ID_DELEGACION = ").append(busqueda.getIdDelegacion());
+    	}
 
     	if (busqueda.getFolioODS() != null) {
     	    query.append(" AND os.CVE_FOLIO = '" + busqueda.getFolioODS() +"' ");
@@ -159,6 +162,9 @@ public class OrdenServicio {
 		if (reporteDto.getIdVelatorio() != null) {
 			condicion.append(" AND fin.ID_VELATORIO = ").append(reporteDto.getIdVelatorio());
 		}
+		if (reporteDto.getIdDelegacion() != null) {
+    		condicion.append(" AND vel.ID_DELEGACION = ").append(reporteDto.getIdDelegacion());
+    	}
 		if (reporteDto.getFolioODS() != null) {
     	    condicion.append(" AND os.CVE_FOLIO = '" + reporteDto.getFolioODS() +"' ");
     	}

@@ -1,7 +1,7 @@
 server:
 
   servlet:
-    contextPath: /mssivimss-notasremision
+    contextPath: /mssivimss-notasremision/v1
     
 spring:
   mvc:
@@ -23,16 +23,12 @@ logging:
     org.hibernate: error
 
 logos:
-  msit_logo_imss: /sintrans_data/LOGOS/logoImss.png
-  msit_logo_sistema: /sintrans_data/LOGOS/logoSistema.png
+  msit_logo_imss: /sivimss_data/LOGOS/logoImss.png
+  msit_logo_sistema: /sivimss_data/LOGOS/logoSistema.png
 
 endpoints:
-   dominio-consulta: http://localhost:8090/mssivimss-mod-catalogos/generico/consulta
-   dominio-paginado: http://localhost:8090/mssivimss-mod-catalogos/generico/paginado
-   dominio-crear: http://localhost:8090/mssivimss-mod-catalogos/generico/crear
-   dominio-actualizar: http://localhost:8090/mssivimss-mod-catalogos/generico/actualizar
+   dominio: http://localhost:8090/mssivimss-mod-catalogos/v1/generico/
    generico-reportes: http://localhost:8088/mssivimss-reportes-jpr/generales/generar-reporte
-   
 
 jwt:
   secretkey-flujo: funcionamuybien

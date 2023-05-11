@@ -51,7 +51,7 @@ public class NotasRemisionControllerTest extends BaseTest {
 	       Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 	       String myToken = jwtTokenProvider.createTokenTest(authentication.getPrincipal().toString());
 	       MockModCatalogosClient.listaODS(HttpStatusCode.OK_200, JsonUtil.readFromJson("json/request/lista_ods_mock.json"), JsonUtil.readFromJson("json/response/response_lista_ods.json"), myToken, mockServer);
-	       this.mockMvc.perform(post("/notasrem/listaODS")
+	       this.mockMvc.perform(post("/notas-remision/lista-ods")
 	                    .contentType(MediaType.APPLICATION_JSON)
 	                    .accept(MediaType.APPLICATION_JSON)
 	                    .header("Authorization","Bearer " + myToken)
@@ -68,7 +68,7 @@ public class NotasRemisionControllerTest extends BaseTest {
 	       Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 	       String myToken = jwtTokenProvider.createTokenTest(authentication.getPrincipal().toString());
 	       MockModCatalogosClient.buscarODS(HttpStatusCode.OK_200, JsonUtil.readFromJson("json/request/buscar_ods_mock.json"), JsonUtil.readFromJson("json/response/response_buscar_ods.json"), myToken, mockServer);
-	       this.mockMvc.perform(post("/notasrem/buscar")
+	       this.mockMvc.perform(post("/notas-remision/buscar")
 	                    .contentType(MediaType.APPLICATION_JSON)
 	                    .accept(MediaType.APPLICATION_JSON)
 	                    .header("Authorization","Bearer " + myToken)
@@ -85,7 +85,7 @@ public class NotasRemisionControllerTest extends BaseTest {
 	       Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 	       String myToken = jwtTokenProvider.createTokenTest(authentication.getPrincipal().toString());
 	       MockModCatalogosClient.generarNota(HttpStatusCode.OK_200, JsonUtil.readFromJson("json/request/generar_nota_mock.json"), JsonUtil.readFromJson("json/response/response_generar_nota.json"), myToken, mockServer);
-	       this.mockMvc.perform(post("/notasrem/genera")
+	       this.mockMvc.perform(post("/notas-remision/genera")
 	                    .contentType(MediaType.APPLICATION_JSON)
 	                    .accept(MediaType.APPLICATION_JSON)
 	                    .header("Authorization","Bearer " + myToken)
@@ -102,7 +102,7 @@ public class NotasRemisionControllerTest extends BaseTest {
 	       Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 	       String myToken = jwtTokenProvider.createTokenTest(authentication.getPrincipal().toString());
 	       MockModCatalogosClient.detalleNota(HttpStatusCode.OK_200, JsonUtil.readFromJson("json/request/detalle_nota_mock.json"), JsonUtil.readFromJson("json/response/response_detalle_nota.json"), myToken, mockServer);
-	       this.mockMvc.perform(post("/notasrem/det-nota")
+	       this.mockMvc.perform(post("/notas-remision/detalle-nota")
 	                    .contentType(MediaType.APPLICATION_JSON)
 	                    .accept(MediaType.APPLICATION_JSON)
 	                    .header("Authorization","Bearer " + myToken)
@@ -119,7 +119,7 @@ public class NotasRemisionControllerTest extends BaseTest {
 	       Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 	       String myToken = jwtTokenProvider.createTokenTest(authentication.getPrincipal().toString());
 	       MockModCatalogosClient.detalleNota(HttpStatusCode.OK_200, JsonUtil.readFromJson("json/request/cancela_nota_mock.json"), JsonUtil.readFromJson("json/response/response_cancela_nota.json"), myToken, mockServer);
-	       this.mockMvc.perform(post("/notasrem/cancela")
+	       this.mockMvc.perform(post("/notas-remision/cancela")
 	                    .contentType(MediaType.APPLICATION_JSON)
 	                    .accept(MediaType.APPLICATION_JSON)
 	                    .header("Authorization","Bearer " + myToken)
