@@ -35,13 +35,10 @@ public class OrdenServicio {
 	private String nomFinado;
 	private Integer estatus;
 	
-	@Value("${formato_fecha}")
-	private String formatoFecha;
-	
 	private static final String ORDENAMIENTO = " ORDER BY os.ID_ORDEN_SERVICIO DESC";
 	
-	public DatosRequest obtenerODS(DatosRequest request, BusquedaDto busqueda) {
-		StringBuilder query = armaQuery();
+	public DatosRequest obtenerODS(DatosRequest request, BusquedaDto busqueda, String formatoFecha) {
+		StringBuilder query = armaQuery(formatoFecha);
 		if (busqueda.getIdOficina() > 1) {
 			query.append(" WHERE vel.ID_DELEGACION = ").append(busqueda.getIdDelegacion());
 			if (busqueda.getIdOficina() == 3) {
@@ -78,9 +75,9 @@ public class OrdenServicio {
 		return request;
 	}
 	
-    public DatosRequest buscarODS(DatosRequest request, BusquedaDto busqueda) {
+    public DatosRequest buscarODS(DatosRequest request, BusquedaDto busqueda, String formatoFecha) {
 		
-    	StringBuilder query = armaQuery();
+    	StringBuilder query = armaQuery(formatoFecha);
     	query.append("WHERE 1 = 1");
     	if (busqueda.getIdVelatorio() != null) {
 			query.append(" AND fin.ID_VELATORIO = ").append(busqueda.getIdVelatorio());
@@ -93,7 +90,7 @@ public class OrdenServicio {
     	    query.append(" AND os.CVE_FOLIO = '" + busqueda.getFolioODS() +"' ");
     	}
     	if (busqueda.getFecIniODS() != null) {
-    	    query.append(" AND DATE_FORMAT(inf.FEC_CORTEJO," + formatoFecha + ") BETWEEN '" + busqueda.getFecIniODS() + "' AND '" + busqueda.getFecFinODS() + "' \n");
+    	    query.append(" AND DATE_FORMAT(inf.FEC_CORTEJO,'" + formatoFecha + "') BETWEEN '" + busqueda.getFecIniODS() + "' AND '" + busqueda.getFecFinODS() + "' \n");
     	}
     	query.append(ORDENAMIENTO);
     	
@@ -139,8 +136,8 @@ public class OrdenServicio {
   		return request;
   	}
     
-    private StringBuilder armaQuery() {
-    	StringBuilder query = new StringBuilder("SELECT os.ID_ORDEN_SERVICIO AS id, os.CVE_FOLIO AS folioODS, DATE_FORMAT(inf.FEC_CORTEJO," + formatoFecha + ") AS fechaODS, \n");
+    private StringBuilder armaQuery(String formatoFecha) {
+    	StringBuilder query = new StringBuilder("SELECT os.ID_ORDEN_SERVICIO AS id, os.CVE_FOLIO AS folioODS, DATE_FORMAT(inf.FEC_CORTEJO,'" + formatoFecha + "') AS fechaODS, \n");
 		query.append("0 AS folioConvenio, os.ID_CONTRATANTE AS idContratante, \n");
 		query.append("CONCAT(prc.NOM_PERSONA,' ',prc.NOM_PRIMER_APELLIDO,' ',prc.NOM_SEGUNDO_APELLIDO) AS nomContratante, \n");
 		query.append("fin.ID_FINADO AS idFinado, CONCAT(prf.NOM_PERSONA,' ',prf.NOM_PRIMER_APELLIDO,' ',prf.NOM_SEGUNDO_APELLIDO) AS nomFinado, \n");
@@ -171,7 +168,7 @@ public class OrdenServicio {
 		return request;
     }
     
-    public Map<String, Object> generarReporte(BusquedaDto reporteDto,String nombrePdfReportes){
+    public Map<String, Object> generarReporte(BusquedaDto reporteDto,String nombrePdfReportes, String formatoFecha){
 		Map<String, Object> envioDatos = new HashMap<>();
 		StringBuilder condicion = new StringBuilder(" ");
 		if (reporteDto.getIdVelatorio() != null) {
@@ -184,7 +181,7 @@ public class OrdenServicio {
     	    condicion.append(" AND os.CVE_FOLIO = '" + reporteDto.getFolioODS() +"' ");
     	}
     	if (reporteDto.getFecIniODS() != null) {
-    	    condicion.append(" AND DATE_FORMAT(inf.FEC_CORTEJO," + formatoFecha + ") BETWEEN '" + reporteDto.getFecIniODS() + "' AND '" + reporteDto.getFecFinODS() + "' \n");
+    	    condicion.append(" AND DATE_FORMAT(inf.FEC_CORTEJO,'" + formatoFecha + "') BETWEEN '" + reporteDto.getFecIniODS() + "' AND '" + reporteDto.getFecFinODS() + "' \n");
     	}
 		
 		envioDatos.put("condicion", condicion.toString());

@@ -5,6 +5,8 @@ import java.util.Map;
 
 import javax.xml.bind.DatatypeConverter;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import com.imss.sivimss.notasremision.util.QueryHelper;
 import com.imss.sivimss.notasremision.model.request.BusquedaDto;
 import com.imss.sivimss.notasremision.model.request.FormatoNotaDto;
@@ -66,8 +68,9 @@ public class NotaRemision {
 		return request;
 	}
 	
-	public DatosRequest detalleNotaRem(DatosRequest request) {
-		StringBuilder query = new StringBuilder("SELECT nr.NUM_FOLIO AS folioNota, os.CVE_FOLIO AS folioODS, vel.NOM_VELATORIO AS nomVelatorio, \n");
+	public DatosRequest detalleNotaRem(DatosRequest request, String formatoFecha) {
+		StringBuilder query = new StringBuilder("SELECT nr.NUM_FOLIO AS folioNota, DATE_FORMAT(nr.FEC_ALTA,'" + formatoFecha + "') AS fechaNota, \n");
+		query.append("os.CVE_FOLIO AS folioODS, vel.NOM_VELATORIO AS nomVelatorio, \n");
 		query.append("IFNULL(CONCAT(domv.DES_CALLE,' ',domv.NUM_EXTERIOR,' ',domv.DES_COLONIA),'') AS dirVelatorio, \n");
 		query.append("CONCAT(prf.NOM_PERSONA,' ',prf.NOM_PRIMER_APELLIDO,' ',prf.NOM_SEGUNDO_APELLIDO) AS nomFinado, \n");
 		query.append("par.DES_PARENTESCO AS parFinado, \n");

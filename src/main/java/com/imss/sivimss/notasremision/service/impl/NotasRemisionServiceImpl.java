@@ -3,7 +3,6 @@ package com.imss.sivimss.notasremision.service.impl;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +45,9 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 	@Value("${endpoints.generico-reportes}")
 	private String urlReportes;
 	
+	@Value("${formato_fecha}")
+	private String formatoFecha;
+	
 	private static final String NOMBREPDFNOTAREM = "reportes/generales/FormatoNotaRemision.jrxml";
 	
 	private static final String NOMBREPDFREPORTE = "reportes/generales/ReporteODSNotas.jrxml";
@@ -66,7 +68,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		String datosJson = String.valueOf(authentication.getPrincipal());
 		BusquedaDto busqueda = gson.fromJson(datosJson, BusquedaDto.class);
 
-		return providerRestTemplate.consumirServicio(ordenServicio.obtenerODS(request, busqueda).getDatos(), urlDominioGenerico + PAGINADO, 
+		return providerRestTemplate.consumirServicio(ordenServicio.obtenerODS(request, busqueda, formatoFecha).getDatos(), urlDominioGenerico + PAGINADO, 
 				authentication);
 	}
 	
@@ -96,7 +98,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		BusquedaDto busqueda = gson.fromJson(datosJson, BusquedaDto.class);
 		OrdenServicio ordenServicio = new OrdenServicio();
 		
-		Response<?> response = providerRestTemplate.consumirServicio(ordenServicio.buscarODS(request, busqueda).getDatos(), urlDominioGenerico + PAGINADO,
+		Response<?> response = providerRestTemplate.consumirServicio(ordenServicio.buscarODS(request, busqueda, formatoFecha).getDatos(), urlDominioGenerico + PAGINADO,
 				authentication);
 		ArrayList datos1 = (ArrayList) ((LinkedHashMap) response.getDatos()).get("content");
 		if (datos1.isEmpty()) {
@@ -133,7 +135,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		}
 		NotaRemision notaRemision  = new NotaRemision(notaDto.getIdNota(), notaDto.getIdOrden());
 		
-		return providerRestTemplate.consumirServicio(notaRemision.detalleNotaRem(request).getDatos(), urlDominioGenerico + CONSULTA, 
+		return providerRestTemplate.consumirServicio(notaRemision.detalleNotaRem(request, formatoFecha).getDatos(), urlDominioGenerico + CONSULTA, 
 				authentication);
 	}
 	
@@ -208,7 +210,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		}
 		NotaRemision notaRemision  = new NotaRemision(notaDto.getIdNota(), notaDto.getIdOrden());
 		
-		Response<?> response1 = providerRestTemplate.consumirServicio(notaRemision.detalleNotaRem(request).getDatos(), urlDominioGenerico + CONSULTA, 
+		Response<?> response1 = providerRestTemplate.consumirServicio(notaRemision.detalleNotaRem(request, formatoFecha).getDatos(), urlDominioGenerico + CONSULTA, 
 				authentication);
 		ArrayList<LinkedHashMap> datos1 = (ArrayList) response1.getDatos();
 		
@@ -235,7 +237,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		String datosJson = String.valueOf(request.getDatos().get(AppConstantes.DATOS));
 		BusquedaDto reporteDto = gson.fromJson(datosJson, BusquedaDto.class);
 		
-		Map<String, Object> envioDatos = new OrdenServicio().generarReporte(reporteDto, NOMBREPDFREPORTE);
+		Map<String, Object> envioDatos = new OrdenServicio().generarReporte(reporteDto, NOMBREPDFREPORTE, formatoFecha);
 		return providerRestTemplate.consumirServicioReportes(envioDatos, urlReportes, authentication);
 	}
 
