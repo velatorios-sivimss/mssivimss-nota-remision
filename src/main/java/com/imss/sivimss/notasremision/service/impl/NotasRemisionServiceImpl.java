@@ -215,6 +215,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		ArrayList<LinkedHashMap> datos1 = (ArrayList) response1.getDatos();
 		
 		FormatoNotaDto formatoNotaDto = new FormatoNotaDto();
+		formatoNotaDto.setTipoReporte(notaDto.getTipoReporte());
 		if (datos1.size() > 0) {
 			formatoNotaDto.setNomVelatorio(datos1.get(0).get("nomVelatorio").toString());
 			formatoNotaDto.setFolioNota(datos1.get(0).get("folioNota").toString());

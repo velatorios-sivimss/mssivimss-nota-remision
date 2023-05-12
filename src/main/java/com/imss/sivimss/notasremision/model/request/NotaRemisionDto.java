@@ -13,5 +13,6 @@ public class NotaRemisionDto {
 	private Integer idNota;
 	private Integer idOrden;
 	private String motivo;
+	private String tipoReporte;
 	
 }

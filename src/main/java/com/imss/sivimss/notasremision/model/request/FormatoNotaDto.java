@@ -2,9 +2,7 @@ package com.imss.sivimss.notasremision.model.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
@@ -27,5 +25,7 @@ public class FormatoNotaDto {
 	private String nomFinado;
 	private String parFinado;
 	private String folioODS;
+	
+	private String tipoReporte;
 	
 }

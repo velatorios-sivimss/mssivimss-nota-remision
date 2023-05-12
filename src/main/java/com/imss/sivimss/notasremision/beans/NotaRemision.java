@@ -75,7 +75,7 @@ public class NotaRemision {
 		query.append("CONCAT(prf.NOM_PERSONA,' ',prf.NOM_PRIMER_APELLIDO,' ',prf.NOM_SEGUNDO_APELLIDO) AS nomFinado, \n");
 		query.append("par.DES_PARENTESCO AS parFinado, \n");
 		query.append("CONCAT(prc.NOM_PERSONA,' ',prc.NOM_PRIMER_APELLIDO,' ',prc.NOM_SEGUNDO_APELLIDO) AS nomSolicitante, \n");
-		query.append("CONCAT(domc.DES_CALLE,' ',domc.NUM_EXTERIOR,' ',domc.DES_COLONIA) AS dirSolicitante, \n");
+		query.append("IFNULL(CONCAT(domc.DES_CALLE,' ',domc.NUM_EXTERIOR,' ',domc.DES_COLONIA),'') AS dirSolicitante, \n");
 		query.append("prc.CVE_CURP AS curpSolicitante, vel.NOM_VELATORIO AS velatorioOrigen \n");
 		query.append("FROM SVT_NOTA_REMISION nr \n");
 		query.append("JOIN SVC_ORDEN_SERVICIO os ON (nr.ID_ORDEN_SERVICIO = os.ID_ORDEN_SERVICIO) \n");
@@ -145,7 +145,7 @@ public class NotaRemision {
 		envioDatos.put("parFinado", formatoDto.getParFinado());
 		envioDatos.put("folioODS", formatoDto.getFolioODS());
 		envioDatos.put("condicion", " AND cp.ID_ORDEN_SERVICIO = " +  this.id);
-		envioDatos.put("tipoReporte", "pdf");
+		envioDatos.put("tipoReporte", formatoDto.getTipoReporte());
 		envioDatos.put("rutaNombreReporte", nombrePdfNotaRem);
 		
 		return envioDatos;
