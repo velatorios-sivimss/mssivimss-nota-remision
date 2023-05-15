@@ -154,20 +154,6 @@ public class OrdenServicio {
 		return query;
     }
     
-    public DatosRequest actualizaEstatus(String estatus) {
-    	DatosRequest request = new DatosRequest();
-		Map<String, Object> parametro = new HashMap<>();
-		final QueryHelper q = new QueryHelper("UPDATE SVC_ORDEN_SERVICIO");
-		q.agregarParametroValues("ID_ESTATUS_ORDEN_SERVICIO", estatus);
-		q.addWhere("ID_ORDEN_SERVICIO = " + this.id);
-		
-		String query = q.obtenerQueryActualizar();
-		String encoded = DatatypeConverter.printBase64Binary(query.getBytes());
-		parametro.put(AppConstantes.QUERY, encoded);
-		request.setDatos(parametro);
-		return request;
-    }
-    
     public Map<String, Object> generarReporte(BusquedaDto reporteDto,String nombrePdfReportes, String formatoFecha){
 		Map<String, Object> envioDatos = new HashMap<>();
 		StringBuilder condicion = new StringBuilder(" ");

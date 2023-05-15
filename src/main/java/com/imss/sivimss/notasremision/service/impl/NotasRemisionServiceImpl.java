@@ -52,7 +52,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 	
 	private static final String NOMBREPDFREPORTE = "reportes/generales/ReporteODSNotas.jrxml";
 	
-	private static final String INFONOENCONTRADA = "No se encontró información relacionada a tu búsqueda.";
+	private static final String INFONOENCONTRADA = "45";
 	
 	@Autowired
 	private ProviderServiceRestTemplate providerRestTemplate;
@@ -164,10 +164,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		if (notaDto.getIdOrden() == null) {
 			throw new BadRequestException(HttpStatus.BAD_REQUEST, "Informacion incompleta");
 		}
-		//OrdenServicio ordenServicio = new OrdenServicio();
-		//ordenServicio.setId(notaDto.getIdOrden());
-		//providerRestTemplate.consumirServicio(ordenServicio.actualizaEstatus("2").getDatos(), urlDominioGenerico + ACTUALIZAR, authentication);
-		
+	
 		NotaRemision notaRemision  = new NotaRemision(0, notaDto.getIdOrden());
 		notaRemision.setIdUsuarioAlta(usuarioDto.getIdUsuario());
 		Response<?> request1 = providerRestTemplate.consumirServicio(notaRemision.ultimoFolioNota(request).getDatos(), urlDominioGenerico + CONSULTA,
@@ -187,9 +184,6 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		if (notaDto.getIdNota() == null) {
 			throw new BadRequestException(HttpStatus.BAD_REQUEST, "Informacion incompleta");
 		}
-		//OrdenServicio ordenServicio = new OrdenServicio();
-		//ordenServicio.setId(notaDto.getIdOrden());
-		//providerRestTemplate.consumirServicio(ordenServicio.actualizaEstatus("3").getDatos(), urlDominioGenerico + ACTUALIZAR, authentication);
 		
 		UsuarioDto usuarioDto = gson.fromJson((String) authentication.getPrincipal(), UsuarioDto.class);
 		NotaRemision notaRemision  = new NotaRemision(notaDto.getIdNota(), notaDto.getIdOrden());
