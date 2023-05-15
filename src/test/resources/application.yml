@@ -1,5 +1,5 @@
 server:
-
+  port: 8080
   servlet:
     contextPath: /mssivimss-notasremision/v1
     
@@ -28,7 +28,7 @@ logos:
 
 endpoints:
    dominio: http://localhost:8090/mssivimss-mod-catalogos/v1/generico/
-   generico-reportes: http://localhost:8088/mssivimss-reportes-jpr/generales/generar-reporte
+   generico-reportes: http://localhost:8088/mssivimss-reportes-jasp/v1/generales/generar-reporte
 
 jwt:
   secretkey-flujo: funcionamuybien
@@ -36,3 +36,4 @@ jwt:
   expiration-milliseconds: 360
 
 formato_fecha: '%d/%m/%Y'
+ruta-log: 'C:/Users/gsolis/ruta/Documents/logs/'
