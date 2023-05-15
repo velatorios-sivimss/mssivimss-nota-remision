@@ -29,6 +29,7 @@ import com.imss.sivimss.notasremision.model.response.ODSGeneradaResponse;
 import com.imss.sivimss.notasremision.service.NotasRemisionService;
 import com.imss.sivimss.notasremision.util.DatosRequest;
 import com.imss.sivimss.notasremision.util.Response;
+import com.imss.sivimss.notasremision.util.MensajeResponseUtil;
 
 @Service
 public class NotasRemisionServiceImpl implements NotasRemisionService {
@@ -53,6 +54,8 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 	private static final String NOMBREPDFREPORTE = "reportes/generales/ReporteODSNotas.jrxml";
 	
 	private static final String INFONOENCONTRADA = "45";
+	
+	private static final String ERROR_DESCARGA = "64";
 	
 	@Autowired
 	private ProviderServiceRestTemplate providerRestTemplate;
@@ -223,7 +226,9 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 			formatoNotaDto.setFolioODS(datos1.get(0).get("folioODS").toString());
 		}
 		Map<String, Object> envioDatos = notaRemision.imprimirNotaRem(formatoNotaDto, NOMBREPDFNOTAREM);
-		return providerRestTemplate.consumirServicioReportes(envioDatos, urlReportes, authentication);
+		Response<?> response = providerRestTemplate.consumirServicioReportes(envioDatos, urlReportes, authentication);
+		
+		return MensajeResponseUtil.mensajeConsultaResponse(response, ERROR_DESCARGA);
 	}
 	
 	@Override
@@ -233,7 +238,9 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		BusquedaDto reporteDto = gson.fromJson(datosJson, BusquedaDto.class);
 		
 		Map<String, Object> envioDatos = new OrdenServicio().generarReporte(reporteDto, NOMBREPDFREPORTE, formatoFecha);
-		return providerRestTemplate.consumirServicioReportes(envioDatos, urlReportes, authentication);
+		Response<?> response =  providerRestTemplate.consumirServicioReportes(envioDatos, urlReportes, authentication);
+	
+		return MensajeResponseUtil.mensajeConsultaResponse(response, ERROR_DESCARGA);
 	}
 
 }
