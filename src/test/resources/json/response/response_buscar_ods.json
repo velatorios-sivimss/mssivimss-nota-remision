@@ -1,0 +1,45 @@
+{
+    "error": false,
+    "codigo": 200,
+    "mensaje": "Exito",
+    "datos": {
+        "content": [
+            {
+                "fechaODS": "02/04/2023",
+                "nomFinado": "JOSE SANCHEZ MARTINEZ",
+                "folioConvenio": 0,
+                "idContratante": 2,
+                "idFinado": 5,
+                "estatus": 1,
+                "folioODS": "876543210",
+                "nomContratante": "JOSE SANCHEZ MARTINEZ",
+                "id": 2
+            }
+        ],
+        "pageable": {
+            "sort": {
+                "empty": true,
+                "sorted": false,
+                "unsorted": true
+            },
+            "offset": 0,
+            "pageSize": 10,
+            "pageNumber": 0,
+            "paged": true,
+            "unpaged": false
+        },
+        "last": true,
+        "totalElements": 1,
+        "totalPages": 1,
+        "size": 10,
+        "number": 0,
+        "sort": {
+            "empty": true,
+            "sorted": false,
+            "unsorted": true
+        },
+        "first": true,
+        "numberOfElements": 1,
+        "empty": false
+    }
+}
