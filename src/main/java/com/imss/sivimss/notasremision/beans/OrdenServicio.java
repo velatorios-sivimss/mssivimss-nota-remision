@@ -60,7 +60,7 @@ public class OrdenServicio {
 		query.append("FROM SVC_ORDEN_SERVICIO os \n");
 		query.append("JOIN SVC_FINADO fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO) \n");
 		query.append("LEFT JOIN SVC_VELATORIO vel ON (fin.ID_VELATORIO = vel.ID_VELATORIO) \n");
-		query.append("WHERE os.ID_ESTATUS_ORDEN_SERVICIO > 1 ");
+		query.append("WHERE os.ID_ESTATUS_ORDEN_SERVICIO = 2 ");
 		if (busqueda.getIdOficina() > 1) {
 			query.append(" AND vel.ID_DELEGACION = ").append(busqueda.getIdDelegacion());
 			if (busqueda.getIdOficina() == 3) {
@@ -136,9 +136,23 @@ public class OrdenServicio {
   		return request;
   	}
     
+    public DatosRequest actualizaEstatus(String estatus) {
+    	DatosRequest request = new DatosRequest();
+		Map<String, Object> parametro = new HashMap<>();
+		final QueryHelper q = new QueryHelper("UPDATE SVC_ORDEN_SERVICIO");
+		q.agregarParametroValues("ID_ESTATUS_ORDEN_SERVICIO", estatus);
+		q.addWhere("ID_ORDEN_SERVICIO = " + this.id);
+		
+		String query = q.obtenerQueryActualizar();
+		String encoded = DatatypeConverter.printBase64Binary(query.getBytes());
+		parametro.put(AppConstantes.QUERY, encoded);
+		request.setDatos(parametro);
+		return request;
+    }
+    
     private StringBuilder armaQuery(String formatoFecha) {
     	StringBuilder query = new StringBuilder("SELECT os.ID_ORDEN_SERVICIO AS id, os.CVE_FOLIO AS folioODS, DATE_FORMAT(os.FEC_ALTA,'" + formatoFecha + "') AS fechaODS, \n");
-		query.append("0 AS folioConvenio, os.ID_CONTRATANTE AS idContratante, \n");
+		query.append("IFNULL(cvn.DES_FOLIO,0) AS folioConvenio, os.ID_CONTRATANTE AS idContratante, \n");
 		query.append("CONCAT(prc.NOM_PERSONA,' ',prc.NOM_PRIMER_APELLIDO,' ',prc.NOM_SEGUNDO_APELLIDO) AS nomContratante, \n");
 		query.append("fin.ID_FINADO AS idFinado, CONCAT(prf.NOM_PERSONA,' ',prf.NOM_PRIMER_APELLIDO,' ',prf.NOM_SEGUNDO_APELLIDO) AS nomFinado, \n");
 		query.append("IFNULL(nr.ID_ESTATUS,1) AS estatus, IFNULL(nr.ID_NOTAREMISION,0) AS idNota \n");
@@ -146,6 +160,8 @@ public class OrdenServicio {
 		query.append("LEFT JOIN SVC_INFORMACION_SERVICIO inf ON (os.ID_ORDEN_SERVICIO = inf.ID_ORDEN_SERVICIO) \n");
 		query.append("JOIN SVC_CONTRATANTE con ON (os.ID_CONTRATANTE = con.ID_CONTRATANTE) \n");
 		query.append("JOIN SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA) \n");
+		query.append("LEFT JOIN SVT_CONTRATANTE_PAQUETE_CONVENIO_PF cpcf ON (con.ID_CONTRATANTE = cpcf.ID_CONTRATANTE) \n");
+		query.append("LEFT JOIN SVT_CONVENIO_PF cvn ON (cpcf.ID_CONVENIO_PF = cvn.ID_CONVENIO_PF) \n");
 		query.append("JOIN SVC_FINADO fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO) \n");
 		query.append("JOIN SVC_PERSONA prf ON (fin.ID_PERSONA = prf.ID_PERSONA) \n");
 		query.append("LEFT JOIN SVT_NOTA_REMISION nr ON (os.ID_ORDEN_SERVICIO = nr.ID_ORDEN_SERVICIO) \n");
