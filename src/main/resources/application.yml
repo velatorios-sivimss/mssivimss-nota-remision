@@ -1,7 +1,7 @@
 server:
   port: 8080
   servlet:
-    contextPath: /mssivimss-notasremision/v1
+    contextPath: /mssivimss-nota-remision/v1
 spring:
   mvc:
     pathmatch:
