@@ -53,15 +53,16 @@ public class NotaRemision {
 		query.append("FROM SVC_CARACTERISTICAS_PRESUPUESTO cp \n");
 		query.append("JOIN SVT_PAQUETE pq ON (cp.ID_PAQUETE = pq.ID_PAQUETE) \n");
 		query.append("JOIN SVC_DETALLE_CARACTERISTICAS_PRESUPUESTO dcp ON (cp.ID_CARACTERISTICAS_PRESUPUESTO = dcp.ID_CARACTERISTICAS_PRESUPUESTO) \n");
-		query.append("JOIN SVT_ARTICULO ar ON (dcp.ID_ARTICULO = ar.ID_ARTICULO) \n");
-		query.append("WHERE dcp.ID_ARTICULO IS NOT NULL AND cp.ID_ORDEN_SERVICIO = " + this.idOrden + " \n");
+		query.append("JOIN SVT_INVENTARIO_ARTICULO ia ON (dcp.ID_INVE_ARTICULO = ia.ID_INVE_ARTICULO) \n");
+		query.append("JOIN SVT_ARTICULO ar ON (ia.ID_ARTICULO = ar.ID_ARTICULO) \n");
+		query.append("WHERE ar.ID_ARTICULO IS NOT NULL AND cp.ID_ORDEN_SERVICIO = " + this.idOrden + " \n");
 		query.append("UNION \n");
 		query.append("SELECT pq.NOM_PAQUETE AS nomPaquete, sv.NOM_SERVICIO AS nomServicio, dcp.CAN_CANTIDAD AS cantidad \n");
 		query.append("FROM SVC_CARACTERISTICAS_PRESUPUESTO cp \n");
 		query.append("JOIN SVT_PAQUETE pq ON (cp.ID_PAQUETE = pq.ID_PAQUETE) \n");
 		query.append("JOIN SVC_DETALLE_CARACTERISTICAS_PRESUPUESTO dcp ON (cp.ID_CARACTERISTICAS_PRESUPUESTO = dcp.ID_CARACTERISTICAS_PRESUPUESTO) \n");
 		query.append("JOIN SVT_SERVICIO sv ON (dcp.ID_SERVICIO = sv.ID_SERVICIO) \n");
-		query.append("WHERE dcp.ID_SERVICIO IS NOT NULL AND cp.ID_ORDEN_SERVICIO = " + this.idOrden);
+		query.append("WHERE sv.ID_SERVICIO IS NOT NULL AND cp.ID_ORDEN_SERVICIO = " + this.idOrden);
 		
 		String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes());
 		request.getDatos().put(AppConstantes.QUERY, encoded);
