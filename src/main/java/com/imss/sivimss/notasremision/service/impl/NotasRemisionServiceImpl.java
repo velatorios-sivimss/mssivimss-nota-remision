@@ -6,8 +6,11 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -29,6 +32,7 @@ import com.imss.sivimss.notasremision.model.response.ODSGeneradaResponse;
 import com.imss.sivimss.notasremision.service.NotasRemisionService;
 import com.imss.sivimss.notasremision.util.DatosRequest;
 import com.imss.sivimss.notasremision.util.Response;
+import com.imss.sivimss.notasremision.util.LogUtil;
 import com.imss.sivimss.notasremision.util.MensajeResponseUtil;
 
 @Service
@@ -61,11 +65,17 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 	
 	private static final String GENERADA = "2";
 	
+	private static final String ALTA = "alta";
+	private static final String BAJA = "baja";
+	
 	@Autowired
 	private ProviderServiceRestTemplate providerRestTemplate;
 
 	@Autowired
 	private ModelMapper modelMapper;
+	
+	@Autowired
+	private LogUtil logUtil;
 
 	@Override
 	public Response<?> consultarODS(DatosRequest request, Authentication authentication) throws IOException {
@@ -74,9 +84,14 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		
 		String datosJson = String.valueOf(authentication.getPrincipal());
 		BusquedaDto busqueda = gson.fromJson(datosJson, BusquedaDto.class);
-
-		return providerRestTemplate.consumirServicio(ordenServicio.obtenerODS(request, busqueda, formatoFecha).getDatos(), urlDominioGenerico + PAGINADO, 
+		
+        try {
+		    return providerRestTemplate.consumirServicio(ordenServicio.obtenerODS(request, busqueda, formatoFecha).getDatos(), urlDominioGenerico + PAGINADO, 
 				authentication);
+        } catch (Exception e) {
+        	logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(), this.getClass().getPackage().toString(), e.getMessage(), CONSULTA, authentication);
+			return null;
+        }
 	}
 	
 	@Override
@@ -182,7 +197,12 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		ArrayList<LinkedHashMap> datos1 = (ArrayList) request1.getDatos();
 		String ultimoFolio = datos1.get(0).get("folio").toString();
 		
-		return providerRestTemplate.consumirServicio(notaRemision.generarNotaRem(ultimoFolio).getDatos(), urlDominioGenerico + "crear", authentication);
+		try {
+		    return providerRestTemplate.consumirServicio(notaRemision.generarNotaRem(ultimoFolio).getDatos(), urlDominioGenerico + "crear", authentication);
+		} catch (Exception e) {
+        	logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(), this.getClass().getPackage().toString(), e.getMessage(), ALTA, authentication);
+			return null;
+        }
 	}
 
 	@Override
@@ -203,7 +223,12 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		notaRemision.setMotivo(notaDto.getMotivo());
 		notaRemision.setIdUsuarioModifica(usuarioDto.getIdUsuario());
 		
-		return providerRestTemplate.consumirServicio(notaRemision.cancelarNotaRem().getDatos(), urlDominioGenerico + ACTUALIZAR, authentication);
+		try {
+		    return providerRestTemplate.consumirServicio(notaRemision.cancelarNotaRem().getDatos(), urlDominioGenerico + ACTUALIZAR, authentication);
+		} catch (Exception e) {
+        	logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(), this.getClass().getPackage().toString(), e.getMessage(), BAJA, authentication);
+			return null;
+        }
 	}
 	
 	@Override

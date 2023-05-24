@@ -49,7 +49,7 @@ public class NotaRemision {
 	
 	
 	public DatosRequest serviciosNotaRem(DatosRequest request) {
-		StringBuilder query = new StringBuilder("SELECT pq.NOM_PAQUETE AS nomPaquete, ar.DES_ARTICULO AS nomServicio, dcp.CAN_CANTIDAD AS cantidad \n");
+		StringBuilder query = new StringBuilder("SELECT pq.DES_PAQUETE AS nomPaquete, ar.DES_ARTICULO AS nomServicio, dcp.CAN_CANTIDAD AS cantidad \n");
 		query.append("FROM SVC_CARACTERISTICAS_PRESUPUESTO cp \n");
 		query.append("JOIN SVT_PAQUETE pq ON (cp.ID_PAQUETE = pq.ID_PAQUETE) \n");
 		query.append("JOIN SVC_DETALLE_CARACTERISTICAS_PRESUPUESTO dcp ON (cp.ID_CARACTERISTICAS_PRESUPUESTO = dcp.ID_CARACTERISTICAS_PRESUPUESTO) \n");
@@ -57,7 +57,7 @@ public class NotaRemision {
 		query.append("JOIN SVT_ARTICULO ar ON (ia.ID_ARTICULO = ar.ID_ARTICULO) \n");
 		query.append("WHERE dcp.ID_INVE_ARTICULO IS NOT NULL AND cp.ID_ORDEN_SERVICIO = " + this.idOrden + " \n");
 		query.append("UNION \n");
-		query.append("SELECT pq.NOM_PAQUETE AS nomPaquete, sv.NOM_SERVICIO AS nomServicio, dcp.CAN_CANTIDAD AS cantidad \n");
+		query.append("SELECT pq.DES_PAQUETE AS nomPaquete, sv.NOM_SERVICIO AS nomServicio, dcp.CAN_CANTIDAD AS cantidad \n");
 		query.append("FROM SVC_CARACTERISTICAS_PRESUPUESTO cp \n");
 		query.append("JOIN SVT_PAQUETE pq ON (cp.ID_PAQUETE = pq.ID_PAQUETE) \n");
 		query.append("JOIN SVC_DETALLE_CARACTERISTICAS_PRESUPUESTO dcp ON (cp.ID_CARACTERISTICAS_PRESUPUESTO = dcp.ID_CARACTERISTICAS_PRESUPUESTO) \n");
@@ -71,13 +71,13 @@ public class NotaRemision {
 	
 	public DatosRequest detalleNotaRem(DatosRequest request, String formatoFecha) {
 		StringBuilder query = new StringBuilder("SELECT nr.NUM_FOLIO AS folioNota, DATE_FORMAT(nr.FEC_ALTA,'" + formatoFecha + "') AS fechaNota, \n");
-		query.append("os.CVE_FOLIO AS folioODS, vel.NOM_VELATORIO AS nomVelatorio, \n");
+		query.append("os.CVE_FOLIO AS folioODS, vel.DES_VELATORIO AS nomVelatorio, \n");
 		query.append("IFNULL(CONCAT(domv.DES_CALLE,' ',domv.NUM_EXTERIOR,' ',domv.DES_COLONIA),'') AS dirVelatorio, \n");
 		query.append("CONCAT(prf.NOM_PERSONA,' ',prf.NOM_PRIMER_APELLIDO,' ',prf.NOM_SEGUNDO_APELLIDO) AS nomFinado, \n");
 		query.append("par.DES_PARENTESCO AS parFinado, \n");
 		query.append("CONCAT(prc.NOM_PERSONA,' ',prc.NOM_PRIMER_APELLIDO,' ',prc.NOM_SEGUNDO_APELLIDO) AS nomSolicitante, \n");
 		query.append("IFNULL(CONCAT(domc.DES_CALLE,' ',domc.NUM_EXTERIOR,' ',domc.DES_COLONIA),'') AS dirSolicitante, \n");
-		query.append("prc.CVE_CURP AS curpSolicitante, vel.NOM_VELATORIO AS velatorioOrigen \n");
+		query.append("prc.CVE_CURP AS curpSolicitante, vel.DES_VELATORIO AS velatorioOrigen \n");
 		query.append("FROM SVT_NOTA_REMISION nr \n");
 		query.append("JOIN SVC_ORDEN_SERVICIO os ON (nr.ID_ORDEN_SERVICIO = os.ID_ORDEN_SERVICIO) \n");
 		query.append("JOIN SVC_FINADO fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO) \n");
