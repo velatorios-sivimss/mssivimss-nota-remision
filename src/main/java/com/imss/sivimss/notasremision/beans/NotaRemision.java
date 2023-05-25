@@ -1,5 +1,6 @@
 package com.imss.sivimss.notasremision.beans;
 
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,17 +40,17 @@ public class NotaRemision {
 		this.idOrden = idOrden;
 	}
 	
-	public DatosRequest ultimoFolioNota(DatosRequest request) {
+	public DatosRequest ultimoFolioNota(DatosRequest request) throws UnsupportedEncodingException {
 		String query = "SELECT IFNULL(MAX(NUM_FOLIO),0) AS folio FROM SVT_NOTA_REMISION";
 		
-		String encoded = DatatypeConverter.printBase64Binary(query.getBytes());
+		String encoded = DatatypeConverter.printBase64Binary(query.getBytes("UTF-8"));
 		request.getDatos().put(AppConstantes.QUERY, encoded);
 		return request;
 	}
 	
 	
-	public DatosRequest serviciosNotaRem(DatosRequest request) {
-		StringBuilder query = new StringBuilder("SELECT pq.NOM_PAQUETE AS nomPaquete, ar.DES_ARTICULO AS nomServicio, dcp.CAN_CANTIDAD AS cantidad \n");
+	public DatosRequest serviciosNotaRem(DatosRequest request) throws UnsupportedEncodingException {
+		StringBuilder query = new StringBuilder("SELECT pq.DES_PAQUETE AS nomPaquete, ar.DES_ARTICULO AS nomServicio, dcp.CAN_CANTIDAD AS cantidad \n");
 		query.append("FROM SVC_CARACTERISTICAS_PRESUPUESTO cp \n");
 		query.append("JOIN SVT_PAQUETE pq ON (cp.ID_PAQUETE = pq.ID_PAQUETE) \n");
 		query.append("JOIN SVC_DETALLE_CARACTERISTICAS_PRESUPUESTO dcp ON (cp.ID_CARACTERISTICAS_PRESUPUESTO = dcp.ID_CARACTERISTICAS_PRESUPUESTO) \n");
@@ -57,27 +58,27 @@ public class NotaRemision {
 		query.append("JOIN SVT_ARTICULO ar ON (ia.ID_ARTICULO = ar.ID_ARTICULO) \n");
 		query.append("WHERE dcp.ID_INVE_ARTICULO IS NOT NULL AND cp.ID_ORDEN_SERVICIO = " + this.idOrden + " \n");
 		query.append("UNION \n");
-		query.append("SELECT pq.NOM_PAQUETE AS nomPaquete, sv.NOM_SERVICIO AS nomServicio, dcp.CAN_CANTIDAD AS cantidad \n");
+		query.append("SELECT pq.DES_PAQUETE AS nomPaquete, sv.NOM_SERVICIO AS nomServicio, dcp.CAN_CANTIDAD AS cantidad \n");
 		query.append("FROM SVC_CARACTERISTICAS_PRESUPUESTO cp \n");
 		query.append("JOIN SVT_PAQUETE pq ON (cp.ID_PAQUETE = pq.ID_PAQUETE) \n");
 		query.append("JOIN SVC_DETALLE_CARACTERISTICAS_PRESUPUESTO dcp ON (cp.ID_CARACTERISTICAS_PRESUPUESTO = dcp.ID_CARACTERISTICAS_PRESUPUESTO) \n");
 		query.append("JOIN SVT_SERVICIO sv ON (dcp.ID_SERVICIO = sv.ID_SERVICIO) \n");
 		query.append("WHERE dcp.ID_SERVICIO IS NOT NULL AND cp.ID_ORDEN_SERVICIO = " + this.idOrden);
 		
-		String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes());
+		String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes("UTF-8"));
 		request.getDatos().put(AppConstantes.QUERY, encoded);
 		return request;
 	}
 	
-	public DatosRequest detalleNotaRem(DatosRequest request, String formatoFecha) {
+	public DatosRequest detalleNotaRem(DatosRequest request, String formatoFecha) throws UnsupportedEncodingException {
 		StringBuilder query = new StringBuilder("SELECT nr.NUM_FOLIO AS folioNota, DATE_FORMAT(nr.FEC_ALTA,'" + formatoFecha + "') AS fechaNota, \n");
-		query.append("os.CVE_FOLIO AS folioODS, vel.NOM_VELATORIO AS nomVelatorio, \n");
-		query.append("IFNULL(CONCAT(domv.DES_CALLE,' ',domv.NUM_EXTERIOR,' ',domv.DES_COLONIA),'') AS dirVelatorio, \n");
+		query.append("os.CVE_FOLIO AS folioODS, vel.DES_VELATORIO AS nomVelatorio, \n");
+		query.append("CONCAT(IFNULL(domv.DES_CALLE,''),' ',IFNULL(domv.NUM_EXTERIOR,''),' ',IFNULL(domv.DES_COLONIA,'')) AS dirVelatorio, \n");
 		query.append("CONCAT(prf.NOM_PERSONA,' ',prf.NOM_PRIMER_APELLIDO,' ',prf.NOM_SEGUNDO_APELLIDO) AS nomFinado, \n");
 		query.append("par.DES_PARENTESCO AS parFinado, \n");
 		query.append("CONCAT(prc.NOM_PERSONA,' ',prc.NOM_PRIMER_APELLIDO,' ',prc.NOM_SEGUNDO_APELLIDO) AS nomSolicitante, \n");
-		query.append("IFNULL(CONCAT(domc.DES_CALLE,' ',domc.NUM_EXTERIOR,' ',domc.DES_COLONIA),'') AS dirSolicitante, \n");
-		query.append("prc.CVE_CURP AS curpSolicitante, vel.NOM_VELATORIO AS velatorioOrigen \n");
+		query.append("CONCAT(IFNULL(domc.DES_CALLE,''),' ',IFNULL(domc.NUM_EXTERIOR,''),' ',IFNULL(domc.DES_COLONIA,'')) AS dirSolicitante, \n");
+		query.append("prc.CVE_CURP AS curpSolicitante, vel.DES_VELATORIO AS velatorioOrigen \n");
 		query.append("FROM SVT_NOTA_REMISION nr \n");
 		query.append("JOIN SVC_ORDEN_SERVICIO os ON (nr.ID_ORDEN_SERVICIO = os.ID_ORDEN_SERVICIO) \n");
 		query.append("JOIN SVC_FINADO fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO) \n");
@@ -90,14 +91,14 @@ public class NotaRemision {
 		query.append("LEFT JOIN SVT_DOMICILIO domc ON (con.ID_DOMICILIO = domc.ID_DOMICILIO) \n");
 		query.append("WHERE nr.ID_NOTAREMISION = " + this.id);
 		
-		String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes());
+		String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes("UTF-8"));
 		request.getDatos().remove("idNota");
 		request.getDatos().put(AppConstantes.QUERY, encoded);
 		
 		return request;
 	}
 	
-    public DatosRequest generarNotaRem(String ultimoFolio) {
+    public DatosRequest generarNotaRem(String ultimoFolio) throws UnsupportedEncodingException {
     	DatosRequest request = new DatosRequest();
 		Map<String, Object> parametro = new HashMap<>();
 		final QueryHelper q = new QueryHelper("INSERT INTO SVT_NOTA_REMISION");
@@ -108,14 +109,14 @@ public class NotaRemision {
 		q.agregarParametroValues("ID_USUARIO_ALTA", "'" + this.idUsuarioAlta + "'");
 		
 		String query = q.obtenerQueryInsertar();
-		String encoded = DatatypeConverter.printBase64Binary(query.getBytes());
+		String encoded = DatatypeConverter.printBase64Binary(query.getBytes("UTF-8"));
 		parametro.put(AppConstantes.QUERY, encoded);
 		request.setDatos(parametro);
 		
 		return request;
 	}
 
-    public DatosRequest cancelarNotaRem() {
+    public DatosRequest cancelarNotaRem() throws UnsupportedEncodingException {
     	DatosRequest request = new DatosRequest();
 		Map<String, Object> parametro = new HashMap<>();
 		final QueryHelper q = new QueryHelper("UPDATE SVT_NOTA_REMISION");
@@ -126,7 +127,7 @@ public class NotaRemision {
 		q.addWhere("ID_NOTAREMISION = " + this.id);
 		
 		String query = q.obtenerQueryActualizar();
-		String encoded = DatatypeConverter.printBase64Binary(query.getBytes());
+		String encoded = DatatypeConverter.printBase64Binary(query.getBytes("UTF-8"));
 		parametro.put(AppConstantes.QUERY, encoded);
 		request.setDatos(parametro);
 		return request;
