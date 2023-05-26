@@ -76,6 +76,8 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 	
 	@Autowired
 	private LogUtil logUtil;
+	
+	private static final Logger log = LoggerFactory.getLogger(NotasRemisionServiceImpl.class);
 
 	@Override
 	public Response<?> consultarODS(DatosRequest request, Authentication authentication) throws IOException {
@@ -89,6 +91,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		    return providerRestTemplate.consumirServicio(ordenServicio.obtenerODS(request, busqueda, formatoFecha).getDatos(), urlDominioGenerico + PAGINADO, 
 				authentication);
         } catch (Exception e) {
+        	log.error(e.getMessage());
         	logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(), this.getClass().getPackage().toString(), e.getMessage(), CONSULTA, authentication);
 			return null;
         }
@@ -200,6 +203,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		try {
 		    return providerRestTemplate.consumirServicio(notaRemision.generarNotaRem(ultimoFolio).getDatos(), urlDominioGenerico + "crear", authentication);
 		} catch (Exception e) {
+			log.error(e.getMessage());
         	logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(), this.getClass().getPackage().toString(), e.getMessage(), ALTA, authentication);
 			return null;
         }
@@ -226,6 +230,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		try {
 		    return providerRestTemplate.consumirServicio(notaRemision.cancelarNotaRem().getDatos(), urlDominioGenerico + ACTUALIZAR, authentication);
 		} catch (Exception e) {
+			log.error(e.getMessage());
         	logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(), this.getClass().getPackage().toString(), e.getMessage(), BAJA, authentication);
 			return null;
         }
