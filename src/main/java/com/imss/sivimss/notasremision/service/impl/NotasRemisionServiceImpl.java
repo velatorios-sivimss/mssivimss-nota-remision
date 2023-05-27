@@ -137,8 +137,14 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 	public Response<?> detalleODS(DatosRequest request, Authentication authentication) throws IOException {
         OrdenServicio ordenServicio = new OrdenServicio();
 		
-		return providerRestTemplate.consumirServicio(ordenServicio.detalleODS(request).getDatos(), urlDominioGenerico + CONSULTA, 
+        try {
+		    return providerRestTemplate.consumirServicio(ordenServicio.detalleODS(request).getDatos(), urlDominioGenerico + CONSULTA, 
 				authentication);
+        } catch (Exception e) {
+		    log.error(e.getMessage());
+	        logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(), this.getClass().getPackage().toString(), e.getMessage(), ALTA, authentication);
+			return null;
+	    }
 	}
 	
 	@Override
@@ -160,8 +166,14 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		}
 		NotaRemision notaRemision  = new NotaRemision(notaDto.getIdNota(), notaDto.getIdOrden());
 		
-		return providerRestTemplate.consumirServicio(notaRemision.detalleNotaRem(request, formatoFecha).getDatos(), urlDominioGenerico + CONSULTA, 
+		try {
+		    return providerRestTemplate.consumirServicio(notaRemision.detalleNotaRem(request, formatoFecha).getDatos(), urlDominioGenerico + CONSULTA, 
 				authentication);
+		} catch (Exception e) {
+			log.error(e.getMessage());
+	       	logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(), this.getClass().getPackage().toString(), e.getMessage(), ALTA, authentication);
+			return null;
+	    }
 	}
 	
 	@Override
