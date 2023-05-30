@@ -36,7 +36,7 @@ public class OrdenServicio {
 	private String nomFinado;
 	private Integer estatus;
 	
-	private static final String ORDENAMIENTO = " ORDER BY os.ID_ORDEN_SERVICIO DESC";
+	//private static final String ORDENAMIENTO = " ORDER BY os.ID_ORDEN_SERVICIO DESC";
 	
 	public DatosRequest obtenerODS(DatosRequest request, BusquedaDto busqueda, String formatoFecha) throws UnsupportedEncodingException {
 		StringBuilder query = armaQuery(formatoFecha);
@@ -46,7 +46,7 @@ public class OrdenServicio {
 				query.append(" AND fin.ID_VELATORIO = ").append(busqueda.getIdVelatorio());
 			}
 		} 
-		query.append(ORDENAMIENTO);
+		//query.append(ORDENAMIENTO);
         
 		String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes("UTF-8"));
 		request.getDatos().put(AppConstantes.QUERY, encoded);
@@ -68,7 +68,7 @@ public class OrdenServicio {
 				query.append(" AND fin.ID_VELATORIO = ").append(busqueda.getIdVelatorio());
 			}
 		} 
-		query.append(ORDENAMIENTO);
+		//query.append(ORDENAMIENTO);
 		
 		String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes("UTF-8"));
 		parametro.put(AppConstantes.QUERY, encoded);
@@ -81,7 +81,7 @@ public class OrdenServicio {
     	StringBuilder query = armaQuery(formatoFecha);
     	query.append("WHERE 1 = 1");
     	if (busqueda.getIdVelatorio() != null) {
-			query.append(" AND fin.ID_VELATORIO = ").append(busqueda.getIdVelatorio());
+			query.append(" AND os.ID_VELATORIO = ").append(busqueda.getIdVelatorio());
 		}
     	if (busqueda.getIdDelegacion() != null) {
     		query.append(" AND vel.ID_DELEGACION = ").append(busqueda.getIdDelegacion());
@@ -91,9 +91,9 @@ public class OrdenServicio {
     	    query.append(" AND os.CVE_FOLIO = '" + busqueda.getFolioODS() +"' ");
     	}
     	if (busqueda.getFecIniODS() != null) {
-    	    query.append(" AND DATE_FORMAT(inf.FEC_CORTEJO,'" + formatoFecha + "') BETWEEN '" + busqueda.getFecIniODS() + "' AND '" + busqueda.getFecFinODS() + "' \n");
+    	    query.append(" AND DATE_FORMAT(os.FEC_ALTA,'" + formatoFecha + "') BETWEEN '" + busqueda.getFecIniODS() + "' AND '" + busqueda.getFecFinODS() + "' \n");
     	}
-    	query.append(ORDENAMIENTO);
+    	//query.append(ORDENAMIENTO);
     	
     	String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes("UTF-8"));
 		request.getDatos().put(AppConstantes.QUERY, encoded);
@@ -180,7 +180,7 @@ public class OrdenServicio {
 		Map<String, Object> envioDatos = new HashMap<>();
 		StringBuilder condicion = new StringBuilder(" ");
 		if (reporteDto.getIdVelatorio() != null) {
-			condicion.append(" AND fin.ID_VELATORIO = ").append(reporteDto.getIdVelatorio());
+			condicion.append(" AND os.ID_VELATORIO = ").append(reporteDto.getIdVelatorio());
 		}
 		if (reporteDto.getIdDelegacion() != null) {
     		condicion.append(" AND vel.ID_DELEGACION = ").append(reporteDto.getIdDelegacion());
@@ -189,7 +189,7 @@ public class OrdenServicio {
     	    condicion.append(" AND os.CVE_FOLIO = '" + reporteDto.getFolioODS() +"' ");
     	}
     	if (reporteDto.getFecIniODS() != null) {
-    	    condicion.append(" AND DATE_FORMAT(inf.FEC_CORTEJO,'" + formatoFecha + "') BETWEEN '" + reporteDto.getFecIniODS() + "' AND '" + reporteDto.getFecFinODS() + "' \n");
+    	    condicion.append(" AND DATE_FORMAT(os.FEC_ALTA,'" + formatoFecha + "') BETWEEN '" + reporteDto.getFecIniODS() + "' AND '" + reporteDto.getFecFinODS() + "' \n");
     	}
 		
 		envioDatos.put("condicion", condicion.toString());
