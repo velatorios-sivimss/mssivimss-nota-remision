@@ -146,7 +146,7 @@ public class NotaRemision {
 		envioDatos.put("nomFinado", formatoDto.getNomFinado());
 		envioDatos.put("parFinado", formatoDto.getParFinado());
 		envioDatos.put("folioODS", formatoDto.getFolioODS());
-		envioDatos.put("condicion", " AND cp.ID_ORDEN_SERVICIO = " +  this.id);
+		envioDatos.put("condicion", " AND cp.ID_ORDEN_SERVICIO = " +  this.idOrden);
 		envioDatos.put("tipoReporte", formatoDto.getTipoReporte());
 		envioDatos.put("rutaNombreReporte", nombrePdfNotaRem);
 		
