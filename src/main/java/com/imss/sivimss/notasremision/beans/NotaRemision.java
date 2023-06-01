@@ -6,10 +6,7 @@ import java.util.Map;
 
 import javax.xml.bind.DatatypeConverter;
 
-import org.springframework.beans.factory.annotation.Value;
-
 import com.imss.sivimss.notasremision.util.QueryHelper;
-import com.imss.sivimss.notasremision.model.request.BusquedaDto;
 import com.imss.sivimss.notasremision.model.request.FormatoNotaDto;
 import com.imss.sivimss.notasremision.util.AppConstantes;
 import com.imss.sivimss.notasremision.util.DatosRequest;
@@ -78,7 +75,8 @@ public class NotaRemision {
 		query.append("par.DES_PARENTESCO AS parFinado, \n");
 		query.append("CONCAT(prc.NOM_PERSONA,' ',prc.NOM_PRIMER_APELLIDO,' ',prc.NOM_SEGUNDO_APELLIDO) AS nomSolicitante, \n");
 		query.append("CONCAT(IFNULL(domc.DES_CALLE,''),' ',IFNULL(domc.NUM_EXTERIOR,''),' ',IFNULL(domc.DES_COLONIA,'')) AS dirSolicitante, \n");
-		query.append("prc.CVE_CURP AS curpSolicitante, vel.DES_VELATORIO AS velatorioOrigen \n");
+		query.append("prc.CVE_CURP AS curpSolicitante, vel.DES_VELATORIO AS velatorioOrigen, IFNULL(cvn.DES_FOLIO,0) AS folioConvenio, ");
+		query.append("DATE_FORMAT(IFNULL(cvn.FEC_INICIO,0),'" + formatoFecha + "') AS fechaConvenio \n");
 		query.append("FROM SVT_NOTA_REMISION nr \n");
 		query.append("JOIN SVC_ORDEN_SERVICIO os ON (nr.ID_ORDEN_SERVICIO = os.ID_ORDEN_SERVICIO) \n");
 		query.append("JOIN SVC_FINADO fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO) \n");
@@ -88,6 +86,8 @@ public class NotaRemision {
 		query.append("LEFT JOIN SVC_PARENTESCO par ON (os.ID_PARENTESCO = par.ID_PARENTESCO) \n");
 		query.append("JOIN SVC_CONTRATANTE con ON (os.ID_CONTRATANTE = con.ID_CONTRATANTE) \n");
 		query.append("JOIN SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA) \n");
+		query.append("JOIN SVT_CONTRATANTE_PAQUETE_CONVENIO_PF cpcf ON (con.ID_CONTRATANTE = cpcf.ID_CONTRATANTE) \n");
+		query.append("JOIN SVT_CONVENIO_PF cvn ON (cpcf.ID_CONVENIO_PF = cvn.ID_CONVENIO_PF) \n");
 		query.append("LEFT JOIN SVT_DOMICILIO domc ON (con.ID_DOMICILIO = domc.ID_DOMICILIO) \n");
 		query.append("WHERE nr.ID_NOTAREMISION = " + this.id);
 		
@@ -146,6 +146,8 @@ public class NotaRemision {
 		envioDatos.put("nomFinado", formatoDto.getNomFinado());
 		envioDatos.put("parFinado", formatoDto.getParFinado());
 		envioDatos.put("folioODS", formatoDto.getFolioODS());
+		envioDatos.put("convenio", formatoDto.getFolioConvenio());
+		envioDatos.put("fechaConvenio", formatoDto.getFechaConvenio());
 		envioDatos.put("condicion", " AND cp.ID_ORDEN_SERVICIO = " +  this.idOrden);
 		envioDatos.put("tipoReporte", formatoDto.getTipoReporte());
 		envioDatos.put("rutaNombreReporte", nombrePdfNotaRem);

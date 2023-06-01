@@ -276,6 +276,8 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 			formatoNotaDto.setNomFinado(datos1.get(0).get("nomFinado").toString());
 			formatoNotaDto.setParFinado(datos1.get(0).get("parFinado").toString());
 			formatoNotaDto.setFolioODS(datos1.get(0).get("folioODS").toString());
+			formatoNotaDto.setFolioConvenio(datos1.get(0).get("folioConvenio").toString());
+			formatoNotaDto.setFechaConvenio(datos1.get(0).get("fechaConvenio").toString());
 		}
 		Map<String, Object> envioDatos = notaRemision.imprimirNotaRem(formatoNotaDto, NOMBREPDFNOTAREM);
 		Response<?> response = providerRestTemplate.consumirServicioReportes(envioDatos, urlReportes, authentication);
