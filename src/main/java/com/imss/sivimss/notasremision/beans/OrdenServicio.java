@@ -189,7 +189,7 @@ public class OrdenServicio {
     	    condicion.append(" AND os.CVE_FOLIO = '" + reporteDto.getFolioODS() +"' ");
     	}
     	if (reporteDto.getFecIniODS() != null) {
-    	    condicion.append(" AND nr.FEC_ALTA BETWEEN STR_TO_DATE('" + reporteDto.getFecIniODS() + "','" + formatoFecha + "') AND STR_TO_DATE('" + reporteDto.getFecFinODS() + "','" + formatoFecha + "')");)
+    	    condicion.append(" AND nr.FEC_ALTA BETWEEN STR_TO_DATE('" + reporteDto.getFecIniODS() + "','" + formatoFecha + "') AND STR_TO_DATE('" + reporteDto.getFecFinODS() + "','" + formatoFecha + "')");
     	}
 		
 		envioDatos.put("condicion", condicion.toString());
