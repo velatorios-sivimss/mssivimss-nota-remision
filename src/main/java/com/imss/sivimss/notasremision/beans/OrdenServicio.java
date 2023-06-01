@@ -77,6 +77,7 @@ public class OrdenServicio {
     	StringBuilder query = armaQuery(formatoFecha);
     	boolean otroFiltro = false;
     	if (busqueda.getIdVelatorio() != null) {
+    		otroFiltro = true;
 			query.append(" AND os.ID_VELATORIO = ").append(busqueda.getIdVelatorio());
 		}
     	if (busqueda.getIdDelegacion() != null) {
@@ -89,7 +90,7 @@ public class OrdenServicio {
     	    query.append(" AND os.CVE_FOLIO = '" + busqueda.getFolioODS() +"' ");
     	}
     	if (busqueda.getFecIniODS() != null) {
-    	    query.append(" AND DATE_FORMAT(os.FEC_ALTA,'" + formatoFecha + "') BETWEEN '" + busqueda.getFecIniODS() + "' AND '" + busqueda.getFecFinODS() + "' \n");
+    	    query.append(" AND nr.FEC_ALTA BETWEEN STR_TO_DATE('" + busqueda.getFecIniODS() + "','" + formatoFecha + "') AND STR_TO_DATE('" + busqueda.getFecFinODS() + "','" + formatoFecha + "')");
     	    if (!otroFiltro) {
     	    	query.append(" AND nr.ID_ESTATUS = 2 ORDER BY os.FEC_ALTA");
     	    }
@@ -188,7 +189,7 @@ public class OrdenServicio {
     	    condicion.append(" AND os.CVE_FOLIO = '" + reporteDto.getFolioODS() +"' ");
     	}
     	if (reporteDto.getFecIniODS() != null) {
-    	    condicion.append(" AND DATE_FORMAT(os.FEC_ALTA,'" + formatoFecha + "') BETWEEN '" + reporteDto.getFecIniODS() + "' AND '" + reporteDto.getFecFinODS() + "' \n");
+    	    condicion.append(" AND nr.FEC_ALTA BETWEEN STR_TO_DATE('" + reporteDto.getFecIniODS() + "','" + formatoFecha + "') AND STR_TO_DATE('" + reporteDto.getFecFinODS() + "','" + formatoFecha + "')");)
     	}
 		
 		envioDatos.put("condicion", condicion.toString());
