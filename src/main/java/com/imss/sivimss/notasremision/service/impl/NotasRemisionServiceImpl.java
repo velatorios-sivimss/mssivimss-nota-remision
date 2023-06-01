@@ -6,8 +6,11 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -29,6 +32,7 @@ import com.imss.sivimss.notasremision.model.response.ODSGeneradaResponse;
 import com.imss.sivimss.notasremision.service.NotasRemisionService;
 import com.imss.sivimss.notasremision.util.DatosRequest;
 import com.imss.sivimss.notasremision.util.Response;
+import com.imss.sivimss.notasremision.util.LogUtil;
 import com.imss.sivimss.notasremision.util.MensajeResponseUtil;
 
 @Service
@@ -61,11 +65,19 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 	
 	private static final String GENERADA = "2";
 	
+	private static final String ALTA = "alta";
+	private static final String BAJA = "baja";
+	
 	@Autowired
 	private ProviderServiceRestTemplate providerRestTemplate;
 
 	@Autowired
 	private ModelMapper modelMapper;
+	
+	@Autowired
+	private LogUtil logUtil;
+	
+	private static final Logger log = LoggerFactory.getLogger(NotasRemisionServiceImpl.class);
 
 	@Override
 	public Response<?> consultarODS(DatosRequest request, Authentication authentication) throws IOException {
@@ -74,9 +86,15 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		
 		String datosJson = String.valueOf(authentication.getPrincipal());
 		BusquedaDto busqueda = gson.fromJson(datosJson, BusquedaDto.class);
-
-		return providerRestTemplate.consumirServicio(ordenServicio.obtenerODS(request, busqueda, formatoFecha).getDatos(), urlDominioGenerico + PAGINADO, 
+		
+        try {
+		    return providerRestTemplate.consumirServicio(ordenServicio.obtenerODS(request, busqueda, formatoFecha).getDatos(), urlDominioGenerico + PAGINADO, 
 				authentication);
+        } catch (Exception e) {
+        	log.error(e.getMessage());
+        	logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(), this.getClass().getPackage().toString(), e.getMessage(), CONSULTA, authentication);
+			return null;
+        }
 	}
 	
 	@Override
@@ -119,8 +137,14 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 	public Response<?> detalleODS(DatosRequest request, Authentication authentication) throws IOException {
         OrdenServicio ordenServicio = new OrdenServicio();
 		
-		return providerRestTemplate.consumirServicio(ordenServicio.detalleODS(request).getDatos(), urlDominioGenerico + CONSULTA, 
+        try {
+		    return providerRestTemplate.consumirServicio(ordenServicio.detalleODS(request).getDatos(), urlDominioGenerico + CONSULTA, 
 				authentication);
+        } catch (Exception e) {
+		    log.error(e.getMessage());
+	        logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(), this.getClass().getPackage().toString(), e.getMessage(), ALTA, authentication);
+			return null;
+	    }
 	}
 	
 	@Override
@@ -142,8 +166,14 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		}
 		NotaRemision notaRemision  = new NotaRemision(notaDto.getIdNota(), notaDto.getIdOrden());
 		
-		return providerRestTemplate.consumirServicio(notaRemision.detalleNotaRem(request, formatoFecha).getDatos(), urlDominioGenerico + CONSULTA, 
+		try {
+		    return providerRestTemplate.consumirServicio(notaRemision.detalleNotaRem(request, formatoFecha).getDatos(), urlDominioGenerico + CONSULTA, 
 				authentication);
+		} catch (Exception e) {
+			log.error(e.getMessage());
+	       	logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(), this.getClass().getPackage().toString(), e.getMessage(), ALTA, authentication);
+			return null;
+	    }
 	}
 	
 	@Override
@@ -182,7 +212,13 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		ArrayList<LinkedHashMap> datos1 = (ArrayList) request1.getDatos();
 		String ultimoFolio = datos1.get(0).get("folio").toString();
 		
-		return providerRestTemplate.consumirServicio(notaRemision.generarNotaRem(ultimoFolio).getDatos(), urlDominioGenerico + "crear", authentication);
+		try {
+		    return providerRestTemplate.consumirServicio(notaRemision.generarNotaRem(ultimoFolio).getDatos(), urlDominioGenerico + "crear", authentication);
+		} catch (Exception e) {
+			log.error(e.getMessage());
+        	logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(), this.getClass().getPackage().toString(), e.getMessage(), ALTA, authentication);
+			return null;
+        }
 	}
 
 	@Override
@@ -203,7 +239,13 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		notaRemision.setMotivo(notaDto.getMotivo());
 		notaRemision.setIdUsuarioModifica(usuarioDto.getIdUsuario());
 		
-		return providerRestTemplate.consumirServicio(notaRemision.cancelarNotaRem().getDatos(), urlDominioGenerico + ACTUALIZAR, authentication);
+		try {
+		    return providerRestTemplate.consumirServicio(notaRemision.cancelarNotaRem().getDatos(), urlDominioGenerico + ACTUALIZAR, authentication);
+		} catch (Exception e) {
+			log.error(e.getMessage());
+        	logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(), this.getClass().getPackage().toString(), e.getMessage(), BAJA, authentication);
+			return null;
+        }
 	}
 	
 	@Override
@@ -234,6 +276,8 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 			formatoNotaDto.setNomFinado(datos1.get(0).get("nomFinado").toString());
 			formatoNotaDto.setParFinado(datos1.get(0).get("parFinado").toString());
 			formatoNotaDto.setFolioODS(datos1.get(0).get("folioODS").toString());
+			formatoNotaDto.setFolioConvenio(datos1.get(0).get("folioConvenio").toString());
+			formatoNotaDto.setFechaConvenio(datos1.get(0).get("fechaConvenio").toString());
 		}
 		Map<String, Object> envioDatos = notaRemision.imprimirNotaRem(formatoNotaDto, NOMBREPDFNOTAREM);
 		Response<?> response = providerRestTemplate.consumirServicioReportes(envioDatos, urlReportes, authentication);
