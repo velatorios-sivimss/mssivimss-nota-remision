@@ -3,22 +3,18 @@ package com.imss.sivimss.notasremision.beans;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import javax.xml.bind.DatatypeConverter;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 
-import com.imss.sivimss.notasremision.util.AppConstantes;
 import com.imss.sivimss.notasremision.model.request.BusquedaDto;
+import com.imss.sivimss.notasremision.util.AppConstantes;
 import com.imss.sivimss.notasremision.util.DatosRequest;
 import com.imss.sivimss.notasremision.util.QueryHelper;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
@@ -34,8 +30,10 @@ public class OrdenServicio {
 	private Integer idFinado;
 	private String nomFinado;
 	private Integer estatus;
-	private static final Logger logger = (Logger) LoggerFactory.getLogger(OrdenServicio.class);
+	//private static final Logger logger = (Logger) LoggerFactory.getLogger(OrdenServicio.class);
 	
+	private static final Logger logger = LoggerFactory.getLogger(OrdenServicio.class);
+
 	public DatosRequest obtenerODS(DatosRequest request, BusquedaDto busqueda, String formatoFecha) throws UnsupportedEncodingException {
 		StringBuilder query = armaQuery(formatoFecha);
 		if (busqueda.getIdOficina() > 1) {
