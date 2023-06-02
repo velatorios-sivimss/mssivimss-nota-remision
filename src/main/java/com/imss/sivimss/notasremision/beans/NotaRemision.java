@@ -76,10 +76,12 @@ public class NotaRemision {
 		query.append("CONCAT(prc.NOM_PERSONA,' ',prc.NOM_PRIMER_APELLIDO,' ',prc.NOM_SEGUNDO_APELLIDO) AS nomSolicitante, \n");
 		query.append("CONCAT(IFNULL(domc.DES_CALLE,''),' ',IFNULL(domc.NUM_EXTERIOR,''),' ',IFNULL(domc.DES_COLONIA,'')) AS dirSolicitante, \n");
 		query.append("prc.CVE_CURP AS curpSolicitante, vel.DES_VELATORIO AS velatorioOrigen, IFNULL(cvn.DES_FOLIO,0) AS folioConvenio, ");
-		query.append("DATE_FORMAT(IFNULL(cvn.FEC_INICIO,0),'" + formatoFecha + "') AS fechaConvenio \n");
+		query.append("DATE_FORMAT(IFNULL(cvn.FEC_INICIO,0),'" + formatoFecha + "') AS fechaConvenio, \n");
+		query.append("IFNULL(notr.DES_MOTIVO,'') AS motivo  \n");
 		query.append("FROM SVT_NOTA_REMISION nr \n");
 		query.append("JOIN SVC_ORDEN_SERVICIO os ON (nr.ID_ORDEN_SERVICIO = os.ID_ORDEN_SERVICIO) \n");
 		query.append("JOIN SVC_FINADO fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO) \n");
+		query.append("JOIN SVT_NOTA_REMISION notr ON (os.ID_ORDEN_SERVICIO = notr.ID_ORDEN_SERVICIO) \n");
 		query.append("JOIN SVC_VELATORIO vel ON (vel.ID_VELATORIO = fin.ID_VELATORIO) \n");
 		query.append("JOIN SVC_PERSONA prf ON (fin.ID_PERSONA = prf.ID_PERSONA) \n");
 		query.append("LEFT JOIN SVT_DOMICILIO domv ON (vel.ID_DOMICILIO = domv.ID_DOMICILIO) \n");
@@ -90,7 +92,7 @@ public class NotaRemision {
 		query.append("JOIN SVT_CONVENIO_PF cvn ON (cpcf.ID_CONVENIO_PF = cvn.ID_CONVENIO_PF) \n");
 		query.append("LEFT JOIN SVT_DOMICILIO domc ON (con.ID_DOMICILIO = domc.ID_DOMICILIO) \n");
 		query.append("WHERE nr.ID_NOTAREMISION = " + this.id);
-		
+		System.out.print(query.toString());
 		String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes("UTF-8"));
 		request.getDatos().remove("idNota");
 		request.getDatos().put(AppConstantes.QUERY, encoded);
