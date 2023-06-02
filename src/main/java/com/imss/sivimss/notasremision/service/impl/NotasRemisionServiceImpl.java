@@ -88,7 +88,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		BusquedaDto busqueda = gson.fromJson(datosJson, BusquedaDto.class);
 		
         try {
-		    return providerRestTemplate.consumirServicio(ordenServicio.obtenerODS(request, busqueda, formatoFecha).getDatos(), urlDominioGenerico + PAGINADO, 
+		    return providerRestTemplate.consumirServicio(ordenServicio.buscarODS(request, busqueda, formatoFecha).getDatos(), urlDominioGenerico + PAGINADO, 
 				authentication);
         } catch (Exception e) {
         	log.error(e.getMessage());
