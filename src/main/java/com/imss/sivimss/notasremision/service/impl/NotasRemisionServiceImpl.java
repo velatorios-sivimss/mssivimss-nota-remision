@@ -118,19 +118,26 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 	@Override
 	public Response<?> buscarODS(DatosRequest request, Authentication authentication) throws IOException {
 		Gson gson = new Gson();
-
-		String datosJson = String.valueOf(request.getDatos().get(AppConstantes.DATOS));
-		BusquedaDto busqueda = gson.fromJson(datosJson, BusquedaDto.class);
-		OrdenServicio ordenServicio = new OrdenServicio();
+		Response<?> response=new Response(false,200,"Exito");
+		try {
+			String datosJson = String.valueOf(request.getDatos().get(AppConstantes.DATOS));
+			BusquedaDto busqueda = gson.fromJson(datosJson, BusquedaDto.class);
+			OrdenServicio ordenServicio = new OrdenServicio();
+			
+			response = providerRestTemplate.consumirServicio(ordenServicio.buscarODS(request, busqueda, formatoFecha).getDatos(), urlDominioGenerico + PAGINADO,
+					authentication);
+			ArrayList datos1 = (ArrayList) ((LinkedHashMap) response.getDatos()).get("content");
+			if (datos1.isEmpty()) {
+				response.setMensaje(INFONOENCONTRADA);
+		    }
+			
 		
-		Response<?> response = providerRestTemplate.consumirServicio(ordenServicio.buscarODS(request, busqueda, formatoFecha).getDatos(), urlDominioGenerico + PAGINADO,
-				authentication);
-		ArrayList datos1 = (ArrayList) ((LinkedHashMap) response.getDatos()).get("content");
-		if (datos1.isEmpty()) {
-			response.setMensaje(INFONOENCONTRADA);
-	    }
-		
+			
+		}catch(Exception e){
+			log.info(e.getMessage());
+		}
 		return response;
+		
 	}
 
 	@Override
