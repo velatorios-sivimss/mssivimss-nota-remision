@@ -17,5 +17,6 @@ public class BusquedaDto {
 	private String fecIniODS;
 	private String fecFinODS;
 	private String tipoReporte;
+	private Integer total;
 	
 }
