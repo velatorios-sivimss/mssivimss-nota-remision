@@ -215,6 +215,7 @@ public class OrdenServicio {
     	query.append("JOIN SVC_FINADO fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO) \n");
     	query.append("JOIN SVC_PERSONA prf ON (fin.ID_PERSONA = prf.ID_PERSONA) \n");
     	query.append("JOIN SVT_NOTA_REMISION nr ON (os.ID_ORDEN_SERVICIO = nr.ID_ORDEN_SERVICIO) AND nr.ID_ESTATUS =3 \n");
+    	query.append("JOIN SVC_VELATORIO vel ON (vel.ID_VELATORIO = os.ID_VELATORIO) \n");
     	query.append("WHERE os.ID_ESTATUS_ORDEN_SERVICIO > 1 \n");
     	return query;
     }
@@ -236,6 +237,7 @@ public class OrdenServicio {
     	query.append("JOIN SVC_PERSONA prf ON (fin.ID_PERSONA = prf.ID_PERSONA) \n");
     	query.append("JOIN SVT_NOTA_REMISION nr ON (os.ID_ORDEN_SERVICIO = nr.ID_ORDEN_SERVICIO) \n");
     	query.append("AND nr.ID_ESTATUS =2 \n");
+    	query.append("JOIN SVC_VELATORIO vel ON (vel.ID_VELATORIO = os.ID_VELATORIO) \n");
     	query.append("WHERE os.ID_ESTATUS_ORDEN_SERVICIO > 1 \n");
 
     	return query;
@@ -258,6 +260,7 @@ public class OrdenServicio {
     	query.append("JOIN SVC_PERSONA prf ON (fin.ID_PERSONA = prf.ID_PERSONA) \n");
     	query.append("LEFT JOIN SVT_NOTA_REMISION nr ON (os.ID_ORDEN_SERVICIO = nr.ID_ORDEN_SERVICIO) \n");
     	query.append("AND nr.ID_ESTATUS =2 \n");
+    	query.append("JOIN SVC_VELATORIO vel ON (vel.ID_VELATORIO = os.ID_VELATORIO) \n");
     	query.append("WHERE os.ID_ESTATUS_ORDEN_SERVICIO > 1 \n");
     	
     	return query;
