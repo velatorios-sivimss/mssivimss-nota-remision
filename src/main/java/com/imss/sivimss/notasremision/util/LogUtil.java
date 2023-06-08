@@ -16,6 +16,9 @@ import java.util.Date;
 public class LogUtil {
     @Value("${ruta-log}")
     private String rutaLog;
+    
+    @Value("$(spring.application.name)")
+    private String nombreApp;
 
     private String formatoFechaLog = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss").format(new Date());
 
@@ -25,7 +28,7 @@ public class LogUtil {
     public void crearArchivoLog(String tipoLog, String origen, String clasePath, String mensaje, String tiempoEjecucion, Authentication authentication) throws IOException {
        Gson json = new Gson();
        UsuarioDto usuarioDto = json.fromJson((String) authentication.getPrincipal(), UsuarioDto.class);
-       File archivo = new File(rutaLog + "nota-remision" + new SimpleDateFormat("ddMMyyyy").format(new Date()) + ".log");
+       File archivo = new File(rutaLog + nombreApp + "_" + new SimpleDateFormat("ddMMyyyy").format(new Date()) + ".log");
        FileWriter escribirArchivo = new FileWriter(archivo, true);
        try {
             if (archivo.exists()) {

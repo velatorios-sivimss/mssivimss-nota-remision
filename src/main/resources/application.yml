@@ -1,8 +1,11 @@
 server:
   port: 8080
   servlet:
-    contextPath: /mssivimss-nota-remision/v1
+    contextPath: /${spring.application.name}/v1
+    
 spring:
+  application:
+    name: mssivimss-nota-remision
   mvc:
     pathmatch:
       matching-strategy: ANT_PATH_MATCHER
@@ -20,10 +23,6 @@ logging:
     root: info
     org.springframework.web: info
     org.hibernate: error
-
-logos:
-  msit_logo_imss: ${msit_LOGO_IMSS}
-  msit_logo_sistema: ${msit_LOGO_SISTEMA}
 
 endpoints:
    dominio: ${msit_GENERICO_CONSULTA}
