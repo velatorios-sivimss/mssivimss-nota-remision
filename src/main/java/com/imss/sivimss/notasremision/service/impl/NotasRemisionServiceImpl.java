@@ -41,11 +41,11 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 	@Value("${endpoints.dominio}")
 	private String urlDominioGenerico;
 	
-	private static final String PAGINADO = "paginado";
+	private static final String PAGINADO = "/paginado";
 	
-	private static final String CONSULTA = "consulta";
+	private static final String CONSULTA = "/consulta";
 	
-	private static final String ACTUALIZAR = "actualizar";
+	private static final String ACTUALIZAR = "/actualizar";
 	
 	@Value("${endpoints.generico-reportes}")
 	private String urlReportes;
@@ -149,7 +149,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 				authentication);
         } catch (Exception e) {
 		    log.error(e.getMessage());
-	        logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(), this.getClass().getPackage().toString(), e.getMessage(), ALTA, authentication);
+	        logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(), this.getClass().getPackage().toString(), e.getMessage(), CONSULTA, authentication);
 			return null;
 	    }
 	}
@@ -178,7 +178,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 				authentication);
 		} catch (Exception e) {
 			log.error(e.getMessage());
-	       	logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(), this.getClass().getPackage().toString(), e.getMessage(), ALTA, authentication);
+	       	logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(), this.getClass().getPackage().toString(), e.getMessage(), CONSULTA, authentication);
 			return null;
 	    }
 	}
@@ -220,7 +220,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		String ultimoFolio = datos1.get(0).get("folio").toString();
 		
 		try {
-		    return providerRestTemplate.consumirServicio(notaRemision.generarNotaRem(ultimoFolio).getDatos(), urlDominioGenerico + "crear", authentication);
+		    return providerRestTemplate.consumirServicio(notaRemision.generarNotaRem(ultimoFolio).getDatos(), urlDominioGenerico + "/crear", authentication);
 		} catch (Exception e) {
 			log.error(e.getMessage());
         	logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(), this.getClass().getPackage().toString(), e.getMessage(), ALTA, authentication);
