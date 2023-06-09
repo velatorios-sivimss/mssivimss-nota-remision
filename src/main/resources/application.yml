@@ -26,7 +26,7 @@ logging:
 
 endpoints:
    dominio: ${msit_CATALOGOS}
-   generico-reportes: ${msit_GENERICO_REPORTES}
+   generico-reportes: ${msit_REPORTES_GENERALES}
 
 jwt:
   secretkey-flujo: ${msit_SECRET_KEY}
