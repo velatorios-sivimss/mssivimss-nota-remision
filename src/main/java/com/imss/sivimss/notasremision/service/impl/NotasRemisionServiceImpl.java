@@ -264,27 +264,31 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		if (notaDto.getIdNota() == null || notaDto.getIdOrden() == null) {
 			throw new BadRequestException(HttpStatus.BAD_REQUEST, "Informacion incompleta");
 		}
+		
 		NotaRemision notaRemision  = new NotaRemision(notaDto.getIdNota(), notaDto.getIdOrden());
-		
-		Response<?> response1 = providerRestTemplate.consumirServicio(notaRemision.detalleNotaRem(request, formatoFecha).getDatos(), urlDominioGenerico + CONSULTA, 
-				authentication);
-		ArrayList<LinkedHashMap> datos1 = (ArrayList) response1.getDatos();
-		
 		FormatoNotaDto formatoNotaDto = new FormatoNotaDto();
-		formatoNotaDto.setTipoReporte(notaDto.getTipoReporte());
-		if (datos1.size() > 0) {
-			formatoNotaDto.setNomVelatorio(datos1.get(0).get("nomVelatorio").toString());
-			formatoNotaDto.setFolioNota(datos1.get(0).get("folioNota").toString());
-			formatoNotaDto.setDirVelatorio(datos1.get(0).get("dirVelatorio").toString());
-			formatoNotaDto.setNomSolicitante(datos1.get(0).get("nomSolicitante").toString());
-			formatoNotaDto.setDirSolicitante(datos1.get(0).get("dirSolicitante").toString());
-			formatoNotaDto.setCurpSolicitante(datos1.get(0).get("curpSolicitante").toString());
-			formatoNotaDto.setVelatorioOrigen(datos1.get(0).get("velatorioOrigen").toString());
-			formatoNotaDto.setNomFinado(datos1.get(0).get("nomFinado").toString());
-			formatoNotaDto.setParFinado(datos1.get(0).get("parFinado").toString());
-			formatoNotaDto.setFolioODS(datos1.get(0).get("folioODS").toString());
-			formatoNotaDto.setFolioConvenio(datos1.get(0).get("folioConvenio").toString());
-			formatoNotaDto.setFechaConvenio(datos1.get(0).get("fechaConvenio").toString());
+		if (notaDto.getIdNota() > 0) {
+			Response<?> response1 = providerRestTemplate.consumirServicio(notaRemision.detalleNotaRem(request, formatoFecha).getDatos(), urlDominioGenerico + CONSULTA, 
+					authentication);
+			ArrayList<LinkedHashMap> datos1 = (ArrayList) response1.getDatos();
+			
+			formatoNotaDto.setTipoReporte(notaDto.getTipoReporte());
+			if (datos1.size() > 0) {
+				formatoNotaDto.setNomVelatorio(datos1.get(0).get("nomVelatorio").toString());
+				formatoNotaDto.setFolioNota(datos1.get(0).get("folioNota").toString());
+				formatoNotaDto.setDirVelatorio(datos1.get(0).get("dirVelatorio").toString());
+				formatoNotaDto.setNomSolicitante(datos1.get(0).get("nomSolicitante").toString());
+				formatoNotaDto.setDirSolicitante(datos1.get(0).get("dirSolicitante").toString());
+				formatoNotaDto.setCurpSolicitante(datos1.get(0).get("curpSolicitante").toString());
+				formatoNotaDto.setVelatorioOrigen(datos1.get(0).get("velatorioOrigen").toString());
+				formatoNotaDto.setNomFinado(datos1.get(0).get("nomFinado").toString());
+				formatoNotaDto.setParFinado(datos1.get(0).get("parFinado").toString());
+				formatoNotaDto.setFolioODS(datos1.get(0).get("folioODS").toString());
+				formatoNotaDto.setFolioConvenio(datos1.get(0).get("folioConvenio").toString());
+				formatoNotaDto.setFechaConvenio(datos1.get(0).get("fechaConvenio").toString());
+			}
+		} else {
+			formatoNotaDto = gson.fromJson(datosJson, FormatoNotaDto.class);
 		}
 		Map<String, Object> envioDatos = notaRemision.imprimirNotaRem(formatoNotaDto, NOMBREPDFNOTAREM);
 		Response<?> response = providerRestTemplate.consumirServicioReportes(envioDatos, urlReportes, authentication);
