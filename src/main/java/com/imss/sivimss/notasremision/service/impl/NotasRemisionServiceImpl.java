@@ -208,18 +208,18 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		if (notaDto.getIdOrden() == null) {
 			throw new BadRequestException(HttpStatus.BAD_REQUEST, "Informacion incompleta");
 		}
-		OrdenServicio ordenServicio = new OrdenServicio();
-		ordenServicio.setId(notaDto.getIdOrden());
-		providerRestTemplate.consumirServicio(ordenServicio.actualizaEstatus(CONCLUIDA).getDatos(), urlDominioGenerico + ACTUALIZAR, authentication);
+	    try {
+		   OrdenServicio ordenServicio = new OrdenServicio();
+		   ordenServicio.setId(notaDto.getIdOrden());
+		   providerRestTemplate.consumirServicio(ordenServicio.actualizaEstatus(CONCLUIDA).getDatos(), urlDominioGenerico + ACTUALIZAR, authentication);
 	
-		NotaRemision notaRemision  = new NotaRemision(0, notaDto.getIdOrden());
-		notaRemision.setIdUsuarioAlta(usuarioDto.getIdUsuario());
-		Response<?> request1 = providerRestTemplate.consumirServicio(notaRemision.ultimoFolioNota(request).getDatos(), urlDominioGenerico + CONSULTA,
+		   NotaRemision notaRemision  = new NotaRemision(0, notaDto.getIdOrden());
+		   notaRemision.setIdUsuarioAlta(usuarioDto.getIdUsuario());
+		   Response<?> request1 = providerRestTemplate.consumirServicio(notaRemision.ultimoFolioNota(request).getDatos(), urlDominioGenerico + CONSULTA,
 				authentication);
-		ArrayList<LinkedHashMap> datos1 = (ArrayList) request1.getDatos();
-		String ultimoFolio = datos1.get(0).get("folio").toString();
+		   ArrayList<LinkedHashMap> datos1 = (ArrayList) request1.getDatos();
+		   String ultimoFolio = datos1.get(0).get("folio").toString();
 		
-		try {
 		    return providerRestTemplate.consumirServicio(notaRemision.generarNotaRem(ultimoFolio).getDatos(), urlDominioGenerico + "/crear", authentication);
 		} catch (Exception e) {
 			log.error(e.getMessage());
