@@ -100,11 +100,11 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 	@Override
 	public Response<?> listadoODS(DatosRequest request, Authentication authentication) throws IOException {
 		Gson gson = new Gson();
-		OrdenServicio ordenServicio = new OrdenServicio();
 		List<ODSGeneradaResponse> ODSResponse;
 		
-		String datosJson = String.valueOf(authentication.getPrincipal());
+		String datosJson = String.valueOf(request.getDatos().get(AppConstantes.DATOS));
 		BusquedaDto busqueda = gson.fromJson(datosJson, BusquedaDto.class);
+		OrdenServicio ordenServicio = new OrdenServicio();
 		Response<?> response = providerRestTemplate.consumirServicio(ordenServicio.listadoODS(busqueda).getDatos(), urlDominioGenerico + CONSULTA, 
 				authentication);
 		
