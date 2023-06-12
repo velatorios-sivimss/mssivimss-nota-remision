@@ -32,7 +32,9 @@ public class LogUtil {
        FileWriter escribirArchivo = new FileWriter(archivo, true);
        try {
             if (archivo.exists()) {
-                escribirArchivo.write("" + formatoFechaLog + " --- [" + tipoLog + "] " + origen + " " + clasePath + " : " + mensaje + " , Usuario: " + usuarioDto.getCveUsuario() + " - " + tiempoEjecucion);
+            	String peticion = "" + formatoFechaLog + " --- [" + tipoLog + "] " + origen + " " + clasePath + " : " + mensaje + " , Usuario: " + usuarioDto.getCveUsuario() + " - " + tiempoEjecucion;
+                log.info(peticion);
+            	escribirArchivo.write(peticion); 
                 escribirArchivo.write("\r\n");
                 escribirArchivo.close();
             } else {
