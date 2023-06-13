@@ -55,7 +55,7 @@ public class OrdenServicio {
 		StringBuilder query = new StringBuilder("SELECT os.ID_ORDEN_SERVICIO, os.CVE_FOLIO \n");
 		query.append("FROM SVC_ORDEN_SERVICIO os \n");
 		query.append("JOIN SVC_FINADO fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO) \n");
-		query.append("LEFT JOIN SVC_VELATORIO vel ON (fin.ID_VELATORIO = vel.ID_VELATORIO) \n");
+		query.append("JOIN SVC_VELATORIO vel ON (fin.ID_VELATORIO = vel.ID_VELATORIO) \n");
 		query.append("WHERE os.ID_ESTATUS_ORDEN_SERVICIO = 2 ");
 		if (busqueda.getIdDelegacion() != null) {
 			query.append(" AND vel.ID_DELEGACION = ").append(busqueda.getIdDelegacion());
@@ -127,8 +127,8 @@ public class OrdenServicio {
         	    query.append(" AND nr.FEC_ALTA BETWEEN STR_TO_DATE('" + busqueda.getFecIniODS() + "','" + formatoFecha + "') AND STR_TO_DATE('" + busqueda.getFecFinODS() + "','" + formatoFecha + "')");
         	}
         	
-        	 busquedaCancelada.append(query);
-        	 busquedaSinNota.append(query);
+        	busquedaCancelada.append(query);
+        	busquedaSinNota.append(query);
         	 
          	StringBuilder queryCompleto = new StringBuilder("");
         	queryCompleto.append("SELECT  * FROM ( ");
@@ -202,11 +202,12 @@ public class OrdenServicio {
     }
     
     private StringBuilder busquedaCancelada(String formatoFecha) {
-    	StringBuilder query = new StringBuilder("SELECT os.ID_ORDEN_SERVICIO AS id, os.CVE_FOLIO AS folioODS, DATE_FORMAT(os.FEC_ALTA,'" + formatoFecha + "') AS fechaODS, IFNULL(cvn.DES_FOLIO,0) AS folioConvenio, os.ID_CONTRATANTE AS idContratante, CONCAT(prc.NOM_PERSONA,' ',prc.NOM_PRIMER_APELLIDO,' ',prc.NOM_SEGUNDO_APELLIDO) AS nomContratante, \n");
+    	StringBuilder query = new StringBuilder("SELECT os.ID_ORDEN_SERVICIO AS id, os.CVE_FOLIO AS folioODS, DATE_FORMAT(os.FEC_ALTA,'" + formatoFecha + "') AS fechaODS, IFNULL(cvn.DES_FOLIO,0) AS folioConvenio, os.ID_CONTRATANTE AS idContratante, ");
+    	query.append("CONCAT(IFNULL(prc.NOM_PERSONA,' '),IFNULL(prc.NOM_PRIMER_APELLIDO,' '),IFNULL(prc.NOM_SEGUNDO_APELLIDO,' ')) AS nomContratante, \n");
     	query.append("fin.ID_FINADO AS idFinado,  \n");
     	query.append("CONCAT(prf.NOM_PERSONA,' ',prf.NOM_PRIMER_APELLIDO,' ',prf.NOM_SEGUNDO_APELLIDO) AS nomFinado,  \n");
     	query.append("IFNULL(nr.ID_ESTATUS,1) AS estatus, IFNULL(nr.ID_NOTAREMISION,0) AS idNota,  \n");
-    	query.append("IFNULL(nr.ID_NOTAREMISION,0) AS idCancelada,0 AS total \n");
+    	query.append("IFNULL(nr.ID_NOTAREMISION,0) AS idCancelada, 0 AS total \n");
     	query.append("FROM SVC_ORDEN_SERVICIO os \n");
     	query.append("JOIN SVC_CONTRATANTE con ON (os.ID_CONTRATANTE = con.ID_CONTRATANTE) \n");
     	query.append("JOIN SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA) \n");
@@ -224,10 +225,10 @@ public class OrdenServicio {
     	StringBuilder query = new StringBuilder("SELECT os.ID_ORDEN_SERVICIO AS id, os.CVE_FOLIO AS folioODS, \n");
     	query.append("DATE_FORMAT(os.FEC_ALTA,'" + formatoFecha + "') AS fechaODS,  \n");
     	query.append("IFNULL(cvn.DES_FOLIO,0) AS folioConvenio, os.ID_CONTRATANTE AS idContratante, \n");
-    	query.append("CONCAT(prc.NOM_PERSONA,' ',prc.NOM_PRIMER_APELLIDO,' ',prc.NOM_SEGUNDO_APELLIDO) AS nomContratante,  \n");
+    	query.append("CONCAT(IFNULL(prc.NOM_PERSONA,' '),IFNULL(prc.NOM_PRIMER_APELLIDO,' '),IFNULL(prc.NOM_SEGUNDO_APELLIDO,' ')) AS nomContratante,  \n");
     	query.append("fin.ID_FINADO AS idFinado, CONCAT(prf.NOM_PERSONA,' ',prf.NOM_PRIMER_APELLIDO,' ',prf.NOM_SEGUNDO_APELLIDO) AS nomFinado, \n");
     	query.append("IFNULL(nr.ID_ESTATUS,1) AS estatus, IFNULL(nr.ID_NOTAREMISION,0) AS idNota,  \n");
-    	query.append("IFNULL(nr.ID_NOTAREMISION,0) AS idCancelada, (SELECT COUNT(rn.ID_ORDEN_SERVICIO) FROM SVT_NOTA_REMISION rn WHERE rn.ID_ORDEN_SERVICIO=os.ID_ORDEN_SERVICIO )  \n");
+    	query.append("IFNULL(nr.ID_NOTAREMISION,0) AS idCancelada, (SELECT COUNT(rn.ID_ORDEN_SERVICIO) FROM SVT_NOTA_REMISION rn WHERE rn.ID_ORDEN_SERVICIO=os.ID_ORDEN_SERVICIO ) AS total \n");
     	query.append("FROM SVC_ORDEN_SERVICIO os \n");
     	query.append("JOIN SVC_CONTRATANTE con ON (os.ID_CONTRATANTE = con.ID_CONTRATANTE) \n");
     	query.append("JOIN SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA) \n");
@@ -244,13 +245,13 @@ public class OrdenServicio {
     }
     
     private StringBuilder busquedaSinNota(String formatoFecha) {
-    	StringBuilder query = new StringBuilder("SELECT os.ID_ORDEN_SERVICIO AS id, os.CVE_FOLIO AS folioODS, \n");
+    	StringBuilder query = new StringBuilder("SELECT DISTINCT os.ID_ORDEN_SERVICIO AS id, os.CVE_FOLIO AS folioODS, \n");
     	query.append("DATE_FORMAT(os.FEC_ALTA,'" + formatoFecha + "') AS fechaODS,  \n");
     	query.append("IFNULL(cvn.DES_FOLIO,0) AS folioConvenio, os.ID_CONTRATANTE AS idContratante,  \n");
     	query.append("CONCAT(prc.NOM_PERSONA,' ',prc.NOM_PRIMER_APELLIDO,' ',prc.NOM_SEGUNDO_APELLIDO) AS nomContratante, \n");
     	query.append("fin.ID_FINADO AS idFinado, CONCAT(prf.NOM_PERSONA,' ',prf.NOM_PRIMER_APELLIDO,' ',prf.NOM_SEGUNDO_APELLIDO) AS nomFinado, \n");
     	query.append("IFNULL(nr.ID_ESTATUS,1) AS estatus, IFNULL(nr.ID_NOTAREMISION,0) AS idNota,  \n");
-    	query.append("IFNULL(nr.ID_NOTAREMISION,0) AS idCancelada, (SELECT COUNT(rn.ID_ORDEN_SERVICIO) FROM SVT_NOTA_REMISION rn WHERE rn.ID_ORDEN_SERVICIO=os.ID_ORDEN_SERVICIO ) \n");
+    	query.append("IFNULL(nr.ID_NOTAREMISION,0) AS idCancelada, (SELECT COUNT(rn.ID_ORDEN_SERVICIO) FROM SVT_NOTA_REMISION rn WHERE rn.ID_ORDEN_SERVICIO=os.ID_ORDEN_SERVICIO ) AS total \n");
     	query.append("FROM SVC_ORDEN_SERVICIO os \n");
     	query.append("JOIN SVC_CONTRATANTE con ON (os.ID_CONTRATANTE = con.ID_CONTRATANTE) \n");
     	query.append("JOIN SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA) \n");
