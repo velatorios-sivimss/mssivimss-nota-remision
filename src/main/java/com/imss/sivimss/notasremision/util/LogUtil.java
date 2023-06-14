@@ -31,17 +31,17 @@ public class LogUtil {
        File archivo = new File(rutaLog + nombreApp + "_" + new SimpleDateFormat("ddMMyyyy").format(new Date()) + ".log");
        FileWriter escribirArchivo = new FileWriter(archivo, true);
        try {
+    	    String contenido = "" + formatoFechaLog + " --- [" + tipoLog + "] " + origen + " " + clasePath + " : " + mensaje + " , Usuario: " + usuarioDto.getCveUsuario() + " - " + tiempoEjecucion;
+            log.info(contenido);
             if (archivo.exists()) {
-            	String peticion = "" + formatoFechaLog + " --- [" + tipoLog + "] " + origen + " " + clasePath + " : " + mensaje + " , Usuario: " + usuarioDto.getCveUsuario() + " - " + tiempoEjecucion;
-                log.info(peticion);
-            	escribirArchivo.write(peticion); 
+            	escribirArchivo.write(contenido); 
                 escribirArchivo.write("\r\n");
                 escribirArchivo.close();
             } else {
                 if (!archivo.createNewFile()) {
                 	log.warn("No se creo archivo log");
                 }
-                escribirArchivo.write("" + formatoFechaLog + " --- [" + tipoLog + "] " + origen + " " + clasePath + " : " + mensaje + " , Usuario: " + usuarioDto.getCveUsuario() + " - " + tiempoEjecucion);
+                escribirArchivo.write(contenido);
                 escribirArchivo.write("\r\n");
                 escribirArchivo.close();
             }

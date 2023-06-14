@@ -202,7 +202,7 @@ public class OrdenServicio {
     }
     
     private StringBuilder busquedaCancelada(String formatoFecha) {
-    	StringBuilder query = new StringBuilder("SELECT os.ID_ORDEN_SERVICIO AS id, os.CVE_FOLIO AS folioODS, DATE_FORMAT(os.FEC_ALTA,'" + formatoFecha + "') AS fechaODS, IFNULL(cvn.DES_FOLIO,0) AS folioConvenio, os.ID_CONTRATANTE AS idContratante, ");
+    	StringBuilder query = new StringBuilder("SELECT DISTINCT os.ID_ORDEN_SERVICIO AS id, os.CVE_FOLIO AS folioODS, DATE_FORMAT(os.FEC_ALTA,'" + formatoFecha + "') AS fechaODS, IFNULL(cvn.DES_FOLIO,0) AS folioConvenio, os.ID_CONTRATANTE AS idContratante, ");
     	query.append("CONCAT(IFNULL(prc.NOM_PERSONA,' '),IFNULL(prc.NOM_PRIMER_APELLIDO,' '),IFNULL(prc.NOM_SEGUNDO_APELLIDO,' ')) AS nomContratante, \n");
     	query.append("fin.ID_FINADO AS idFinado,  \n");
     	query.append("CONCAT(prf.NOM_PERSONA,' ',prf.NOM_PRIMER_APELLIDO,' ',prf.NOM_SEGUNDO_APELLIDO) AS nomFinado,  \n");
@@ -222,7 +222,7 @@ public class OrdenServicio {
     }
     
     private StringBuilder busquedaGeneradas(String formatoFecha) {
-    	StringBuilder query = new StringBuilder("SELECT os.ID_ORDEN_SERVICIO AS id, os.CVE_FOLIO AS folioODS, \n");
+    	StringBuilder query = new StringBuilder("SELECT DISTINCT os.ID_ORDEN_SERVICIO AS id, os.CVE_FOLIO AS folioODS, \n");
     	query.append("DATE_FORMAT(os.FEC_ALTA,'" + formatoFecha + "') AS fechaODS,  \n");
     	query.append("IFNULL(cvn.DES_FOLIO,0) AS folioConvenio, os.ID_CONTRATANTE AS idContratante, \n");
     	query.append("CONCAT(IFNULL(prc.NOM_PERSONA,' '),IFNULL(prc.NOM_PRIMER_APELLIDO,' '),IFNULL(prc.NOM_SEGUNDO_APELLIDO,' ')) AS nomContratante,  \n");
