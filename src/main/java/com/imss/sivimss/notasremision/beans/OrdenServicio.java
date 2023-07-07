@@ -39,7 +39,7 @@ public class OrdenServicio {
 		if (busqueda.getIdOficina() > 1) {
 			query.append(" AND vel.ID_DELEGACION = ").append(busqueda.getIdDelegacion());
 			if (busqueda.getIdOficina() == 3) {
-				query.append(" AND fin.ID_VELATORIO = ").append(busqueda.getIdVelatorio());
+				query.append(" AND os.ID_VELATORIO = ").append(busqueda.getIdVelatorio());
 			}
 		} 
         
