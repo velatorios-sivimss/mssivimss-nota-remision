@@ -81,7 +81,7 @@ public class OrdenServicio {
     	if (busqueda.getIdDelegacion() != null && busqueda.getIdVelatorio() != null && busqueda.getFecIniODS() != null && busqueda.getFecFinODS() != null) {
     		query.append(" AND vel.ID_DELEGACION = ").append(busqueda.getIdDelegacion());
     		query.append(" AND os.ID_VELATORIO = ").append(busqueda.getIdVelatorio());
-    		query.append(" AND nr.FEC_ALTA BETWEEN STR_TO_DATE('" + busqueda.getFecIniODS() + "','" + formatoFecha + "') AND STR_TO_DATE('" + busqueda.getFecFinODS() + "','" + formatoFecha + "')");
+    		query.append(" AND DATE(nr.FEC_ALTA) BETWEEN STR_TO_DATE('" + busqueda.getFecIniODS() + "','" + formatoFecha + "') AND STR_TO_DATE('" + busqueda.getFecFinODS() + "','" + formatoFecha + "')");
     		busquedaGeneradas.append(query);
     		
     		logger.info(busquedaGeneradas.toString());
@@ -92,7 +92,7 @@ public class OrdenServicio {
 		}
     	else if (busqueda.getIdDelegacion() != null && busqueda.getIdVelatorio() == null && busqueda.getFecIniODS() != null && busqueda.getFecFinODS() != null) {
     		query.append(" AND vel.ID_DELEGACION = ").append(busqueda.getIdDelegacion());
-    		query.append(" AND nr.FEC_ALTA BETWEEN STR_TO_DATE('" + busqueda.getFecIniODS() + "','" + formatoFecha + "') AND STR_TO_DATE('" + busqueda.getFecFinODS() + "','" + formatoFecha + "')");
+    		query.append(" AND DATE(nr.FEC_ALTA) BETWEEN STR_TO_DATE('" + busqueda.getFecIniODS() + "','" + formatoFecha + "') AND STR_TO_DATE('" + busqueda.getFecFinODS() + "','" + formatoFecha + "')");
     		busquedaGeneradas.append(query);
     		
     		logger.info(busquedaGeneradas.toString());
@@ -102,7 +102,7 @@ public class OrdenServicio {
     		return request;
       	}
     	else if (busqueda.getIdDelegacion() == null && busqueda.getIdVelatorio() == null && busqueda.getFecIniODS() != null && busqueda.getFecFinODS() != null) {
-    		query.append(" AND nr.FEC_ALTA BETWEEN STR_TO_DATE('" + busqueda.getFecIniODS() + "','" + formatoFecha + "') AND STR_TO_DATE('" + busqueda.getFecFinODS() + "','" + formatoFecha + "')");
+    		query.append(" AND DATE(nr.FEC_ALTA) BETWEEN STR_TO_DATE('" + busqueda.getFecIniODS() + "','" + formatoFecha + "') AND STR_TO_DATE('" + busqueda.getFecFinODS() + "','" + formatoFecha + "')");
     		busquedaGeneradas.append(query);
     		
     		logger.info(busquedaGeneradas.toString());
@@ -124,7 +124,7 @@ public class OrdenServicio {
         	    query.append(" AND os.CVE_FOLIO = '" + busqueda.getFolioODS() +"' ");
         	}
         	if (busqueda.getFecIniODS() != null) {
-        	    query.append(" AND nr.FEC_ALTA BETWEEN STR_TO_DATE('" + busqueda.getFecIniODS() + "','" + formatoFecha + "') AND STR_TO_DATE('" + busqueda.getFecFinODS() + "','" + formatoFecha + "')");
+        	    query.append(" AND DATE(nr.FEC_ALTA) BETWEEN STR_TO_DATE('" + busqueda.getFecIniODS() + "','" + formatoFecha + "') AND STR_TO_DATE('" + busqueda.getFecFinODS() + "','" + formatoFecha + "')");
         	}
         	
         	busquedaCancelada.append(query);
@@ -301,7 +301,7 @@ public class OrdenServicio {
     	    condicion.append(" AND os.CVE_FOLIO = '" + reporteDto.getFolioODS() +"' ");
     	}
     	if (reporteDto.getFecIniODS() != null) {
-    	    condicion.append(" AND nr.FEC_ALTA BETWEEN STR_TO_DATE('" + reporteDto.getFecIniODS() + "','" + formatoFecha + "') AND STR_TO_DATE('" + reporteDto.getFecFinODS() + "','" + formatoFecha + "')");
+    	    condicion.append(" AND DATE(nr.FEC_ALTA) BETWEEN STR_TO_DATE('" + reporteDto.getFecIniODS() + "','" + formatoFecha + "') AND STR_TO_DATE('" + reporteDto.getFecFinODS() + "','" + formatoFecha + "')");
     	}
 		
 		envioDatos.put("condicion", condicion.toString());
