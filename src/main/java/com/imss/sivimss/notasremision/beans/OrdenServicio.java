@@ -55,12 +55,12 @@ public class OrdenServicio {
 		StringBuilder query = new StringBuilder("SELECT os.ID_ORDEN_SERVICIO, os.CVE_FOLIO \n");
 		query.append("FROM SVC_ORDEN_SERVICIO os \n");
 		query.append("JOIN SVC_FINADO fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO) \n");
-		query.append("JOIN SVC_VELATORIO vel ON (fin.ID_VELATORIO = vel.ID_VELATORIO) \n");
+		query.append("JOIN SVC_VELATORIO vel ON (os.ID_VELATORIO = vel.ID_VELATORIO) \n");
 		query.append("WHERE os.ID_ESTATUS_ORDEN_SERVICIO = 2 ");
 		if (busqueda.getIdDelegacion() != null) {
 			query.append(" AND vel.ID_DELEGACION = ").append(busqueda.getIdDelegacion());
 			if (busqueda.getIdVelatorio() != null) {
-				query.append(" AND fin.ID_VELATORIO = ").append(busqueda.getIdVelatorio());
+				query.append(" AND os.ID_VELATORIO = ").append(busqueda.getIdVelatorio());
 			}
 		} 
 		
@@ -159,15 +159,15 @@ public class OrdenServicio {
 		query.append("IFNULL(cvn.DES_FOLIO,0) AS folioConvenio, IFNULL(cvn.FEC_INICIO,0) AS fechaConvenio, \n");
 		query.append("(SELECT LPAD(IFNULL(MAX(NUM_FOLIO+1),1),6,'0') FROM SVT_NOTA_REMISION) AS folioNota \n");
 		query.append("FROM SVC_ORDEN_SERVICIO os \n");
-		query.append("JOIN SVC_FINADO fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO) \n");
-		query.append("JOIN SVC_VELATORIO vel ON (vel.ID_VELATORIO = fin.ID_VELATORIO) \n");
-		query.append("JOIN SVC_PERSONA prf ON (fin.ID_PERSONA = prf.ID_PERSONA) \n");
-		query.append("LEFT JOIN SVT_DOMICILIO domv ON (vel.ID_DOMICILIO = domv.ID_DOMICILIO) \n");
-		query.append("LEFT JOIN SVC_PARENTESCO par ON (os.ID_PARENTESCO = par.ID_PARENTESCO) \n");
 		query.append("JOIN SVC_CONTRATANTE con ON (os.ID_CONTRATANTE = con.ID_CONTRATANTE) \n");
 		query.append("JOIN SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA) \n");
 		query.append("JOIN SVT_CONTRATANTE_PAQUETE_CONVENIO_PF cpcf ON (con.ID_CONTRATANTE = cpcf.ID_CONTRATANTE) \n");
 		query.append("JOIN SVT_CONVENIO_PF cvn ON (cpcf.ID_CONVENIO_PF = cvn.ID_CONVENIO_PF) \n");
+		query.append("JOIN SVC_FINADO fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO) \n");
+		query.append("JOIN SVC_PERSONA prf ON (fin.ID_PERSONA = prf.ID_PERSONA) \n");
+		query.append("JOIN SVC_VELATORIO vel ON (vel.ID_VELATORIO = os.ID_VELATORIO) \n");
+		query.append("LEFT JOIN SVT_DOMICILIO domv ON (vel.ID_DOMICILIO = domv.ID_DOMICILIO) \n");
+		query.append("LEFT JOIN SVC_PARENTESCO par ON (os.ID_PARENTESCO = par.ID_PARENTESCO) \n");
 		query.append("LEFT JOIN SVT_DOMICILIO domc ON (con.ID_DOMICILIO = domc.ID_DOMICILIO) \n");
 		query.append("WHERE os.ID_ORDEN_SERVICIO = " + idODS);
 		
