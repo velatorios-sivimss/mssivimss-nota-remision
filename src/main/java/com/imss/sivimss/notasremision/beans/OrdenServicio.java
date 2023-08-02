@@ -30,7 +30,6 @@ public class OrdenServicio {
 	private Integer idFinado;
 	private String nomFinado;
 	private Integer estatus;
-	//private static final Logger logger = (Logger) LoggerFactory.getLogger(OrdenServicio.class);
 	
 	private static final Logger logger = LoggerFactory.getLogger(OrdenServicio.class);
 

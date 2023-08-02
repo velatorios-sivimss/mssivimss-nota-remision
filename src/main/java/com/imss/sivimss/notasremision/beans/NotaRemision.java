@@ -8,6 +8,7 @@ import javax.xml.bind.DatatypeConverter;
 
 import com.imss.sivimss.notasremision.util.QueryHelper;
 import com.imss.sivimss.notasremision.model.request.FormatoNotaDto;
+import com.imss.sivimss.notasremision.model.request.LlavesTablasUpd;
 import com.imss.sivimss.notasremision.util.AppConstantes;
 import com.imss.sivimss.notasremision.util.DatosRequest;
 
@@ -117,6 +118,69 @@ public class NotaRemision {
 		
 		return request;
 	}
+    
+    public DatosRequest obtenTipoPrevision(DatosRequest request) throws UnsupportedEncodingException {
+    	StringBuilder query =  new StringBuilder("SELECT ID_TIPO_PREVISION AS idTipoPrevision, con.ID_CONTRATANTE AS idContratante, \n");
+    	query.append("cnv.ID_CONVENIO_PF AS idConvenio, cpc.ID_CONTRATANTE_PAQUETE_CONVENIO_PF AS idContratantePaquete, fin.ID_PERSONA AS idPersona \n");
+    	query.append("FROM SVC_ORDEN_SERVICIO os \n");
+    	query.append("JOIN SVT_CONTRATANTE_PAQUETE_CONVENIO_PF cpc ON cpc.ID_CONTRATANTE = os.ID_CONTRATANTE \n");
+    	query.append("JOIN SVT_CONVENIO_PF cnv ON cnv.ID_CONVENIO_PF = cpc.ID_CONVENIO_PF \n");
+    	query.append("JOIN SVC_FINADO fin ON fin.ID_ORDEN_SERVICIO = os.ID_ORDEN_SERVICIO \n");
+    	query.append("LEFT JOIN SVC_CONTRATANTE con ON con.ID_PERSONA = fin.ID_PERSONA \n");
+    	query.append("WHERE os.ID_ORDEN_SERVICIO = " + this.idOrden);
+		
+		String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes("UTF-8"));
+		request.getDatos().put(AppConstantes.QUERY, encoded);
+		return request;
+    }
+    
+    public DatosRequest actualizaEstatusCrear(LlavesTablasUpd llavesTablasUpd) throws UnsupportedEncodingException {
+    	DatosRequest request = new DatosRequest();
+    	Map<String, Object> parametro = new HashMap<>();
+    	
+    	StringBuilder query = new StringBuilder("");
+    	if (llavesTablasUpd.getIsContratante()) {
+    	    query.append("UPDATE SVT_CONVENIO_PF SET ID_ESTATUS_CONVENIO = 4, ID_USUARIO_MODIFICA = " + this.idUsuarioAlta);
+    	    query.append(", FEC_ACTUALIZACION = CURRENT_TIMESTAMP() WHERE ID_CONVENIO_PF = " + llavesTablasUpd.getIdConvenio() + ";$$");
+    	    query.append("UPDATE SVT_CONTRATANTE_PAQUETE_CONVENIO_PF SET IND_ACTIVO = 0, ID_USUARIO_MODIFICA = " + this.idUsuarioAlta);
+    	    query.append(", FEC_ACTUALIZACION = CURRENT_TIMESTAMP() WHERE ID_CONTRATANTE_PAQUETE_CONVENIO_PF = " + llavesTablasUpd.getIdContratantePaquete() + ";$$");
+    	} if (llavesTablasUpd.getIdTipoPrevision() == 1) {
+    		query.append("UPDATE SVT_CONTRATANTE_BENEFICIARIOS SET IND_SINIESTROS = 1, IND_ACTIVO = 0, ID_USUARIO_MODIFICA = " + this.idUsuarioAlta);
+    	    query.append(", FEC_ACTUALIZACION = CURRENT_TIMESTAMP() WHERE ID_CONTRATANTE_PAQUETE_CONVENIO_PF = " + llavesTablasUpd.getIdContratantePaquete());
+    	    query.append(" AND ID_PERSONA = " + llavesTablasUpd.getIdPersona() + ";$$");
+    	}
+    	
+    	String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes("UTF-8"));
+    	parametro.put(AppConstantes.QUERY, encoded);
+        parametro.put("separador", "$$");
+		request.setDatos(parametro);
+		
+    	return request;
+    }
+    
+    public DatosRequest actualizaEstatusCancelar(LlavesTablasUpd llavesTablasUpd) throws UnsupportedEncodingException {
+    	DatosRequest request = new DatosRequest();
+    	Map<String, Object> parametro = new HashMap<>();
+    	
+    	StringBuilder query = new StringBuilder("");
+    	if (llavesTablasUpd.getIsContratante()) {
+    	    query.append("UPDATE SVT_CONVENIO_PF SET ID_ESTATUS_CONVENIO = 2, ID_USUARIO_MODIFICA = " + this.idUsuarioModifica);
+    	    query.append(", FEC_ACTUALIZACION = CURRENT_TIMESTAMP() WHERE ID_CONVENIO_PF = " + llavesTablasUpd.getIdConvenio() + ";$$");
+    	    query.append("UPDATE SVT_CONTRATANTE_PAQUETE_CONVENIO_PF SET IND_ACTIVO = 1, ID_USUARIO_MODIFICA = " + this.idUsuarioModifica);
+    	    query.append(", FEC_ACTUALIZACION = CURRENT_TIMESTAMP() WHERE ID_CONTRATANTE_PAQUETE_CONVENIO_PF = " + llavesTablasUpd.getIdContratantePaquete() + ";$$");
+    	} else if (llavesTablasUpd.getIdTipoPrevision() == 1) {
+    		query.append("UPDATE SVT_CONTRATANTE_BENEFICIARIOS SET IND_SINIESTROS = 0, IND_ACTIVO = 1, ID_USUARIO_MODIFICA = " + this.idUsuarioModifica);
+    	    query.append(", FEC_ACTUALIZACION = CURRENT_TIMESTAMP() WHERE ID_CONTRATANTE_PAQUETE_CONVENIO_PF = " + llavesTablasUpd.getIdContratantePaquete());
+    	    query.append(" AND ID_PERSONA = " + llavesTablasUpd.getIdPersona() + ";$$");
+    	}
+    	
+    	String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes("UTF-8"));
+    	parametro.put(AppConstantes.QUERY, encoded);
+        parametro.put("separador", "$$");
+		request.setDatos(parametro);
+		
+    	return request;
+    }
 
     public DatosRequest cancelarNotaRem() throws UnsupportedEncodingException {
     	DatosRequest request = new DatosRequest();

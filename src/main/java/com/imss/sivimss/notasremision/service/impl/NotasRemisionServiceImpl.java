@@ -27,6 +27,7 @@ import com.imss.sivimss.notasremision.model.request.UsuarioDto;
 import com.imss.sivimss.notasremision.beans.NotaRemision;
 import com.imss.sivimss.notasremision.model.request.BusquedaDto;
 import com.imss.sivimss.notasremision.model.request.FormatoNotaDto;
+import com.imss.sivimss.notasremision.model.request.LlavesTablasUpd;
 import com.imss.sivimss.notasremision.model.request.NotaRemisionDto;
 import com.imss.sivimss.notasremision.model.response.ODSGeneradaResponse;
 import com.imss.sivimss.notasremision.service.NotasRemisionService;
@@ -46,6 +47,10 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 	private static final String CONSULTA = "/consulta";
 	
 	private static final String ACTUALIZAR = "/actualizar";
+	
+	private static final String CREAR = "/crear";
+	
+	private static final String MULTIPLE = "/insertarMultiple";
 	
 	@Value("${endpoints.generico-reportes}")
 	private String urlReportes;
@@ -211,16 +216,27 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 	    try {
 		   OrdenServicio ordenServicio = new OrdenServicio();
 		   ordenServicio.setId(notaDto.getIdOrden());
+		   // Actualiza estatus de la ODS
 		   providerRestTemplate.consumirServicio(ordenServicio.actualizaEstatus(CONCLUIDA).getDatos(), urlDominioGenerico + ACTUALIZAR, authentication);
 	
 		   NotaRemision notaRemision  = new NotaRemision(0, notaDto.getIdOrden());
 		   notaRemision.setIdUsuarioAlta(usuarioDto.getIdUsuario());
-		   Response<?> request1 = providerRestTemplate.consumirServicio(notaRemision.ultimoFolioNota(request).getDatos(), urlDominioGenerico + CONSULTA,
-				authentication);
+		   
+		   // Actualizar estatus de convenio
+		   Response<?> request1 = providerRestTemplate.consumirServicio(notaRemision.obtenTipoPrevision(request).getDatos(), urlDominioGenerico + CONSULTA, authentication);
 		   ArrayList<LinkedHashMap> datos1 = (ArrayList) request1.getDatos();
+		   LlavesTablasUpd llavesTablasUpd = new LlavesTablasUpd((Integer)datos1.get(0).get("idTipoPrevision"), datos1.get(0).get("idContratante")!=null, 
+				   (Integer)datos1.get(0).get("idConvenio"), (Integer)datos1.get(0).get("idContratantePaquete"), (Integer)datos1.get(0).get("idPersona"));
+		  
+		   providerRestTemplate.consumirServicio(notaRemision.actualizaEstatusCrear(llavesTablasUpd).getDatos(), urlDominioGenerico + MULTIPLE, authentication);
+		   
+		   // Registro de nota de remisión
+		   request1 = providerRestTemplate.consumirServicio(notaRemision.ultimoFolioNota(request).getDatos(), urlDominioGenerico + CONSULTA,
+				authentication);
+		   datos1 = (ArrayList) request1.getDatos();
 		   String ultimoFolio = datos1.get(0).get("folio").toString();
-		
-		    return providerRestTemplate.consumirServicio(notaRemision.generarNotaRem(ultimoFolio).getDatos(), urlDominioGenerico + "/crear", authentication);
+
+		   return providerRestTemplate.consumirServicio(notaRemision.generarNotaRem(ultimoFolio).getDatos(), urlDominioGenerico + CREAR, authentication);
 		} catch (Exception e) {
 			log.error(e.getMessage());
         	logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(), this.getClass().getPackage().toString(), e.getMessage(), ALTA, authentication);
@@ -239,12 +255,22 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		}
 		OrdenServicio ordenServicio = new OrdenServicio();
 		ordenServicio.setId(notaDto.getIdOrden());
+		// Se regresa el estatus de la ODS a generada
 		providerRestTemplate.consumirServicio(ordenServicio.actualizaEstatus(GENERADA).getDatos(), urlDominioGenerico + ACTUALIZAR, authentication);
 		
 		UsuarioDto usuarioDto = gson.fromJson((String) authentication.getPrincipal(), UsuarioDto.class);
 		NotaRemision notaRemision  = new NotaRemision(notaDto.getIdNota(), notaDto.getIdOrden());
 		notaRemision.setMotivo(notaDto.getMotivo());
 		notaRemision.setIdUsuarioModifica(usuarioDto.getIdUsuario());
+		
+		// Actualizar estatus de convenio
+		Response<?> request1 = providerRestTemplate.consumirServicio(notaRemision.obtenTipoPrevision(request).getDatos(), urlDominioGenerico + CONSULTA, authentication);
+		ArrayList<LinkedHashMap> datos1 = (ArrayList) request1.getDatos();
+		LlavesTablasUpd llavesTablasUpd = new LlavesTablasUpd((Integer)datos1.get(0).get("idTipoPrevision"), datos1.get(0).get("idContratante")!=null, 
+				   (Integer)datos1.get(0).get("idConvenio"), (Integer)datos1.get(0).get("idContratantePaquete"), (Integer)datos1.get(0).get("idPersona"));
+		
+		// Cancelación de la nota de remisión
+		providerRestTemplate.consumirServicio(notaRemision.actualizaEstatusCancelar(llavesTablasUpd).getDatos(), urlDominioGenerico + MULTIPLE, authentication);
 		
 		try {
 		    return providerRestTemplate.consumirServicio(notaRemision.cancelarNotaRem().getDatos(), urlDominioGenerico + ACTUALIZAR, authentication);
