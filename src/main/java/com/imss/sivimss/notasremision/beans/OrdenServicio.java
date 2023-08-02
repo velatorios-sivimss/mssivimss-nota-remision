@@ -30,7 +30,6 @@ public class OrdenServicio {
 	private Integer idFinado;
 	private String nomFinado;
 	private Integer estatus;
-	//private static final Logger logger = (Logger) LoggerFactory.getLogger(OrdenServicio.class);
 	
 	private static final Logger logger = LoggerFactory.getLogger(OrdenServicio.class);
 
@@ -39,7 +38,7 @@ public class OrdenServicio {
 		if (busqueda.getIdOficina() > 1) {
 			query.append(" AND vel.ID_DELEGACION = ").append(busqueda.getIdDelegacion());
 			if (busqueda.getIdOficina() == 3) {
-				query.append(" AND fin.ID_VELATORIO = ").append(busqueda.getIdVelatorio());
+				query.append(" AND os.ID_VELATORIO = ").append(busqueda.getIdVelatorio());
 			}
 		} 
         
@@ -55,12 +54,12 @@ public class OrdenServicio {
 		StringBuilder query = new StringBuilder("SELECT os.ID_ORDEN_SERVICIO, os.CVE_FOLIO \n");
 		query.append("FROM SVC_ORDEN_SERVICIO os \n");
 		query.append("JOIN SVC_FINADO fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO) \n");
-		query.append("JOIN SVC_VELATORIO vel ON (fin.ID_VELATORIO = vel.ID_VELATORIO) \n");
+		query.append("JOIN SVC_VELATORIO vel ON (os.ID_VELATORIO = vel.ID_VELATORIO) \n");
 		query.append("WHERE os.ID_ESTATUS_ORDEN_SERVICIO = 2 ");
 		if (busqueda.getIdDelegacion() != null) {
 			query.append(" AND vel.ID_DELEGACION = ").append(busqueda.getIdDelegacion());
 			if (busqueda.getIdVelatorio() != null) {
-				query.append(" AND fin.ID_VELATORIO = ").append(busqueda.getIdVelatorio());
+				query.append(" AND os.ID_VELATORIO = ").append(busqueda.getIdVelatorio());
 			}
 		} 
 		
@@ -81,7 +80,7 @@ public class OrdenServicio {
     	if (busqueda.getIdDelegacion() != null && busqueda.getIdVelatorio() != null && busqueda.getFecIniODS() != null && busqueda.getFecFinODS() != null) {
     		query.append(" AND vel.ID_DELEGACION = ").append(busqueda.getIdDelegacion());
     		query.append(" AND os.ID_VELATORIO = ").append(busqueda.getIdVelatorio());
-    		query.append(" AND nr.FEC_ALTA BETWEEN STR_TO_DATE('" + busqueda.getFecIniODS() + "','" + formatoFecha + "') AND STR_TO_DATE('" + busqueda.getFecFinODS() + "','" + formatoFecha + "')");
+    		query.append(" AND DATE(nr.FEC_ALTA) BETWEEN STR_TO_DATE('" + busqueda.getFecIniODS() + "','" + formatoFecha + "') AND STR_TO_DATE('" + busqueda.getFecFinODS() + "','" + formatoFecha + "')");
     		busquedaGeneradas.append(query);
     		
     		logger.info(busquedaGeneradas.toString());
@@ -92,7 +91,7 @@ public class OrdenServicio {
 		}
     	else if (busqueda.getIdDelegacion() != null && busqueda.getIdVelatorio() == null && busqueda.getFecIniODS() != null && busqueda.getFecFinODS() != null) {
     		query.append(" AND vel.ID_DELEGACION = ").append(busqueda.getIdDelegacion());
-    		query.append(" AND nr.FEC_ALTA BETWEEN STR_TO_DATE('" + busqueda.getFecIniODS() + "','" + formatoFecha + "') AND STR_TO_DATE('" + busqueda.getFecFinODS() + "','" + formatoFecha + "')");
+    		query.append(" AND DATE(nr.FEC_ALTA) BETWEEN STR_TO_DATE('" + busqueda.getFecIniODS() + "','" + formatoFecha + "') AND STR_TO_DATE('" + busqueda.getFecFinODS() + "','" + formatoFecha + "')");
     		busquedaGeneradas.append(query);
     		
     		logger.info(busquedaGeneradas.toString());
@@ -102,7 +101,7 @@ public class OrdenServicio {
     		return request;
       	}
     	else if (busqueda.getIdDelegacion() == null && busqueda.getIdVelatorio() == null && busqueda.getFecIniODS() != null && busqueda.getFecFinODS() != null) {
-    		query.append(" AND nr.FEC_ALTA BETWEEN STR_TO_DATE('" + busqueda.getFecIniODS() + "','" + formatoFecha + "') AND STR_TO_DATE('" + busqueda.getFecFinODS() + "','" + formatoFecha + "')");
+    		query.append(" AND DATE(nr.FEC_ALTA) BETWEEN STR_TO_DATE('" + busqueda.getFecIniODS() + "','" + formatoFecha + "') AND STR_TO_DATE('" + busqueda.getFecFinODS() + "','" + formatoFecha + "')");
     		busquedaGeneradas.append(query);
     		
     		logger.info(busquedaGeneradas.toString());
@@ -124,7 +123,7 @@ public class OrdenServicio {
         	    query.append(" AND os.CVE_FOLIO = '" + busqueda.getFolioODS() +"' ");
         	}
         	if (busqueda.getFecIniODS() != null) {
-        	    query.append(" AND nr.FEC_ALTA BETWEEN STR_TO_DATE('" + busqueda.getFecIniODS() + "','" + formatoFecha + "') AND STR_TO_DATE('" + busqueda.getFecFinODS() + "','" + formatoFecha + "')");
+        	    query.append(" AND DATE(nr.FEC_ALTA) BETWEEN STR_TO_DATE('" + busqueda.getFecIniODS() + "','" + formatoFecha + "') AND STR_TO_DATE('" + busqueda.getFecFinODS() + "','" + formatoFecha + "')");
         	}
         	
         	busquedaCancelada.append(query);
@@ -159,15 +158,15 @@ public class OrdenServicio {
 		query.append("IFNULL(cvn.DES_FOLIO,0) AS folioConvenio, IFNULL(cvn.FEC_INICIO,0) AS fechaConvenio, \n");
 		query.append("(SELECT LPAD(IFNULL(MAX(NUM_FOLIO+1),1),6,'0') FROM SVT_NOTA_REMISION) AS folioNota \n");
 		query.append("FROM SVC_ORDEN_SERVICIO os \n");
-		query.append("JOIN SVC_FINADO fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO) \n");
-		query.append("JOIN SVC_VELATORIO vel ON (vel.ID_VELATORIO = fin.ID_VELATORIO) \n");
-		query.append("JOIN SVC_PERSONA prf ON (fin.ID_PERSONA = prf.ID_PERSONA) \n");
-		query.append("LEFT JOIN SVT_DOMICILIO domv ON (vel.ID_DOMICILIO = domv.ID_DOMICILIO) \n");
-		query.append("LEFT JOIN SVC_PARENTESCO par ON (os.ID_PARENTESCO = par.ID_PARENTESCO) \n");
 		query.append("JOIN SVC_CONTRATANTE con ON (os.ID_CONTRATANTE = con.ID_CONTRATANTE) \n");
 		query.append("JOIN SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA) \n");
 		query.append("JOIN SVT_CONTRATANTE_PAQUETE_CONVENIO_PF cpcf ON (con.ID_CONTRATANTE = cpcf.ID_CONTRATANTE) \n");
 		query.append("JOIN SVT_CONVENIO_PF cvn ON (cpcf.ID_CONVENIO_PF = cvn.ID_CONVENIO_PF) \n");
+		query.append("JOIN SVC_FINADO fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO) \n");
+		query.append("JOIN SVC_PERSONA prf ON (fin.ID_PERSONA = prf.ID_PERSONA) \n");
+		query.append("JOIN SVC_VELATORIO vel ON (vel.ID_VELATORIO = os.ID_VELATORIO) \n");
+		query.append("LEFT JOIN SVT_DOMICILIO domv ON (vel.ID_DOMICILIO = domv.ID_DOMICILIO) \n");
+		query.append("LEFT JOIN SVC_PARENTESCO par ON (os.ID_PARENTESCO = par.ID_PARENTESCO) \n");
 		query.append("LEFT JOIN SVT_DOMICILIO domc ON (con.ID_DOMICILIO = domc.ID_DOMICILIO) \n");
 		query.append("WHERE os.ID_ORDEN_SERVICIO = " + idODS);
 		
@@ -301,7 +300,7 @@ public class OrdenServicio {
     	    condicion.append(" AND os.CVE_FOLIO = '" + reporteDto.getFolioODS() +"' ");
     	}
     	if (reporteDto.getFecIniODS() != null) {
-    	    condicion.append(" AND nr.FEC_ALTA BETWEEN STR_TO_DATE('" + reporteDto.getFecIniODS() + "','" + formatoFecha + "') AND STR_TO_DATE('" + reporteDto.getFecFinODS() + "','" + formatoFecha + "')");
+    	    condicion.append(" AND DATE(nr.FEC_ALTA) BETWEEN STR_TO_DATE('" + reporteDto.getFecIniODS() + "','" + formatoFecha + "') AND STR_TO_DATE('" + reporteDto.getFecFinODS() + "','" + formatoFecha + "')");
     	}
 		
 		envioDatos.put("condicion", condicion.toString());
