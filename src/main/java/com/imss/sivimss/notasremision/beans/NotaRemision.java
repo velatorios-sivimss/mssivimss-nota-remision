@@ -48,7 +48,7 @@ public class NotaRemision {
 	
 	
 	public DatosRequest serviciosNotaRem(DatosRequest request) throws UnsupportedEncodingException {
-		StringBuilder query = new StringBuilder("SELECT pq.DES_PAQUETE AS nomPaquete, ar.DES_ARTICULO AS nomServicio, dcp.CAN_CANTIDAD AS cantidad \n");
+		StringBuilder query = new StringBuilder("SELECT pq.DES_PAQUETE AS nomPaquete, ar.DES_ARTICULO AS nomServicio, dcp.CAN_DET_PRESUP AS cantidad \n");
 		query.append("FROM SVC_CARACTERISTICAS_PRESUPUESTO cp \n");
 		query.append("JOIN SVT_PAQUETE pq ON (cp.ID_PAQUETE = pq.ID_PAQUETE) \n");
 		query.append("JOIN SVC_DETALLE_CARACTERISTICAS_PRESUPUESTO dcp ON (cp.ID_CARACTERISTICAS_PRESUPUESTO = dcp.ID_CARACTERISTICAS_PRESUPUESTO) \n");
@@ -56,7 +56,7 @@ public class NotaRemision {
 		query.append("JOIN SVT_ARTICULO ar ON (ia.ID_ARTICULO = ar.ID_ARTICULO) \n");
 		query.append("WHERE dcp.ID_INVE_ARTICULO IS NOT NULL AND cp.ID_ORDEN_SERVICIO = " + this.idOrden + " \n");
 		query.append("UNION \n");
-		query.append("SELECT pq.DES_PAQUETE AS nomPaquete, sv.DES_SERVICIO AS nomServicio, dcp.CAN_CANTIDAD AS cantidad \n");
+		query.append("SELECT pq.DES_PAQUETE AS nomPaquete, sv.DES_SERVICIO AS nomServicio, dcp.CAN_DET_PRESUP AS cantidad \n");
 		query.append("FROM SVC_CARACTERISTICAS_PRESUPUESTO cp \n");
 		query.append("JOIN SVT_PAQUETE pq ON (cp.ID_PAQUETE = pq.ID_PAQUETE) \n");
 		query.append("JOIN SVC_DETALLE_CARACTERISTICAS_PRESUPUESTO dcp ON (cp.ID_CARACTERISTICAS_PRESUPUESTO = dcp.ID_CARACTERISTICAS_PRESUPUESTO) \n");
