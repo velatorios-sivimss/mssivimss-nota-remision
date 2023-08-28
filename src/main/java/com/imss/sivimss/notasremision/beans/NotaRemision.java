@@ -51,7 +51,7 @@ public class NotaRemision {
 		StringBuilder query = new StringBuilder("SELECT pq.DES_PAQUETE AS nomPaquete, ar.DES_ARTICULO AS nomServicio, dcp.CAN_DET_PRESUP AS cantidad \n");
 		query.append("FROM SVC_CARAC_PRESUPUESTO cp \n");
 		query.append("JOIN SVT_PAQUETE pq ON (cp.ID_PAQUETE = pq.ID_PAQUETE) \n");
-		query.append("JOIN SVC_DETALLE_CARAC_PRESUP dcp ON (cp.ID_CARACTERISTICAS_PRESUPUESTO = dcp.ID_CARACTERISTICAS_PRESUPUESTO) \n");
+		query.append("JOIN SVC_DETALLE_CARAC_PRESUP dcp ON (cp.ID_CARAC_PRESUPUESTO = dcp.ID_CARAC_PRESUPUESTO) \n");
 		query.append("JOIN SVT_INVENTARIO_ARTICULO ia ON (dcp.ID_INVE_ARTICULO = ia.ID_INVE_ARTICULO) \n");
 		query.append("JOIN SVT_ARTICULO ar ON (ia.ID_ARTICULO = ar.ID_ARTICULO) \n");
 		query.append("WHERE dcp.ID_INVE_ARTICULO IS NOT NULL AND cp.ID_ORDEN_SERVICIO = " + this.idOrden + " \n");
@@ -59,7 +59,7 @@ public class NotaRemision {
 		query.append("SELECT pq.DES_PAQUETE AS nomPaquete, sv.DES_SERVICIO AS nomServicio, dcp.CAN_DET_PRESUP AS cantidad \n");
 		query.append("FROM SVC_CARAC_PRESUPUESTO cp \n");
 		query.append("JOIN SVT_PAQUETE pq ON (cp.ID_PAQUETE = pq.ID_PAQUETE) \n");
-		query.append("JOIN SVC_DETALLE_CARAC_PRESUP dcp ON (cp.ID_CARACTERISTICAS_PRESUPUESTO = dcp.ID_CARACTERISTICAS_PRESUPUESTO) \n");
+		query.append("JOIN SVC_DETALLE_CARAC_PRESUP dcp ON (cp.ID_CARAC_PRESUPUESTO = dcp.ID_CARAC_PRESUPUESTO) \n");
 		query.append("JOIN SVT_SERVICIO sv ON (dcp.ID_SERVICIO = sv.ID_SERVICIO) \n");
 		query.append("WHERE dcp.ID_SERVICIO IS NOT NULL AND cp.ID_ORDEN_SERVICIO = " + this.idOrden);
 		
