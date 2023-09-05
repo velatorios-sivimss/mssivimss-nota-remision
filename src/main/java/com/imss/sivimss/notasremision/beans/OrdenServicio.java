@@ -306,6 +306,9 @@ public class OrdenServicio {
 		envioDatos.put("condicion", condicion.toString());
 		envioDatos.put("tipoReporte", reporteDto.getTipoReporte());
 		envioDatos.put("rutaNombreReporte", nombrePdfReportes);
+		if (reporteDto.getTipoReporte().equals("xls")) {
+			envioDatos.put("IS_IGNORE_PAGINATION", true);
+		}
 		
 		return envioDatos;
 	}
