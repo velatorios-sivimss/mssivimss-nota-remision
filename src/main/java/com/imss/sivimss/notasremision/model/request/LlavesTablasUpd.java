@@ -11,11 +11,13 @@ import lombok.Setter;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class LlavesTablasUpd {
-	
+
 	private Integer idTipoPrevision;
-	private Boolean isContratante;
+	private Integer idContratante;
 	private Integer idConvenio;
-    private Integer idContratantePaquete;
-    private Integer idPersona;
-	
+	private Integer idContratantePaquete;
+	private Integer idPersona;
+	private Integer idTipoOrden;
+	private Integer idConvenioSFPA;
+
 }

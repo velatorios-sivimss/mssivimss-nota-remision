@@ -133,15 +133,21 @@ public class NotaRemision {
 
 	public DatosRequest obtenTipoPrevision(DatosRequest request) throws UnsupportedEncodingException {
 		StringBuilder query = new StringBuilder(
-				"SELECT ID_TIPO_PREVISION AS idTipoPrevision, con.ID_CONTRATANTE AS idContratante, \n");
-		query.append(
-				"cnv.ID_CONVENIO_PF AS idConvenio, cpc.ID_CONTRA_PAQ_CONVENIO_PF  AS idContratantePaquete, fin.ID_PERSONA AS idPersona \n");
-		query.append("FROM SVC_ORDEN_SERVICIO os \n");
-		query.append(" LEFT JOIN SVT_CONTRATANTE_PAQUETE_CONVENIO_PF cpc ON cpc.ID_CONTRATANTE = os.ID_CONTRATANTE \n");
-		query.append("LEFT JOIN SVT_CONVENIO_PF cnv ON cnv.ID_CONVENIO_PF = cpc.ID_CONVENIO_PF \n");
-		query.append("LEFT JOIN SVC_FINADO fin ON fin.ID_ORDEN_SERVICIO = os.ID_ORDEN_SERVICIO \n");
-		query.append("LEFT JOIN SVC_CONTRATANTE con ON con.ID_PERSONA = fin.ID_PERSONA \n");
-		query.append("WHERE os.ID_ORDEN_SERVICIO = " + this.idOrden);
+				"SELECT cnv.ID_TIPO_PREVISION AS idTipoPrevision, con.ID_CONTRATANTE AS idContratante,  cnv.ID_CONVENIO_PF AS idConvenio,"
+						+
+						" cpc.ID_CONTRA_PAQ_CONVENIO_PF  AS idContratantePaquete," +
+						" fin.ID_PERSONA AS idPersona,");
+		query.append(" fin.ID_TIPO_ORDEN AS idTipoOrden, sps.ID_PLAN_SFPA AS idConvenioSFPA");
+		query.append(" FROM SVC_ORDEN_SERVICIO os \n");
+		query.append(" LEFT JOIN SVC_FINADO fin ON fin.ID_ORDEN_SERVICIO = os.ID_ORDEN_SERVICIO \n");
+		query.append(" LEFT JOIN SVT_CONVENIO_PF cnv ON cnv.ID_CONVENIO_PF = fin.ID_CONTRATO_PREVISION \n");
+		query.append(" LEFT JOIN SVT_CONTRATANTE_PAQUETE_CONVENIO_PF cpc ON cpc.ID_CONVENIO_PF = cnv.ID_CONVENIO_PF\n");
+		query.append(" LEFT JOIN SVT_PLAN_SFPA sps ON sps.ID_PLAN_SFPA = fin.ID_CONTRATO_PREVISION_PA \n");
+		query.append(" LEFT JOIN SVC_CONTRATANTE con ON con.ID_PERSONA = fin.ID_PERSONA");
+		query.append(" WHERE fin.ID_TIPO_ORDEN IN (2,4) ");
+		query.append(" AND os.ID_ESTATUS_ORDEN_SERVICIO=2 ");
+		query.append(" AND os.ID_ORDEN_SERVICIO = " + this.idOrden);
+		query.append(" GROUP BY os.ID_ORDEN_SERVICIO");
 		logg.info(query.toString());
 		String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes("UTF-8"));
 		request.getDatos().put(AppConstantes.QUERY, encoded);
@@ -153,24 +159,35 @@ public class NotaRemision {
 		Map<String, Object> parametro = new HashMap<>();
 
 		StringBuilder query = new StringBuilder("");
-		if (llavesTablasUpd.getIsContratante()) {
+		Integer tipoOrden = llavesTablasUpd.getIdTipoOrden();
+
+		if (tipoOrden == 2 && llavesTablasUpd.getIdConvenio() > 0) {
 			query.append(
-					"UPDATE SVT_CONVENIO_PF SET ID_ESTATUS_CONVENIO = 4, ID_USUARIO_MODIFICA = " + this.idUsuarioAlta);
+					"UPDATE SVT_CONVENIO_PF SET ID_ESTATUS_CONVENIO = 4, ID_USUARIO_MODIFICA = "
+							+ this.idUsuarioAlta);
 			query.append(", FEC_ACTUALIZACION = CURRENT_TIMESTAMP() WHERE ID_CONVENIO_PF = "
 					+ llavesTablasUpd.getIdConvenio() + ";$$");
 			query.append("UPDATE SVT_CONTRATANTE_PAQUETE_CONVENIO_PF SET IND_ACTIVO = 0, ID_USUARIO_MODIFICA = "
 					+ this.idUsuarioAlta);
 			query.append(", FEC_ACTUALIZACION = CURRENT_TIMESTAMP() WHERE ID_CONTRA_PAQ_CONVENIO_PF  = "
 					+ llavesTablasUpd.getIdContratantePaquete() + ";$$");
+
+			if (llavesTablasUpd.getIdTipoPrevision() == 1) {
+				query.append(
+						"UPDATE SVT_CONTRATANTE_BENEFICIARIOS SET IND_SINIESTROS = 1, IND_ACTIVO = 0, ID_USUARIO_MODIFICA = "
+								+ this.idUsuarioAlta);
+				query.append(", FEC_ACTUALIZACION = CURRENT_TIMESTAMP() WHERE ID_CONTRA_PAQ_CONVENIO_PF  = "
+						+ llavesTablasUpd.getIdContratantePaquete());
+				query.append(" AND ID_PERSONA = " + llavesTablasUpd.getIdPersona() + ";$$");
+			}
+
+		} else if (tipoOrden == 4) {
+			query.append("update SVT_PLAN_SFPA SET ID_ESTATUS_PLAN_SFPA=4 ,");
+			query.append(" ID_USUARIO_MODIFICA=" + this.idUsuarioAlta);
+			query.append("FEC_ACTUALIZACION = CURRENT_TIMESTAMP() ");
+			query.append(" WHERE ID_PLAN_SFPA =" + llavesTablasUpd.getIdConvenioSFPA() + ";$$");
 		}
-		if (llavesTablasUpd.getIdTipoPrevision() == 1) {
-			query.append(
-					"UPDATE SVT_CONTRATANTE_BENEFICIARIOS SET IND_SINIESTROS = 1, IND_ACTIVO = 0, ID_USUARIO_MODIFICA = "
-							+ this.idUsuarioAlta);
-			query.append(", FEC_ACTUALIZACION = CURRENT_TIMESTAMP() WHERE ID_CONTRA_PAQ_CONVENIO_PF  = "
-					+ llavesTablasUpd.getIdContratantePaquete());
-			query.append(" AND ID_PERSONA = " + llavesTablasUpd.getIdPersona() + ";$$");
-		}
+
 		logg.info(query.toString());
 		String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes("UTF-8"));
 		parametro.put(AppConstantes.QUERY, encoded);
@@ -185,7 +202,9 @@ public class NotaRemision {
 		Map<String, Object> parametro = new HashMap<>();
 
 		StringBuilder query = new StringBuilder("");
-		if (llavesTablasUpd.getIsContratante()) {
+		Integer tipoOrden = llavesTablasUpd.getIdTipoOrden();
+
+		if (tipoOrden == 2 && llavesTablasUpd.getIdContratante() > 0) {
 			query.append("UPDATE SVT_CONVENIO_PF SET ID_ESTATUS_CONVENIO = 2, ID_USUARIO_MODIFICA = "
 					+ this.idUsuarioModifica);
 			query.append(", FEC_ACTUALIZACION = CURRENT_TIMESTAMP() WHERE ID_CONVENIO_PF = "
@@ -194,13 +213,19 @@ public class NotaRemision {
 					+ this.idUsuarioModifica);
 			query.append(", FEC_ACTUALIZACION = CURRENT_TIMESTAMP() WHERE ID_CONTRA_PAQ_CONVENIO_PF  = "
 					+ llavesTablasUpd.getIdContratantePaquete() + ";$$");
-		} else if (llavesTablasUpd.getIdTipoPrevision() == 1) {
-			query.append(
-					"UPDATE SVT_CONTRATANTE_BENEFICIARIOS SET IND_SINIESTROS = 0, IND_ACTIVO = 1, ID_USUARIO_MODIFICA = "
-							+ this.idUsuarioModifica);
-			query.append(", FEC_ACTUALIZACION = CURRENT_TIMESTAMP() WHERE ID_CONTRA_PAQ_CONVENIO_PF  = "
-					+ llavesTablasUpd.getIdContratantePaquete());
-			query.append(" AND ID_PERSONA = " + llavesTablasUpd.getIdPersona() + ";$$");
+			if (llavesTablasUpd.getIdTipoPrevision() == 1) {
+				query.append(
+						"UPDATE SVT_CONTRATANTE_BENEFICIARIOS SET IND_SINIESTROS = 0, IND_ACTIVO = 1, ID_USUARIO_MODIFICA = "
+								+ this.idUsuarioModifica);
+				query.append(", FEC_ACTUALIZACION = CURRENT_TIMESTAMP() WHERE ID_CONTRA_PAQ_CONVENIO_PF  = "
+						+ llavesTablasUpd.getIdContratantePaquete());
+				query.append(" AND ID_PERSONA = " + llavesTablasUpd.getIdPersona() + ";$$");
+			}
+		} else if (tipoOrden == 4) {
+			query.append("update SVT_PLAN_SFPA SET ID_ESTATUS_PLAN_SFPA=4 ,");
+			query.append(" ID_USUARIO_MODIFICA=" + this.idUsuarioAlta);
+			query.append("FEC_ACTUALIZACION = CURRENT_TIMESTAMP() ");
+			query.append(" WHERE ID_PLAN_SFPA =" + llavesTablasUpd.getIdConvenioSFPA() + ";$$");
 		}
 
 		logg.info(query.toString());

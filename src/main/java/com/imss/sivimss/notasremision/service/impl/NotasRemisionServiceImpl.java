@@ -38,81 +38,84 @@ import com.imss.sivimss.notasremision.util.MensajeResponseUtil;
 
 @Service
 public class NotasRemisionServiceImpl implements NotasRemisionService {
-	
+
 	@Value("${endpoints.dominio}")
 	private String urlDominioGenerico;
-	
+
 	private static final String PAGINADO = "/paginado";
-	
+
 	private static final String CONSULTA = "/consulta";
-	
+
 	private static final String ACTUALIZAR = "/actualizar";
-	
+
 	private static final String CREAR = "/crear";
-	
+
 	private static final String MULTIPLE = "/insertarMultiple";
-	
+
 	@Value("${endpoints.generico-reportes}")
 	private String urlReportes;
-	
+
 	@Value("${formato_fecha}")
 	private String formatoFecha;
-	
+
 	private static final String NOMBREPDFNOTAREM = "reportes/generales/FormatoNotaRemision.jrxml";
-	
+
 	private static final String NOMBREPDFREPORTE = "reportes/generales/ReporteODSNotas.jrxml";
-	
+
 	private static final String INFONOENCONTRADA = "45";
-	
+
 	private static final String ERROR_DESCARGA = "64";
-	
+
 	private static final String CONCLUIDA = "6";
-	
+
 	private static final String GENERADA = "2";
-	
+
 	private static final String ALTA = "alta";
 	private static final String BAJA = "baja";
-	
+
 	@Autowired
 	private ProviderServiceRestTemplate providerRestTemplate;
 
 	@Autowired
 	private ModelMapper modelMapper;
-	
+
 	@Autowired
 	private LogUtil logUtil;
-	
+
 	private static final Logger log = LoggerFactory.getLogger(NotasRemisionServiceImpl.class);
 
 	@Override
 	public Response<?> consultarODS(DatosRequest request, Authentication authentication) throws IOException {
 		Gson gson = new Gson();
 		OrdenServicio ordenServicio = new OrdenServicio();
-		
+
 		String datosJson = String.valueOf(authentication.getPrincipal());
 		BusquedaDto busqueda = gson.fromJson(datosJson, BusquedaDto.class);
-		
-        try {
-		    return providerRestTemplate.consumirServicio(ordenServicio.buscarODS(request, busqueda, formatoFecha).getDatos(), urlDominioGenerico + PAGINADO, 
-				authentication);
-        } catch (Exception e) {
-        	log.error(e.getMessage());
-        	logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(), this.getClass().getPackage().toString(), e.getMessage(), CONSULTA, authentication);
+
+		try {
+			return providerRestTemplate.consumirServicio(
+					ordenServicio.buscarODS(request, busqueda, formatoFecha).getDatos(), urlDominioGenerico + PAGINADO,
+					authentication);
+		} catch (Exception e) {
+			log.error(e.getMessage());
+			logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(),
+					this.getClass().getPackage().toString(), e.getMessage(), CONSULTA, authentication);
 			return null;
-        }
+		}
 	}
-	
+
 	@Override
 	public Response<?> listadoODS(DatosRequest request, Authentication authentication) throws IOException {
 		Gson gson = new Gson();
 		OrdenServicio ordenServicio = new OrdenServicio();
 		List<ODSGeneradaResponse> ODSResponse;
-		
+
 		String datosJson = String.valueOf(request.getDatos().get(AppConstantes.DATOS));
 		BusquedaDto busqueda = gson.fromJson(datosJson, BusquedaDto.class);
-		Response<?> response = providerRestTemplate.consumirServicio(ordenServicio.listadoODS(busqueda).getDatos(), urlDominioGenerico + CONSULTA, 
+		Response<?> response = providerRestTemplate.consumirServicio(ordenServicio.listadoODS(busqueda).getDatos(),
+				urlDominioGenerico + CONSULTA,
 				authentication);
-		
+
 		if (response.getCodigo() == 200) {
 			ODSResponse = Arrays.asList(modelMapper.map(response.getDatos(), ODSGeneradaResponse[].class));
 			response.setDatos(ConvertirGenerico.convertInstanceOfObject(ODSResponse));
@@ -123,50 +126,52 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 	@Override
 	public Response<?> buscarODS(DatosRequest request, Authentication authentication) throws IOException {
 		Gson gson = new Gson();
-		Response<?> response=new Response(false,200,"Exito");
+		Response<?> response = new Response(false, 200, "Exito");
 		try {
 			String datosJson = String.valueOf(request.getDatos().get(AppConstantes.DATOS));
 			BusquedaDto busqueda = gson.fromJson(datosJson, BusquedaDto.class);
 			OrdenServicio ordenServicio = new OrdenServicio();
-			
-			response = providerRestTemplate.consumirServicio(ordenServicio.buscarODS(request, busqueda, formatoFecha).getDatos(), urlDominioGenerico + PAGINADO,
+
+			response = providerRestTemplate.consumirServicio(
+					ordenServicio.buscarODS(request, busqueda, formatoFecha).getDatos(), urlDominioGenerico + PAGINADO,
 					authentication);
 			ArrayList datos1 = (ArrayList) ((LinkedHashMap) response.getDatos()).get("content");
 			if (datos1.isEmpty()) {
 				response.setMensaje(INFONOENCONTRADA);
-		    }
-			
-		
-			
-		}catch(Exception e){
+			}
+
+		} catch (Exception e) {
 			log.info(e.getMessage());
 		}
 		return response;
-		
+
 	}
 
 	@Override
 	public Response<?> detalleODS(DatosRequest request, Authentication authentication) throws IOException {
-        OrdenServicio ordenServicio = new OrdenServicio();
-		
-        try {
-		    return providerRestTemplate.consumirServicio(ordenServicio.detalleODS(request).getDatos(), urlDominioGenerico + CONSULTA, 
-				authentication);
-        } catch (Exception e) {
-		    log.error(e.getMessage());
-	        logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(), this.getClass().getPackage().toString(), e.getMessage(), CONSULTA, authentication);
+		OrdenServicio ordenServicio = new OrdenServicio();
+
+		try {
+			return providerRestTemplate.consumirServicio(ordenServicio.detalleODS(request).getDatos(),
+					urlDominioGenerico + CONSULTA,
+					authentication);
+		} catch (Exception e) {
+			log.error(e.getMessage());
+			logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(),
+					this.getClass().getPackage().toString(), e.getMessage(), CONSULTA, authentication);
 			return null;
-	    }
+		}
 	}
-	
+
 	@Override
 	public Response<?> existeNotaRem(DatosRequest request, Authentication authentication) throws IOException {
-        OrdenServicio ordenServicio = new OrdenServicio();
-		
-		return providerRestTemplate.consumirServicio(ordenServicio.existeNotaRem(request).getDatos(), urlDominioGenerico + CONSULTA, 
+		OrdenServicio ordenServicio = new OrdenServicio();
+
+		return providerRestTemplate.consumirServicio(ordenServicio.existeNotaRem(request).getDatos(),
+				urlDominioGenerico + CONSULTA,
 				authentication);
 	}
-	
+
 	@Override
 	public Response<?> detalleNotaRem(DatosRequest request, Authentication authentication) throws IOException {
 		Gson gson = new Gson();
@@ -176,18 +181,20 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		if (notaDto.getIdNota() == null) {
 			throw new BadRequestException(HttpStatus.BAD_REQUEST, "Informacion incompleta");
 		}
-		NotaRemision notaRemision  = new NotaRemision(notaDto.getIdNota(), notaDto.getIdOrden());
-		
+		NotaRemision notaRemision = new NotaRemision(notaDto.getIdNota(), notaDto.getIdOrden());
+
 		try {
-		    return providerRestTemplate.consumirServicio(notaRemision.detalleNotaRem(request, formatoFecha).getDatos(), urlDominioGenerico + CONSULTA, 
-				authentication);
+			return providerRestTemplate.consumirServicio(notaRemision.detalleNotaRem(request, formatoFecha).getDatos(),
+					urlDominioGenerico + CONSULTA,
+					authentication);
 		} catch (Exception e) {
 			log.error(e.getMessage());
-	       	logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(), this.getClass().getPackage().toString(), e.getMessage(), CONSULTA, authentication);
+			logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(),
+					this.getClass().getPackage().toString(), e.getMessage(), CONSULTA, authentication);
 			return null;
-	    }
+		}
 	}
-	
+
 	@Override
 	public Response<?> serviciosNotaRem(DatosRequest request, Authentication authentication) throws IOException {
 		Gson gson = new Gson();
@@ -197,9 +204,10 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		if (notaDto.getIdOrden() == null) {
 			throw new BadRequestException(HttpStatus.BAD_REQUEST, "Informacion incompleta");
 		}
-		NotaRemision notaRemision  = new NotaRemision(notaDto.getIdNota(), notaDto.getIdOrden());
-		
-		return providerRestTemplate.consumirServicio(notaRemision.serviciosNotaRem(request).getDatos(), urlDominioGenerico + CONSULTA, 
+		NotaRemision notaRemision = new NotaRemision(notaDto.getIdNota(), notaDto.getIdOrden());
+
+		return providerRestTemplate.consumirServicio(notaRemision.serviciosNotaRem(request).getDatos(),
+				urlDominioGenerico + CONSULTA,
 				authentication);
 	}
 
@@ -213,35 +221,46 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		if (notaDto.getIdOrden() == null) {
 			throw new BadRequestException(HttpStatus.BAD_REQUEST, "Informacion incompleta");
 		}
-	    try {
-		   OrdenServicio ordenServicio = new OrdenServicio();
-		   ordenServicio.setId(notaDto.getIdOrden());
-		   // Actualiza estatus de la ODS
-		   providerRestTemplate.consumirServicio(ordenServicio.actualizaEstatus(CONCLUIDA).getDatos(), urlDominioGenerico + ACTUALIZAR, authentication);
-	
-		   NotaRemision notaRemision  = new NotaRemision(0, notaDto.getIdOrden());
-		   notaRemision.setIdUsuarioAlta(usuarioDto.getIdUsuario());
-		   
-		   // Actualizar estatus de convenio
-		   Response<?> request1 = providerRestTemplate.consumirServicio(notaRemision.obtenTipoPrevision(request).getDatos(), urlDominioGenerico + CONSULTA, authentication);
-		   ArrayList<LinkedHashMap> datos1 = (ArrayList) request1.getDatos();
-		   LlavesTablasUpd llavesTablasUpd = new LlavesTablasUpd((Integer)datos1.get(0).get("idTipoPrevision"), datos1.get(0).get("idContratante")!=null, 
-				   (Integer)datos1.get(0).get("idConvenio"), (Integer)datos1.get(0).get("idContratantePaquete"), (Integer)datos1.get(0).get("idPersona"));
-		  
-		   providerRestTemplate.consumirServicio(notaRemision.actualizaEstatusCrear(llavesTablasUpd).getDatos(), urlDominioGenerico + MULTIPLE, authentication);
-		   
-		   // Registro de nota de remisión
-		   request1 = providerRestTemplate.consumirServicio(notaRemision.ultimoFolioNota(request).getDatos(), urlDominioGenerico + CONSULTA,
-				authentication);
-		   datos1 = (ArrayList) request1.getDatos();
-		   String ultimoFolio = datos1.get(0).get("folio").toString();
+		try {
+			OrdenServicio ordenServicio = new OrdenServicio();
+			ordenServicio.setId(notaDto.getIdOrden());
+			// Actualiza estatus de la ODS
+			providerRestTemplate.consumirServicio(ordenServicio.actualizaEstatus(CONCLUIDA).getDatos(),
+					urlDominioGenerico + ACTUALIZAR, authentication);
 
-		   return providerRestTemplate.consumirServicio(notaRemision.generarNotaRem(ultimoFolio).getDatos(), urlDominioGenerico + CREAR, authentication);
+			NotaRemision notaRemision = new NotaRemision(0, notaDto.getIdOrden());
+			notaRemision.setIdUsuarioAlta(usuarioDto.getIdUsuario());
+
+			// Actualizar estatus de convenio
+			Response<?> request1 = providerRestTemplate.consumirServicio(
+					notaRemision.obtenTipoPrevision(request).getDatos(), urlDominioGenerico + CONSULTA, authentication);
+			ArrayList<LinkedHashMap> datos1 = (ArrayList) request1.getDatos();
+			LlavesTablasUpd llavesTablasUpd = new LlavesTablasUpd((Integer) datos1.get(0).get("idTipoPrevision"),
+					(Integer) datos1.get(0).get("idContratante"),
+					(Integer) datos1.get(0).get("idConvenio"),
+					(Integer) datos1.get(0).get("idContratantePaquete"),
+					(Integer) datos1.get(0).get("idPersona"),
+					(Integer) datos1.get(0).get("idTipoOrden"),
+					(Integer) datos1.get(0).get("idConvenioSFPA"));
+
+			providerRestTemplate.consumirServicio(notaRemision.actualizaEstatusCrear(llavesTablasUpd).getDatos(),
+					urlDominioGenerico + MULTIPLE, authentication);
+
+			// Registro de nota de remisión
+			request1 = providerRestTemplate.consumirServicio(notaRemision.ultimoFolioNota(request).getDatos(),
+					urlDominioGenerico + CONSULTA,
+					authentication);
+			datos1 = (ArrayList) request1.getDatos();
+			String ultimoFolio = datos1.get(0).get("folio").toString();
+
+			return providerRestTemplate.consumirServicio(notaRemision.generarNotaRem(ultimoFolio).getDatos(),
+					urlDominioGenerico + CREAR, authentication);
 		} catch (Exception e) {
 			log.error(e.getMessage());
-        	logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(), this.getClass().getPackage().toString(), e.getMessage(), ALTA, authentication);
+			logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(),
+					this.getClass().getPackage().toString(), e.getMessage(), ALTA, authentication);
 			return null;
-        }
+		}
 	}
 
 	@Override
@@ -256,31 +275,41 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		OrdenServicio ordenServicio = new OrdenServicio();
 		ordenServicio.setId(notaDto.getIdOrden());
 		// Se regresa el estatus de la ODS a generada
-		providerRestTemplate.consumirServicio(ordenServicio.actualizaEstatus(GENERADA).getDatos(), urlDominioGenerico + ACTUALIZAR, authentication);
-		
+		providerRestTemplate.consumirServicio(ordenServicio.actualizaEstatus(GENERADA).getDatos(),
+				urlDominioGenerico + ACTUALIZAR, authentication);
+
 		UsuarioDto usuarioDto = gson.fromJson((String) authentication.getPrincipal(), UsuarioDto.class);
-		NotaRemision notaRemision  = new NotaRemision(notaDto.getIdNota(), notaDto.getIdOrden());
+		NotaRemision notaRemision = new NotaRemision(notaDto.getIdNota(), notaDto.getIdOrden());
 		notaRemision.setMotivo(notaDto.getMotivo());
 		notaRemision.setIdUsuarioModifica(usuarioDto.getIdUsuario());
-		
+
 		// Actualizar estatus de convenio
-		Response<?> request1 = providerRestTemplate.consumirServicio(notaRemision.obtenTipoPrevision(request).getDatos(), urlDominioGenerico + CONSULTA, authentication);
+		Response<?> request1 = providerRestTemplate.consumirServicio(
+				notaRemision.obtenTipoPrevision(request).getDatos(), urlDominioGenerico + CONSULTA, authentication);
 		ArrayList<LinkedHashMap> datos1 = (ArrayList) request1.getDatos();
-		LlavesTablasUpd llavesTablasUpd = new LlavesTablasUpd((Integer)datos1.get(0).get("idTipoPrevision"), datos1.get(0).get("idContratante")!=null, 
-				   (Integer)datos1.get(0).get("idConvenio"), (Integer)datos1.get(0).get("idContratantePaquete"), (Integer)datos1.get(0).get("idPersona"));
-		
+		LlavesTablasUpd llavesTablasUpd = new LlavesTablasUpd((Integer) datos1.get(0).get("idTipoPrevision"),
+				(Integer) datos1.get(0).get("idContratante"),
+				(Integer) datos1.get(0).get("idConvenio"),
+				(Integer) datos1.get(0).get("idContratantePaquete"),
+				(Integer) datos1.get(0).get("idPersona"),
+				(Integer) datos1.get(0).get("idTipoOrden"),
+				(Integer) datos1.get(0).get("idConvenioSFPA"));
+
 		// Cancelación de la nota de remisión
-		providerRestTemplate.consumirServicio(notaRemision.actualizaEstatusCancelar(llavesTablasUpd).getDatos(), urlDominioGenerico + MULTIPLE, authentication);
-		
+		providerRestTemplate.consumirServicio(notaRemision.actualizaEstatusCancelar(llavesTablasUpd).getDatos(),
+				urlDominioGenerico + MULTIPLE, authentication);
+
 		try {
-		    return providerRestTemplate.consumirServicio(notaRemision.cancelarNotaRem().getDatos(), urlDominioGenerico + ACTUALIZAR, authentication);
+			return providerRestTemplate.consumirServicio(notaRemision.cancelarNotaRem().getDatos(),
+					urlDominioGenerico + ACTUALIZAR, authentication);
 		} catch (Exception e) {
 			log.error(e.getMessage());
-        	logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(), this.getClass().getPackage().toString(), e.getMessage(), BAJA, authentication);
+			logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(),
+					this.getClass().getPackage().toString(), e.getMessage(), BAJA, authentication);
 			return null;
-        }
+		}
 	}
-	
+
 	@Override
 	public Response<?> descargarNotaRem(DatosRequest request, Authentication authentication) throws IOException {
 		Gson gson = new Gson();
@@ -290,14 +319,15 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		if (notaDto.getIdNota() == null || notaDto.getIdOrden() == null) {
 			throw new BadRequestException(HttpStatus.BAD_REQUEST, "Informacion incompleta");
 		}
-		
-		NotaRemision notaRemision  = new NotaRemision(notaDto.getIdNota(), notaDto.getIdOrden());
+
+		NotaRemision notaRemision = new NotaRemision(notaDto.getIdNota(), notaDto.getIdOrden());
 		FormatoNotaDto formatoNotaDto = new FormatoNotaDto();
 		if (notaDto.getIdNota() > 0) {
-			Response<?> response1 = providerRestTemplate.consumirServicio(notaRemision.detalleNotaRem(request, formatoFecha).getDatos(), urlDominioGenerico + CONSULTA, 
+			Response<?> response1 = providerRestTemplate.consumirServicio(
+					notaRemision.detalleNotaRem(request, formatoFecha).getDatos(), urlDominioGenerico + CONSULTA,
 					authentication);
 			ArrayList<LinkedHashMap> datos1 = (ArrayList) response1.getDatos();
-			
+
 			formatoNotaDto.setTipoReporte(notaDto.getTipoReporte());
 			if (datos1.size() > 0) {
 				formatoNotaDto.setNomVelatorio(datos1.get(0).get("nomVelatorio").toString());
@@ -318,19 +348,19 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		}
 		Map<String, Object> envioDatos = notaRemision.imprimirNotaRem(formatoNotaDto, NOMBREPDFNOTAREM);
 		Response<?> response = providerRestTemplate.consumirServicioReportes(envioDatos, urlReportes, authentication);
-		
+
 		return MensajeResponseUtil.mensajeConsultaResponse(response, ERROR_DESCARGA);
 	}
-	
+
 	@Override
 	public Response<?> descargarDocumento(DatosRequest request, Authentication authentication) throws IOException {
 		Gson gson = new Gson();
 		String datosJson = String.valueOf(request.getDatos().get(AppConstantes.DATOS));
 		BusquedaDto reporteDto = gson.fromJson(datosJson, BusquedaDto.class);
-		
+
 		Map<String, Object> envioDatos = new OrdenServicio().generarReporte(reporteDto, NOMBREPDFREPORTE, formatoFecha);
-		Response<?> response =  providerRestTemplate.consumirServicioReportes(envioDatos, urlReportes, authentication);
-	
+		Response<?> response = providerRestTemplate.consumirServicioReportes(envioDatos, urlReportes, authentication);
+
 		return MensajeResponseUtil.mensajeConsultaResponse(response, ERROR_DESCARGA);
 	}
 
