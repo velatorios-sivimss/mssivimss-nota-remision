@@ -6,6 +6,9 @@ import java.util.Map;
 
 import javax.xml.bind.DatatypeConverter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.imss.sivimss.notasremision.util.QueryHelper;
 import com.imss.sivimss.notasremision.model.request.FormatoNotaDto;
 import com.imss.sivimss.notasremision.model.request.LlavesTablasUpd;
@@ -32,6 +35,7 @@ public class NotaRemision {
 	private String motivo;
 	private Integer idUsuarioAlta;
 	private Integer idUsuarioModifica;
+	private static final Logger logg = LoggerFactory.getLogger(NotaRemision.class);
 
 	public NotaRemision(Integer id, Integer idOrden) {
 		this.id = id;
@@ -40,7 +44,7 @@ public class NotaRemision {
 
 	public DatosRequest ultimoFolioNota(DatosRequest request) throws UnsupportedEncodingException {
 		String query = "SELECT IFNULL(MAX(NUM_FOLIO),0) AS folio FROM SVT_NOTA_REMISION";
-
+		logg.info(query);
 		String encoded = DatatypeConverter.printBase64Binary(query.getBytes("UTF-8"));
 		request.getDatos().put(AppConstantes.QUERY, encoded);
 		return request;
@@ -63,7 +67,7 @@ public class NotaRemision {
 		query.append("JOIN SVC_DETALLE_CARAC_PRESUP dcp ON (cp.ID_CARAC_PRESUPUESTO = dcp.ID_CARAC_PRESUPUESTO) \n");
 		query.append("JOIN SVT_SERVICIO sv ON (dcp.ID_SERVICIO = sv.ID_SERVICIO) \n");
 		query.append("WHERE dcp.ID_SERVICIO IS NOT NULL AND cp.ID_ORDEN_SERVICIO = " + this.idOrden);
-
+		logg.info(query.toString());
 		String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes("UTF-8"));
 		request.getDatos().put(AppConstantes.QUERY, encoded);
 		return request;
@@ -101,7 +105,7 @@ public class NotaRemision {
 		query.append("LEFT JOIN SVT_CONVENIO_PF cvn ON (cpcf.ID_CONVENIO_PF = cvn.ID_CONVENIO_PF) \n");
 		query.append("LEFT JOIN SVT_DOMICILIO domc ON (con.ID_DOMICILIO = domc.ID_DOMICILIO) \n");
 		query.append("WHERE nr.ID_NOTAREMISION = " + this.id);
-		System.out.print(query.toString());
+		logg.info(query.toString());
 		String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes("UTF-8"));
 		request.getDatos().remove("idNota");
 		request.getDatos().put(AppConstantes.QUERY, encoded);
@@ -118,7 +122,7 @@ public class NotaRemision {
 		q.agregarParametroValues("ID_ESTATUS", "2");
 		q.agregarParametroValues("FEC_ALTA", "CURRENT_TIMESTAMP()");
 		q.agregarParametroValues("ID_USUARIO_ALTA", "'" + this.idUsuarioAlta + "'");
-
+		logg.info(q.toString());
 		String query = q.obtenerQueryInsertar();
 		String encoded = DatatypeConverter.printBase64Binary(query.getBytes("UTF-8"));
 		parametro.put(AppConstantes.QUERY, encoded);
@@ -138,7 +142,7 @@ public class NotaRemision {
 		query.append("LEFT JOIN SVC_FINADO fin ON fin.ID_ORDEN_SERVICIO = os.ID_ORDEN_SERVICIO \n");
 		query.append("LEFT JOIN SVC_CONTRATANTE con ON con.ID_PERSONA = fin.ID_PERSONA \n");
 		query.append("WHERE os.ID_ORDEN_SERVICIO = " + this.idOrden);
-
+		logg.info(query.toString());
 		String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes("UTF-8"));
 		request.getDatos().put(AppConstantes.QUERY, encoded);
 		return request;
@@ -167,7 +171,7 @@ public class NotaRemision {
 					+ llavesTablasUpd.getIdContratantePaquete());
 			query.append(" AND ID_PERSONA = " + llavesTablasUpd.getIdPersona() + ";$$");
 		}
-
+		logg.info(query.toString());
 		String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes("UTF-8"));
 		parametro.put(AppConstantes.QUERY, encoded);
 		parametro.put("separador", "$$");
@@ -199,6 +203,7 @@ public class NotaRemision {
 			query.append(" AND ID_PERSONA = " + llavesTablasUpd.getIdPersona() + ";$$");
 		}
 
+		logg.info(query.toString());
 		String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes("UTF-8"));
 		parametro.put(AppConstantes.QUERY, encoded);
 		parametro.put("separador", "$$");
@@ -216,7 +221,7 @@ public class NotaRemision {
 		q.agregarParametroValues("DES_MOTIVO", "'" + this.motivo + "'");
 		q.agregarParametroValues("ID_USUARIO_MODIFICA", "'" + this.idUsuarioModifica + "'");
 		q.addWhere("ID_NOTAREMISION = " + this.id);
-
+		logg.info(q.toString());
 		String query = q.obtenerQueryActualizar();
 		String encoded = DatatypeConverter.printBase64Binary(query.getBytes("UTF-8"));
 		parametro.put(AppConstantes.QUERY, encoded);
