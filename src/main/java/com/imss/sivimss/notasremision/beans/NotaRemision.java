@@ -184,7 +184,7 @@ public class NotaRemision {
 		} else if (tipoOrden == 4) {
 			query.append("update SVT_PLAN_SFPA SET ID_ESTATUS_PLAN_SFPA=4 ,");
 			query.append(" ID_USUARIO_MODIFICA=" + this.idUsuarioAlta);
-			query.append(" FEC_ACTUALIZACION = CURRENT_TIMESTAMP() ");
+			query.append(", FEC_ACTUALIZACION = CURRENT_TIMESTAMP() ");
 			query.append("  WHERE ID_PLAN_SFPA =" + llavesTablasUpd.getIdConvenioSFPA() + ";$$");
 		}
 
@@ -224,7 +224,7 @@ public class NotaRemision {
 		} else if (tipoOrden == 4) {
 			query.append("update SVT_PLAN_SFPA SET ID_ESTATUS_PLAN_SFPA=4 ,");
 			query.append(" ID_USUARIO_MODIFICA=" + this.idUsuarioAlta);
-			query.append(" FEC_ACTUALIZACION = CURRENT_TIMESTAMP() ");
+			query.append(" , FEC_ACTUALIZACION = CURRENT_TIMESTAMP() ");
 			query.append(" WHERE ID_PLAN_SFPA =" + llavesTablasUpd.getIdConvenioSFPA() + ";$$");
 		}
 
