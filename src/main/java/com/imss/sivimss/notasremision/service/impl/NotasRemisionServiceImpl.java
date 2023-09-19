@@ -214,26 +214,31 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 	@Override
 	public Response<?> generarNotaRem(DatosRequest request, Authentication authentication) throws IOException {
 		Gson gson = new Gson();
-
+		log.info("generando nota de remision");
 		String datosJson = String.valueOf(request.getDatos().get(AppConstantes.DATOS));
 		NotaRemisionDto notaDto = gson.fromJson(datosJson, NotaRemisionDto.class);
 		UsuarioDto usuarioDto = gson.fromJson((String) authentication.getPrincipal(), UsuarioDto.class);
 		if (notaDto.getIdOrden() == null) {
+			log.error("fallo");
 			throw new BadRequestException(HttpStatus.BAD_REQUEST, "Informacion incompleta");
 		}
 		try {
 			OrdenServicio ordenServicio = new OrdenServicio();
 			ordenServicio.setId(notaDto.getIdOrden());
 			// Actualiza estatus de la ODS
+			log.info("actualizando estatus ods");
 			providerRestTemplate.consumirServicio(ordenServicio.actualizaEstatus(CONCLUIDA).getDatos(),
 					urlDominioGenerico + ACTUALIZAR, authentication);
-
+			log.info("ods actualizada");
 			NotaRemision notaRemision = new NotaRemision(0, notaDto.getIdOrden());
 			notaRemision.setIdUsuarioAlta(usuarioDto.getIdUsuario());
 
 			// Actualizar estatus de convenio
+
+			log.info("obteniendo datos tipo prevision y psfpa");
 			Response<?> request1 = providerRestTemplate.consumirServicio(
 					notaRemision.obtenTipoPrevision(request).getDatos(), urlDominioGenerico + CONSULTA, authentication);
+			log.info("informacion extraida");
 			ArrayList<LinkedHashMap> datos1 = (ArrayList) request1.getDatos();
 			LlavesTablasUpd llavesTablasUpd = new LlavesTablasUpd((Integer) datos1.get(0).get("idTipoPrevision"),
 					(Integer) datos1.get(0).get("idContratante"),
@@ -243,18 +248,24 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 					(Integer) datos1.get(0).get("idTipoOrden"),
 					(Integer) datos1.get(0).get("idConvenioSFPA"));
 
+			log.info("extraccion de informacion correcta");
 			providerRestTemplate.consumirServicio(notaRemision.actualizaEstatusCrear(llavesTablasUpd).getDatos(),
 					urlDominioGenerico + MULTIPLE, authentication);
+			log.info("se actualizo en estatus");
 
 			// Registro de nota de remisión
 			request1 = providerRestTemplate.consumirServicio(notaRemision.ultimoFolioNota(request).getDatos(),
 					urlDominioGenerico + CONSULTA,
 					authentication);
+			log.info("se registro la nota de remision");
 			datos1 = (ArrayList) request1.getDatos();
 			String ultimoFolio = datos1.get(0).get("folio").toString();
 
-			return providerRestTemplate.consumirServicio(notaRemision.generarNotaRem(ultimoFolio).getDatos(),
+			Response<?> salida = providerRestTemplate.consumirServicio(
+					notaRemision.generarNotaRem(ultimoFolio).getDatos(),
 					urlDominioGenerico + CREAR, authentication);
+			log.info("{}", salida);
+			return salida;
 		} catch (Exception e) {
 			log.error(e.getMessage());
 			logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(),
