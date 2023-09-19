@@ -167,7 +167,7 @@ public class NotaRemision {
 							+ this.idUsuarioAlta);
 			query.append(", FEC_ACTUALIZACION = CURRENT_TIMESTAMP() WHERE ID_CONVENIO_PF = "
 					+ llavesTablasUpd.getIdConvenio() + ";$$");
-			query.append("UPDATE SVT_CONTRATANTE_PAQUETE_CONVENIO_PF SET IND_ACTIVO = 0, ID_USUARIO_MODIFICA = "
+			query.append(" UPDATE SVT_CONTRATANTE_PAQUETE_CONVENIO_PF SET IND_ACTIVO = 0, ID_USUARIO_MODIFICA = "
 					+ this.idUsuarioAlta);
 			query.append(", FEC_ACTUALIZACION = CURRENT_TIMESTAMP() WHERE ID_CONTRA_PAQ_CONVENIO_PF  = "
 					+ llavesTablasUpd.getIdContratantePaquete() + ";$$");
@@ -184,8 +184,8 @@ public class NotaRemision {
 		} else if (tipoOrden == 4) {
 			query.append("update SVT_PLAN_SFPA SET ID_ESTATUS_PLAN_SFPA=4 ,");
 			query.append(" ID_USUARIO_MODIFICA=" + this.idUsuarioAlta);
-			query.append("FEC_ACTUALIZACION = CURRENT_TIMESTAMP() ");
-			query.append(" WHERE ID_PLAN_SFPA =" + llavesTablasUpd.getIdConvenioSFPA() + ";$$");
+			query.append(" FEC_ACTUALIZACION = CURRENT_TIMESTAMP() ");
+			query.append("  WHERE ID_PLAN_SFPA =" + llavesTablasUpd.getIdConvenioSFPA() + ";$$");
 		}
 
 		logg.info(query.toString());
@@ -224,7 +224,7 @@ public class NotaRemision {
 		} else if (tipoOrden == 4) {
 			query.append("update SVT_PLAN_SFPA SET ID_ESTATUS_PLAN_SFPA=4 ,");
 			query.append(" ID_USUARIO_MODIFICA=" + this.idUsuarioAlta);
-			query.append("FEC_ACTUALIZACION = CURRENT_TIMESTAMP() ");
+			query.append(" FEC_ACTUALIZACION = CURRENT_TIMESTAMP() ");
 			query.append(" WHERE ID_PLAN_SFPA =" + llavesTablasUpd.getIdConvenioSFPA() + ";$$");
 		}
 
