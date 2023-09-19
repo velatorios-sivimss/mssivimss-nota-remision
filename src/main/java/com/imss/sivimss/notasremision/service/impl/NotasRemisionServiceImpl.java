@@ -225,16 +225,9 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		try {
 			OrdenServicio ordenServicio = new OrdenServicio();
 			ordenServicio.setId(notaDto.getIdOrden());
-			// Actualiza estatus de la ODS
-			log.info("actualizando estatus ods");
-			providerRestTemplate.consumirServicio(ordenServicio.actualizaEstatus(CONCLUIDA).getDatos(),
-					urlDominioGenerico + ACTUALIZAR, authentication);
 			log.info("ods actualizada");
 			NotaRemision notaRemision = new NotaRemision(0, notaDto.getIdOrden());
 			notaRemision.setIdUsuarioAlta(usuarioDto.getIdUsuario());
-
-			// Actualizar estatus de convenio
-
 			log.info("obteniendo datos tipo prevision y psfpa");
 			Response<?> request1 = providerRestTemplate.consumirServicio(
 					notaRemision.obtenTipoPrevision(request).getDatos(), urlDominioGenerico + CONSULTA, authentication);
@@ -247,6 +240,13 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 					(Integer) datos1.get(0).get("idPersona"),
 					(Integer) datos1.get(0).get("idTipoOrden"),
 					(Integer) datos1.get(0).get("idConvenioSFPA"));
+
+			// Actualiza estatus de la ODS
+			log.info("actualizando estatus ods");
+			providerRestTemplate.consumirServicio(ordenServicio.actualizaEstatus(CONCLUIDA).getDatos(),
+					urlDominioGenerico + ACTUALIZAR, authentication);
+
+			// Actualizar estatus de convenio
 
 			log.info("extraccion de informacion correcta");
 			providerRestTemplate.consumirServicio(notaRemision.actualizaEstatusCrear(llavesTablasUpd).getDatos(),
