@@ -145,7 +145,7 @@ public class NotaRemision {
 		query.append(" LEFT JOIN SVT_PLAN_SFPA sps ON sps.ID_PLAN_SFPA = fin.ID_CONTRATO_PREVISION_PA \n");
 		query.append(" LEFT JOIN SVC_CONTRATANTE con ON con.ID_PERSONA = fin.ID_PERSONA");
 		query.append(" WHERE fin.ID_TIPO_ORDEN IN (2,4) ");
-		query.append(" AND os.ID_ESTATUS_ORDEN_SERVICIO=2 ");
+		/// query.append(" AND os.ID_ESTATUS_ORDEN_SERVICIO=2 ");
 		query.append(" AND os.ID_ORDEN_SERVICIO = " + this.idOrden);
 		query.append(" GROUP BY os.ID_ORDEN_SERVICIO");
 		logg.info(query.toString());
