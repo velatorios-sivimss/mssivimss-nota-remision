@@ -87,7 +87,7 @@ public class OrdenServicio {
 			query.append(" AND DATE(nr.FEC_ALTA) BETWEEN STR_TO_DATE('" + busqueda.getFecIniODS() + "','" + formatoFecha
 					+ "') AND STR_TO_DATE('" + busqueda.getFecFinODS() + "','" + formatoFecha + "')");
 			busquedaGeneradas.append(query);
-
+			logger.info("busqueda generada");
 			logger.info(busquedaGeneradas.toString());
 			String encoded = DatatypeConverter.printBase64Binary(busquedaGeneradas.toString().getBytes("UTF-8"));
 			request.getDatos().put(AppConstantes.QUERY, encoded);
@@ -99,7 +99,7 @@ public class OrdenServicio {
 			query.append(" AND DATE(nr.FEC_ALTA) BETWEEN STR_TO_DATE('" + busqueda.getFecIniODS() + "','" + formatoFecha
 					+ "') AND STR_TO_DATE('" + busqueda.getFecFinODS() + "','" + formatoFecha + "')");
 			busquedaGeneradas.append(query);
-
+			logger.info("busqueda generada");
 			logger.info(busquedaGeneradas.toString());
 			String encoded = DatatypeConverter.printBase64Binary(busquedaGeneradas.toString().getBytes("UTF-8"));
 			request.getDatos().put(AppConstantes.QUERY, encoded);
@@ -110,7 +110,7 @@ public class OrdenServicio {
 			query.append(" AND DATE(nr.FEC_ALTA) BETWEEN STR_TO_DATE('" + busqueda.getFecIniODS() + "','" + formatoFecha
 					+ "') AND STR_TO_DATE('" + busqueda.getFecFinODS() + "','" + formatoFecha + "')");
 			busquedaGeneradas.append(query);
-
+			logger.info("busqueda generada");
 			logger.info(busquedaGeneradas.toString());
 			String encoded = DatatypeConverter.printBase64Binary(busquedaGeneradas.toString().getBytes("UTF-8"));
 			request.getDatos().put(AppConstantes.QUERY, encoded);
@@ -144,7 +144,7 @@ public class OrdenServicio {
 			queryCompleto.append(" UNION ALL ");
 			queryCompleto.append(busquedaSinNota);
 			queryCompleto.append(" ) datos  ORDER BY datos.id");
-
+			logger.info("busqueda por ODS general");
 			logger.info(queryCompleto.toString());
 			String encoded = DatatypeConverter.printBase64Binary(queryCompleto.toString().getBytes("UTF-8"));
 			request.getDatos().put(AppConstantes.QUERY, encoded);
@@ -239,6 +239,8 @@ public class OrdenServicio {
 		query.append("JOIN SVC_VELATORIO vel ON (vel.ID_VELATORIO = os.ID_VELATORIO) \n");
 		query.append("WHERE os.ID_ESTATUS_ORDEN_SERVICIO = 2 \n");
 		query.append("AND fin.ID_TIPO_ORDEN in(3,4)");
+		logger.info("busqueda cancelada");
+		logger.info(query.toString());
 		return query;
 	}
 
@@ -296,6 +298,9 @@ public class OrdenServicio {
 		query.append("JOIN SVC_VELATORIO vel ON (vel.ID_VELATORIO = os.ID_VELATORIO) \n");
 		query.append("WHERE os.ID_ESTATUS_ORDEN_SERVICIO =2 \n");
 		query.append("AND fin.ID_TIPO_ORDEN in(3,4)");
+
+		logger.info("busqueda sin nota");
+		logger.info(query.toString());
 		return query;
 	}
 
