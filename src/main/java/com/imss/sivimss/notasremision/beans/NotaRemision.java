@@ -161,7 +161,7 @@ public class NotaRemision {
 		StringBuilder query = new StringBuilder("");
 		Integer tipoOrden = llavesTablasUpd.getIdTipoOrden();
 
-		if (tipoOrden == 2 && llavesTablasUpd.getIdConvenio() > 0) {
+		if (tipoOrden == 2) {
 			query.append(
 					"UPDATE SVT_CONVENIO_PF SET ID_ESTATUS_CONVENIO = 4, ID_USUARIO_MODIFICA = "
 							+ this.idUsuarioAlta);
