@@ -57,7 +57,7 @@ public class OrdenServicio {
 		query.append("JOIN SVC_FINADO fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO) \n");
 		query.append("JOIN SVC_VELATORIO vel ON (os.ID_VELATORIO = vel.ID_VELATORIO) \n");
 		query.append("WHERE os.ID_ESTATUS_ORDEN_SERVICIO = 2 ");
-		query.append("AND fin.ID_TIPO_ORDEN in(3,4) ");
+		query.append("AND fin.ID_TIPO_ORDEN in(2,4) ");
 
 		if (busqueda.getIdDelegacion() != null) {
 			query.append(" AND vel.ID_DELEGACION = ").append(busqueda.getIdDelegacion());
@@ -244,7 +244,7 @@ public class OrdenServicio {
 		query.append(
 				" JOIN SVT_NOTA_REMISION nr ON (os.ID_ORDEN_SERVICIO = nr.ID_ORDEN_SERVICIO) AND nr.ID_ESTATUS in (3) ");
 		query.append(" JOIN SVC_VELATORIO vel ON (vel.ID_VELATORIO = os.ID_VELATORIO)");
-		query.append(" WHERE os.ID_ESTATUS_ORDEN_SERVICIO = 2 AND fin.ID_TIPO_ORDEN in(3,4)");
+		query.append(" WHERE os.ID_ESTATUS_ORDEN_SERVICIO = 2 AND fin.ID_TIPO_ORDEN in(2,4)");
 
 		logger.info("busqueda cancelada");
 		logger.info(query.toString());
@@ -282,7 +282,7 @@ public class OrdenServicio {
 		query.append(
 				"  JOIN SVT_NOTA_REMISION nr ON (os.ID_ORDEN_SERVICIO = nr.ID_ORDEN_SERVICIO) AND nr.ID_ESTATUS =2");
 		query.append(" JOIN SVC_VELATORIO vel ON (vel.ID_VELATORIO = os.ID_VELATORIO)");
-		query.append(" WHERE os.ID_ESTATUS_ORDEN_SERVICIO = 6 AND fin.ID_TIPO_ORDEN in(3,4) ");
+		query.append(" WHERE os.ID_ESTATUS_ORDEN_SERVICIO = 6 AND fin.ID_TIPO_ORDEN in(2,4) ");
 
 		return query;
 	}
@@ -318,7 +318,7 @@ public class OrdenServicio {
 		query.append(
 				" LEFT JOIN SVT_NOTA_REMISION nr ON (os.ID_ORDEN_SERVICIO = nr.ID_ORDEN_SERVICIO) AND nr.ID_ESTATUS  IN (2)");
 		query.append(" JOIN SVC_VELATORIO vel ON (vel.ID_VELATORIO = os.ID_VELATORIO)");
-		query.append(" WHERE os.ID_ESTATUS_ORDEN_SERVICIO IN (2) AND fin.ID_TIPO_ORDEN in(3,4) ");
+		query.append(" WHERE os.ID_ESTATUS_ORDEN_SERVICIO IN (2) AND fin.ID_TIPO_ORDEN in(2,4) ");
 
 		logger.info("busqueda sin nota");
 		logger.info(query.toString());
@@ -348,7 +348,7 @@ public class OrdenServicio {
 		query.append(
 				"LEFT JOIN SVT_NOTA_REMISION nrc ON (os.ID_ORDEN_SERVICIO = nrc.ID_ORDEN_SERVICIO AND nrc.ID_ESTATUS = 3) \n");
 		query.append("WHERE os.ID_ESTATUS_ORDEN_SERVICIO =2  ");
-		query.append("AND fin.ID_TIPO_ORDEN in(3,4)");
+		query.append("AND fin.ID_TIPO_ORDEN in(2,4)");
 
 		return query;
 	}
