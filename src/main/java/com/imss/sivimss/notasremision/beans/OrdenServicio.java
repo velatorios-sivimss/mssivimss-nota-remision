@@ -79,12 +79,20 @@ public class OrdenServicio {
 		StringBuilder busquedaCancelada = busquedaCancelada(formatoFecha);
 		StringBuilder busquedaGeneradas = busquedaGeneradas(formatoFecha);
 		StringBuilder busquedaSinNota = busquedaSinNota(formatoFecha);
-
-		// Busqueda por dos fechas, regresa las notas con estatus Generada
-		if (busqueda.getIdDelegacion() != null && busqueda.getIdVelatorio() != null && busqueda.getFecIniODS() != null
-				&& busqueda.getFecFinODS() != null) {
-			query.append(" AND vel.ID_DELEGACION = ").append(busqueda.getIdDelegacion());
+		
+		if (busqueda.getIdVelatorio() != null) {
 			query.append(" AND os.ID_VELATORIO = ").append(busqueda.getIdVelatorio());
+		}
+		
+		if (busqueda.getIdDelegacion() != null) {
+			query.append(" AND vel.ID_DELEGACION = ").append(busqueda.getIdDelegacion());
+		}
+
+		if (busqueda.getFolioODS() != null) {
+			query.append(" AND os.CVE_FOLIO = '" + busqueda.getFolioODS() + "' ");
+		}
+		
+		if (busqueda.getFecIniODS() != null && busqueda.getFecFinODS() != null) {
 			query.append(" AND DATE(nr.FEC_ALTA) BETWEEN STR_TO_DATE('" + busqueda.getFecIniODS() + "','" + formatoFecha
 					+ "') AND STR_TO_DATE('" + busqueda.getFecFinODS() + "','" + formatoFecha + "')");
 			busquedaGeneradas.append(query);
@@ -92,66 +100,27 @@ public class OrdenServicio {
 			logger.info(busquedaGeneradas.toString());
 			String encoded = DatatypeConverter.printBase64Binary(busquedaGeneradas.toString().getBytes("UTF-8"));
 			request.getDatos().put(AppConstantes.QUERY, encoded);
-
-			return request;
-		} else if (busqueda.getIdDelegacion() != null && busqueda.getIdVelatorio() == null
-				&& busqueda.getFecIniODS() != null && busqueda.getFecFinODS() != null) {
-			query.append(" AND vel.ID_DELEGACION = ").append(busqueda.getIdDelegacion());
-			query.append(" AND DATE(nr.FEC_ALTA) BETWEEN STR_TO_DATE('" + busqueda.getFecIniODS() + "','" + formatoFecha
-					+ "') AND STR_TO_DATE('" + busqueda.getFecFinODS() + "','" + formatoFecha + "')");
-			busquedaGeneradas.append(query);
-			logger.info("busqueda generada");
-			logger.info(busquedaGeneradas.toString());
-			String encoded = DatatypeConverter.printBase64Binary(busquedaGeneradas.toString().getBytes(StandardCharsets.UTF_8));
-			request.getDatos().put(AppConstantes.QUERY, encoded);
-
-			return request;
-		} else if (busqueda.getIdDelegacion() == null && busqueda.getIdVelatorio() == null
-				&& busqueda.getFecIniODS() != null && busqueda.getFecFinODS() != null) {
-			query.append(" AND DATE(nr.FEC_ALTA) BETWEEN STR_TO_DATE('" + busqueda.getFecIniODS() + "','" + formatoFecha
-					+ "') AND STR_TO_DATE('" + busqueda.getFecFinODS() + "','" + formatoFecha + "')");
-			busquedaGeneradas.append(query);
-			logger.info("busqueda generada");
-			logger.info(busquedaGeneradas.toString());
-			String encoded = DatatypeConverter.printBase64Binary(busquedaGeneradas.toString().getBytes(StandardCharsets.UTF_8));
-			request.getDatos().put(AppConstantes.QUERY, encoded);
-
-			return request;
-		}
-		// Busqueda General
-		else {
-			if (busqueda.getIdVelatorio() != null) {
-				query.append(" AND os.ID_VELATORIO = ").append(busqueda.getIdVelatorio());
-			}
-			if (busqueda.getIdDelegacion() != null) {
-				query.append(" AND vel.ID_DELEGACION = ").append(busqueda.getIdDelegacion());
-			}
-
-			if (busqueda.getFolioODS() != null) {
-				query.append(" AND os.CVE_FOLIO = '" + busqueda.getFolioODS() + "' ");
-			}
-			if (busqueda.getFecIniODS() != null) {
-				query.append(
-						" AND DATE(nr.FEC_ALTA) BETWEEN STR_TO_DATE('" + busqueda.getFecIniODS() + "','" + formatoFecha
-								+ "') AND STR_TO_DATE('" + busqueda.getFecFinODS() + "','" + formatoFecha + "')");
-			}
-
+		}else {
+			
 			busquedaCancelada.append(query);
 			busquedaSinNota.append(query);
-
+			busquedaGeneradas.append(query);
+			
 			StringBuilder queryCompleto = new StringBuilder("");
 			queryCompleto.append("SELECT  * FROM ( ");
 			queryCompleto.append(busquedaCancelada);
 			queryCompleto.append(" UNION ALL ");
 			queryCompleto.append(busquedaSinNota);
+			queryCompleto.append(" UNION ALL ");
+			queryCompleto.append(busquedaGeneradas);
 			queryCompleto.append(" ) datos  ORDER BY datos.id");
 			logger.info("busqueda por ODS general");
 			logger.info(queryCompleto.toString());
-			String encoded = DatatypeConverter.printBase64Binary(queryCompleto.toString().getBytes(StandardCharsets.UTF_8));
+			String encoded = DatatypeConverter.printBase64Binary(queryCompleto.toString().getBytes("UTF-8"));
 			request.getDatos().put(AppConstantes.QUERY, encoded);
-
-			return request;
 		}
+		
+			return request;
 
 	}
 
@@ -217,118 +186,137 @@ public class OrdenServicio {
 
 	private StringBuilder busquedaCancelada(String formatoFecha) {
 		StringBuilder query = new StringBuilder();
-		query.append(" SELECT DISTINCT os.ID_ORDEN_SERVICIO AS id, os.CVE_FOLIO AS folioODS,");
-		query.append(" DATE_FORMAT(os.FEC_ALTA,'" + formatoFecha + "') AS fechaODS, ");
-		query.append(" CASE WHEN cvn.DES_FOLIO IS NOT NULL THEN cvn.DES_FOLIO");
-		query.append(" WHEN sps.NUM_FOLIO_PLAN_SFPA IS NOT NULL THEN sps.NUM_FOLIO_PLAN_SFPA ");
-		query.append(" ELSE '' END AS folioConvenio,");
-		query.append(" os.ID_CONTRATANTE AS idContratante,");
-		query.append(" CONCAT(IFNULL(prc.NOM_PERSONA,' '), ");
-		query.append(" IFNULL(prc.NOM_PRIMER_APELLIDO,' '), IFNULL(prc.NOM_SEGUNDO_APELLIDO,' ')) AS nomContratante,");
-		query.append(" fin.ID_FINADO AS idFinado,");
-		query.append(
-				" CONCAT(prf.NOM_PERSONA,' ',prf.NOM_PRIMER_APELLIDO,' ',prf.NOM_SEGUNDO_APELLIDO) AS nomFinado, ");
-		query.append(" IFNULL(nr.ID_ESTATUS,1) AS estatus, ");
+		query.append("SELECT 	DISTINCT\r\n"
+				+ "            os.ID_ORDEN_SERVICIO AS id,\r\n"
+				+ "            os.CVE_FOLIO AS folioODS,\r\n"
+				+ "            DATE_FORMAT(os.FEC_ALTA, '%d/%m/%Y') AS fechaODS,\r\n"
+				+ "            CASE \r\n"
+				+ "				WHEN cvn.DES_FOLIO IS NOT NULL THEN cvn.DES_FOLIO \r\n"
+				+ "				WHEN sps.NUM_FOLIO_PLAN_SFPA IS NOT NULL THEN sps.NUM_FOLIO_PLAN_SFPA \r\n"
+				+ "				ELSE ''\r\n"
+				+ "			END AS folioConvenio,\r\n"
+				+ "			os.ID_CONTRATANTE AS idContratante,\r\n"
+				+ "			CONCAT(\r\n"
+				+ "				IFNULL(prc.NOM_PERSONA, ' '), ' ',\r\n"
+				+ "				IFNULL(prc.NOM_PRIMER_APELLIDO, ' '), ' ',\r\n"
+				+ "				IFNULL(prc.NOM_SEGUNDO_APELLIDO, ' ')\r\n"
+				+ "			) AS nomContratante,\r\n"
+				+ "			fin.ID_FINADO AS idFinado,\r\n"
+				+ "			CONCAT(\r\n"
+				+ "				prf.NOM_PERSONA,\r\n"
+				+ "				' ',\r\n"
+				+ "				prf.NOM_PRIMER_APELLIDO,\r\n"
+				+ "				' ',\r\n"
+				+ "				prf.NOM_SEGUNDO_APELLIDO\r\n"
+				+ "			) AS nomFinado,\r\n"
+				+ "			IFNULL(nr.ID_ESTATUS, 1) AS estatus,\r\n"
+				+ "			IFNULL(nr.ID_NOTAREMISION, 0) AS idNota,\r\n"
+				+ "			IFNULL(nr.ID_NOTAREMISION, 0) AS idCancelada,\r\n"
+				+ "			0 AS total\r\n"
+				+ "    FROM 		SVC_ORDEN_SERVICIO os\r\n"
+				+ "    JOIN 		SVC_CONTRATANTE con 						ON ( con.ID_CONTRATANTE = os.ID_CONTRATANTE) 	-- el id de contratante viene de os\r\n"
+				+ "    JOIN 		SVC_CONTRATANTE con2 						ON ( con2.ID_CONTRATANTE = os.ID_CONTRATANTE_PF) 	-- el id de contratante viene de os\r\n"
+				+ "    LEFT JOIN 	SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA )\r\n"
+				+ "    LEFT JOIN 	SVT_CONTRATANTE_PAQUETE_CONVENIO_PF cpcf ON ( con2.ID_CONTRATANTE = cpcf.ID_CONTRATANTE )\r\n"
+				+ "    JOIN 		SVT_CONVENIO_PF cvn ON   ( cpcf.ID_CONVENIO_PF = cvn.ID_CONVENIO_PF   )-- CONVENIOS\r\n"
+				+ "    LEFT JOIN 	SVC_FINADO fin ON ( os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO )\r\n"
+				+ "    LEFT JOIN 	SVC_PERSONA prf ON ( fin.ID_PERSONA = prf.ID_PERSONA )\r\n"
+				+ "    LEFT JOIN 	SVT_PLAN_SFPA sps ON	 sps.ID_PLAN_SFPA = fin.ID_CONTRATO_PREVISION_PA -- CONVENIOS PLAN\r\n"
+				+ "    JOIN 		SVT_NOTA_REMISION nr ON ( os.ID_ORDEN_SERVICIO = nr.ID_ORDEN_SERVICIO ) AND nr.ID_ESTATUS IN(3)\r\n"
+				+ "    JOIN 		SVC_VELATORIO vel ON( vel.ID_VELATORIO = os.ID_VELATORIO )\r\n"
+				+ "    WHERE os.ID_ESTATUS_ORDEN_SERVICIO IN (2) AND fin.ID_TIPO_ORDEN IN(2, 4)");
 
-		query.append(" IFNULL(nr.ID_NOTAREMISION,0) AS idNota,");
-		query.append(" IFNULL(nr.ID_NOTAREMISION,0) AS idCancelada, ");
-		query.append(" 0 AS total");
-        query.append(", seos.DES_ESTATUS AS DesEstatus ");
-		query.append(" FROM SVC_ORDEN_SERVICIO os");
-		query.append(" JOIN SVC_CONTRATANTE con ON (os.ID_CONTRATANTE = con.ID_CONTRATANTE)");
-		query.append(" LEFT JOIN SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA)");
-		query.append(
-				"  LEFT JOIN SVT_CONTRATANTE_PAQUETE_CONVENIO_PF cpcf ON (con.ID_CONTRATANTE = cpcf.ID_CONTRATANTE)");
-		query.append(" JOIN SVT_CONVENIO_PF cvn ON (cpcf.ID_CONVENIO_PF = cvn.ID_CONVENIO_PF)");
-		query.append(" LEFT JOIN SVC_FINADO fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO)");
-		query.append(" LEFT JOIN SVC_PERSONA prf ON (fin.ID_PERSONA = prf.ID_PERSONA)");
-		query.append(" LEFT JOIN SVT_PLAN_SFPA sps ON sps.ID_PLAN_SFPA = fin.ID_CONTRATO_PREVISION_PA");
-		query.append(
-				" JOIN SVT_NOTA_REMISION nr ON (os.ID_ORDEN_SERVICIO = nr.ID_ORDEN_SERVICIO) AND nr.ID_ESTATUS in (3) ");
-		query.append(" JOIN SVC_VELATORIO vel ON (vel.ID_VELATORIO = os.ID_VELATORIO)");
-        query.append(" JOIN SVC_ESTATUS_ORDEN_SERVICIO seos ON seos.ID_ESTATUS_ORDEN_SERVICIO = nr.ID_ESTATUS ");
-		query.append(" WHERE os.ID_ESTATUS_ORDEN_SERVICIO = 2 AND fin.ID_TIPO_ORDEN in(2,4)");
-
-		logger.info("busqueda cancelada");
-		logger.info(query.toString());
 		return query;
 	}
 
 	private StringBuilder busquedaGeneradas(String formatoFecha) {
-		StringBuilder query = new StringBuilder("SELECT DISTINCT os.ID_ORDEN_SERVICIO AS id,");
-		query.append(" os.CVE_FOLIO AS folioODS, ");
-		query.append(" DATE_FORMAT(os.FEC_ALTA,'" + formatoFecha + "') AS fechaODS,   ");
-		query.append(" CASE WHEN cvn.DES_FOLIO IS NOT NULL THEN cvn.DES_FOLIO");
-		query.append(" WHEN sps.NUM_FOLIO_PLAN_SFPA IS NOT NULL THEN sps.NUM_FOLIO_PLAN_SFPA ");
-		query.append("  ELSE '' END AS folioConvenio,");
-		query.append(" os.ID_CONTRATANTE AS idContratante,");
-		query.append(" CONCAT(IFNULL(prc.NOM_PERSONA,' '), ");
-		query.append(" IFNULL(prc.NOM_PRIMER_APELLIDO,' '),");
-		query.append(" IFNULL(prc.NOM_SEGUNDO_APELLIDO,' ')) AS nomContratante, ");
-		query.append(" fin.ID_FINADO AS idFinado, ");
-		query.append(" CONCAT(prf.NOM_PERSONA,' ',prf.NOM_PRIMER_APELLIDO,' ',prf.NOM_SEGUNDO_APELLIDO) AS nomFinado,");
-		query.append(" IFNULL(nr.ID_ESTATUS,1) AS estatus,");
-		query.append(" IFNULL(nr.ID_NOTAREMISION,0) AS idNota, ");
-		query.append(" IFNULL(nr.ID_NOTAREMISION,0) AS idCancelada,");
-		query.append(" (SELECT COUNT(rn.ID_ORDEN_SERVICIO)");
-		query.append(" FROM SVT_NOTA_REMISION rn");
-		query.append(" WHERE rn.ID_ORDEN_SERVICIO=os.ID_ORDEN_SERVICIO) AS total");
-		query.append(", seos.DES_ESTATUS AS DesEstatus ");
-		query.append(" FROM SVC_ORDEN_SERVICIO os");
-		query.append(" JOIN SVC_CONTRATANTE con ON (os.ID_CONTRATANTE = con.ID_CONTRATANTE)");
-		query.append(" LEFT JOIN SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA)");
-		query.append(
-				" LEFT JOIN SVT_CONTRATANTE_PAQUETE_CONVENIO_PF cpcf ON (con.ID_CONTRATANTE = cpcf.ID_CONTRATANTE)");
-		query.append(" LEFT JOIN SVT_CONVENIO_PF cvn ON (cpcf.ID_CONVENIO_PF = cvn.ID_CONVENIO_PF)");
-		query.append(" LEFT JOIN SVC_FINADO fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO)");
-		query.append(" LEFT JOIN SVC_PERSONA prf ON (fin.ID_PERSONA = prf.ID_PERSONA)");
-		query.append(" LEFT JOIN SVT_PLAN_SFPA sps ON sps.ID_PLAN_SFPA = fin.ID_CONTRATO_PREVISION_PA");
-		query.append(
-				"  JOIN SVT_NOTA_REMISION nr ON (os.ID_ORDEN_SERVICIO = nr.ID_ORDEN_SERVICIO) AND nr.ID_ESTATUS =2");
-		query.append(" JOIN SVC_VELATORIO vel ON (vel.ID_VELATORIO = os.ID_VELATORIO)");
-		query.append("JOIN SVC_ESTATUS_ORDEN_SERVICIO seos ON seos.ID_ESTATUS_ORDEN_SERVICIO = nr.ID_ESTATUS ");
-		query.append(" WHERE os.ID_ESTATUS_ORDEN_SERVICIO = 6 AND fin.ID_TIPO_ORDEN in(2,4) ");
+		
+		StringBuilder query = new StringBuilder();
+		query.append("SELECT 	DISTINCT\r\n"
+				+ "            os.ID_ORDEN_SERVICIO AS id,\r\n"
+				+ "            os.CVE_FOLIO AS folioODS,\r\n"
+				+ "            DATE_FORMAT(os.FEC_ALTA, '%d/%m/%Y') AS fechaODS,\r\n"
+				+ "            CASE \r\n"
+				+ "				WHEN cvn.DES_FOLIO IS NOT NULL THEN cvn.DES_FOLIO \r\n"
+				+ "				WHEN sps.NUM_FOLIO_PLAN_SFPA IS NOT NULL THEN sps.NUM_FOLIO_PLAN_SFPA \r\n"
+				+ "				ELSE ''\r\n"
+				+ "			END AS folioConvenio,\r\n"
+				+ "			os.ID_CONTRATANTE AS idContratante,\r\n"
+				+ "			CONCAT(\r\n"
+				+ "				IFNULL(prc.NOM_PERSONA, ' '), ' ',\r\n"
+				+ "				IFNULL(prc.NOM_PRIMER_APELLIDO, ' '), ' ',\r\n"
+				+ "				IFNULL(prc.NOM_SEGUNDO_APELLIDO, ' ')\r\n"
+				+ "			) AS nomContratante,\r\n"
+				+ "			fin.ID_FINADO AS idFinado,\r\n"
+				+ "			CONCAT(\r\n"
+				+ "				prf.NOM_PERSONA,\r\n"
+				+ "				' ',\r\n"
+				+ "				prf.NOM_PRIMER_APELLIDO,\r\n"
+				+ "				' ',\r\n"
+				+ "				prf.NOM_SEGUNDO_APELLIDO\r\n"
+				+ "			) AS nomFinado,\r\n"
+				+ "			IFNULL(nr.ID_ESTATUS, 1) AS estatus,\r\n"
+				+ "			IFNULL(nr.ID_NOTAREMISION, 0) AS idNota,\r\n"
+				+ "			IFNULL(nr.ID_NOTAREMISION, 0) AS idCancelada,\r\n"
+				+ "			0 AS total\r\n"
+				+ "    FROM 		SVC_ORDEN_SERVICIO os\r\n"
+				+ "    JOIN 		SVC_CONTRATANTE con 						ON ( con.ID_CONTRATANTE = os.ID_CONTRATANTE) 	-- el id de contratante viene de os\r\n"
+				+ "    JOIN 		SVC_CONTRATANTE con2 						ON ( con2.ID_CONTRATANTE = os.ID_CONTRATANTE_PF) 	-- el id de contratante viene de os\r\n"
+				+ "    LEFT JOIN 	SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA )\r\n"
+				+ "    LEFT JOIN 	SVT_CONTRATANTE_PAQUETE_CONVENIO_PF cpcf ON ( con2.ID_CONTRATANTE = cpcf.ID_CONTRATANTE )\r\n"
+				+ "    JOIN 		SVT_CONVENIO_PF cvn ON   ( cpcf.ID_CONVENIO_PF = cvn.ID_CONVENIO_PF   )-- CONVENIOS\r\n"
+				+ "    LEFT JOIN 	SVC_FINADO fin ON ( os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO )\r\n"
+				+ "    LEFT JOIN 	SVC_PERSONA prf ON ( fin.ID_PERSONA = prf.ID_PERSONA )\r\n"
+				+ "    LEFT JOIN 	SVT_PLAN_SFPA sps ON	 sps.ID_PLAN_SFPA = fin.ID_CONTRATO_PREVISION_PA -- CONVENIOS PLAN\r\n"
+				+ "    JOIN 		SVT_NOTA_REMISION nr ON ( os.ID_ORDEN_SERVICIO = nr.ID_ORDEN_SERVICIO ) AND nr.ID_ESTATUS IN(2)\r\n"
+				+ "    JOIN 		SVC_VELATORIO vel ON( vel.ID_VELATORIO = os.ID_VELATORIO )\r\n"
+				+ "    WHERE os.ID_ESTATUS_ORDEN_SERVICIO IN (6) AND fin.ID_TIPO_ORDEN IN(2, 4)");		
 
 		return query;
 	}
 
 	private StringBuilder busquedaSinNota(String formatoFecha) {
-		StringBuilder query = new StringBuilder(
-				"SELECT DISTINCT os.ID_ORDEN_SERVICIO AS id, os.CVE_FOLIO AS folioODS,  ");
-		query.append(" DATE_FORMAT(os.FEC_ALTA,'" + formatoFecha + "') AS fechaODS,   ");
-		query.append(" CASE WHEN cvn.DES_FOLIO IS NOT NULL THEN cvn.DES_FOLIO");
-		query.append(" WHEN sps.NUM_FOLIO_PLAN_SFPA IS NOT NULL THEN sps.NUM_FOLIO_PLAN_SFPA");
-		query.append(" ELSE '' END AS folioConvenio, ");
-		query.append(" os.ID_CONTRATANTE AS idContratante,");
-		query.append(
-				" CONCAT(prc.NOM_PERSONA,' ',prc.NOM_PRIMER_APELLIDO,' ',prc.NOM_SEGUNDO_APELLIDO) AS nomContratante,");
-		query.append(" fin.ID_FINADO AS idFinado, ");
-		query.append(
-				" CONCAT(prf.NOM_PERSONA,' ',prf.NOM_PRIMER_APELLIDO,' ',prf.NOM_SEGUNDO_APELLIDO) AS nomFinado, ");
-		query.append(" IFNULL(nr.ID_ESTATUS,1) AS estatus,");
-		query.append(" IFNULL(nr.ID_NOTAREMISION,0) AS idNota,");
-		query.append(" IFNULL(nr.ID_NOTAREMISION,0) AS idCancelada,");
-		query.append(" (SELECT COUNT(rn.ID_ORDEN_SERVICIO)");
-		query.append(", seos.DES_ESTATUS AS DesEstatus ");
-		query.append(" FROM SVT_NOTA_REMISION rn");
-		query.append(" WHERE rn.ID_ORDEN_SERVICIO=os.ID_ORDEN_SERVICIO) AS total");
-		query.append(" FROM SVC_ORDEN_SERVICIO os");
-		query.append(" JOIN SVC_CONTRATANTE con ON (os.ID_CONTRATANTE = con.ID_CONTRATANTE)");
-		query.append(" JOIN SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA)");
-		query.append(
-				" LEFT JOIN SVT_CONTRATANTE_PAQUETE_CONVENIO_PF cpcf ON (con.ID_CONTRATANTE = cpcf.ID_CONTRATANTE)");
-		query.append(" LEFT JOIN SVT_CONVENIO_PF cvn ON (cpcf.ID_CONVENIO_PF = cvn.ID_CONVENIO_PF)");
-		query.append(" LEFT JOIN SVC_FINADO fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO)");
-		query.append(" LEFT JOIN SVC_PERSONA prf ON (fin.ID_PERSONA = prf.ID_PERSONA)");
-		query.append(" LEFT JOIN SVT_PLAN_SFPA sps ON sps.ID_PLAN_SFPA = fin.ID_CONTRATO_PREVISION_PA");
-		query.append(
-				" LEFT JOIN SVT_NOTA_REMISION nr ON (os.ID_ORDEN_SERVICIO = nr.ID_ORDEN_SERVICIO) AND nr.ID_ESTATUS  IN (2)");
-		query.append(" JOIN SVC_VELATORIO vel ON (vel.ID_VELATORIO = os.ID_VELATORIO)");
-		query.append("JOIN SVC_ESTATUS_ORDEN_SERVICIO seos ON seos.ID_ESTATUS_ORDEN_SERVICIO = nr.ID_ESTATUS ");
-		query.append(" WHERE os.ID_ESTATUS_ORDEN_SERVICIO IN (2) AND fin.ID_TIPO_ORDEN in(2,4) ");
-
-		logger.info("busqueda sin nota");
-		logger.info(query.toString());
+		
+		StringBuilder query = new StringBuilder("SELECT 	DISTINCT\r\n"
+				+ "            os.ID_ORDEN_SERVICIO AS id,\r\n"
+				+ "            os.CVE_FOLIO AS folioODS,\r\n"
+				+ "            DATE_FORMAT(os.FEC_ALTA, '%d/%m/%Y') AS fechaODS,\r\n"
+				+ "            CASE \r\n"
+				+ "				WHEN cvn.DES_FOLIO IS NOT NULL THEN cvn.DES_FOLIO \r\n"
+				+ "				WHEN sps.NUM_FOLIO_PLAN_SFPA IS NOT NULL THEN sps.NUM_FOLIO_PLAN_SFPA \r\n"
+				+ "				ELSE ''\r\n"
+				+ "			END AS folioConvenio,\r\n"
+				+ "			os.ID_CONTRATANTE AS idContratante,\r\n"
+				+ "			CONCAT(\r\n"
+				+ "				IFNULL(prc.NOM_PERSONA, ' '), ' ',\r\n"
+				+ "				IFNULL(prc.NOM_PRIMER_APELLIDO, ' '), ' ',\r\n"
+				+ "				IFNULL(prc.NOM_SEGUNDO_APELLIDO, ' ')\r\n"
+				+ "			) AS nomContratante,\r\n"
+				+ "			fin.ID_FINADO AS idFinado,\r\n"
+				+ "			CONCAT(\r\n"
+				+ "				prf.NOM_PERSONA,\r\n"
+				+ "				' ',\r\n"
+				+ "				prf.NOM_PRIMER_APELLIDO,\r\n"
+				+ "				' ',\r\n"
+				+ "				prf.NOM_SEGUNDO_APELLIDO\r\n"
+				+ "			) AS nomFinado,\r\n"
+				+ "			IFNULL(nr.ID_ESTATUS, 1) AS estatus,\r\n"
+				+ "			IFNULL(nr.ID_NOTAREMISION, 0) AS idNota,\r\n"
+				+ "			IFNULL(nr.ID_NOTAREMISION, 0) AS idCancelada,\r\n"
+				+ "			0 AS total\r\n"
+				+ "    FROM 		SVC_ORDEN_SERVICIO os\r\n"
+				+ "    JOIN 		SVC_CONTRATANTE con 						ON ( con.ID_CONTRATANTE = os.ID_CONTRATANTE) 	-- el id de contratante viene de os\r\n"
+				+ "    JOIN 		SVC_CONTRATANTE con2 						ON ( con2.ID_CONTRATANTE = os.ID_CONTRATANTE_PF) 	-- el id de contratante viene de os\r\n"
+				+ "    LEFT JOIN 	SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA )\r\n"
+				+ "    LEFT JOIN 	SVT_CONTRATANTE_PAQUETE_CONVENIO_PF cpcf ON ( con2.ID_CONTRATANTE = cpcf.ID_CONTRATANTE )\r\n"
+				+ "    JOIN 		SVT_CONVENIO_PF cvn ON   ( cpcf.ID_CONVENIO_PF = cvn.ID_CONVENIO_PF   )-- CONVENIOS\r\n"
+				+ "    LEFT JOIN 	SVC_FINADO fin ON ( os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO )\r\n"
+				+ "    LEFT JOIN 	SVC_PERSONA prf ON ( fin.ID_PERSONA = prf.ID_PERSONA )\r\n"
+				+ "    LEFT JOIN 	SVT_PLAN_SFPA sps ON	 sps.ID_PLAN_SFPA = fin.ID_CONTRATO_PREVISION_PA -- CONVENIOS PLAN\r\n"
+				+ "    JOIN 		SVT_NOTA_REMISION nr ON ( os.ID_ORDEN_SERVICIO = nr.ID_ORDEN_SERVICIO ) AND nr.ID_ESTATUS IN(2)\r\n"
+				+ "    JOIN 		SVC_VELATORIO vel ON( vel.ID_VELATORIO = os.ID_VELATORIO )\r\n"
+				+ "    WHERE os.ID_ESTATUS_ORDEN_SERVICIO IN (2) AND fin.ID_TIPO_ORDEN IN(2, 4)");
+		
 		return query;
 	}
 
