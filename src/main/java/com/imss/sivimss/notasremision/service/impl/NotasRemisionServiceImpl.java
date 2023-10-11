@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
+import javax.xml.bind.DatatypeConverter;
+
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -368,11 +370,20 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		Gson gson = new Gson();
 		String datosJson = String.valueOf(request.getDatos().get(AppConstantes.DATOS));
 		BusquedaDto reporteDto = gson.fromJson(datosJson, BusquedaDto.class);
-
-		Map<String, Object> envioDatos = new OrdenServicio().generarReporte(reporteDto, NOMBREPDFREPORTE, formatoFecha);
-		Response<?> response = providerRestTemplate.consumirServicioReportes(envioDatos, urlReportes, authentication);
-
+		Map<String, Object> envioDatos = new OrdenServicio().buscarODS(request, reporteDto, formatoFecha).getDatos();
+		String query = queryDecoded(envioDatos);
+		envioDatos.put("condicion", query);
+		envioDatos.put("rutaNombreReporte", NOMBREPDFREPORTE);
+		envioDatos.put("tipoReporte", reporteDto.getTipoReporte());
+		if (reporteDto.getTipoReporte().equals("xls")) {
+			envioDatos.put("IS_IGNORE_PAGINATION", true);
+		}
+		Response<?> response =  providerRestTemplate.consumirServicioReportes(envioDatos, urlReportes, authentication);
+	
 		return MensajeResponseUtil.mensajeConsultaResponse(response, ERROR_DESCARGA);
 	}
 
+	private String queryDecoded (Map<String, Object> envioDatos ) {
+		return new String(DatatypeConverter.parseBase64Binary(envioDatos.get(AppConstantes.QUERY).toString()));
+	}
 }

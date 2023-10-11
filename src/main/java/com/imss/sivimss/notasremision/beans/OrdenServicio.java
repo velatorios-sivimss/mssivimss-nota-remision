@@ -1,6 +1,7 @@
 package com.imss.sivimss.notasremision.beans;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,7 +44,7 @@ public class OrdenServicio {
 			}
 		}
 
-		String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes("UTF-8"));
+		String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes(StandardCharsets.UTF_8));
 		request.getDatos().put(AppConstantes.QUERY, encoded);
 
 		return request;
@@ -52,10 +53,10 @@ public class OrdenServicio {
 	public DatosRequest listadoODS(BusquedaDto busqueda) throws UnsupportedEncodingException {
 		DatosRequest request = new DatosRequest();
 		Map<String, Object> parametro = new HashMap<>();
-		StringBuilder query = new StringBuilder("SELECT os.ID_ORDEN_SERVICIO, os.CVE_FOLIO \n");
-		query.append("FROM SVC_ORDEN_SERVICIO os \n");
-		query.append("JOIN SVC_FINADO fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO) \n");
-		query.append("JOIN SVC_VELATORIO vel ON (os.ID_VELATORIO = vel.ID_VELATORIO) \n");
+		StringBuilder query = new StringBuilder("SELECT os.ID_ORDEN_SERVICIO, os.CVE_FOLIO  ");
+		query.append("FROM SVC_ORDEN_SERVICIO os  ");
+		query.append("JOIN SVC_FINADO fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO)  ");
+		query.append("JOIN SVC_VELATORIO vel ON (os.ID_VELATORIO = vel.ID_VELATORIO)  ");
 		query.append("WHERE os.ID_ESTATUS_ORDEN_SERVICIO = 2 ");
 		query.append("AND fin.ID_TIPO_ORDEN in(2,4) ");
 
@@ -101,7 +102,7 @@ public class OrdenServicio {
 			busquedaGeneradas.append(query);
 			logger.info("busqueda generada");
 			logger.info(busquedaGeneradas.toString());
-			String encoded = DatatypeConverter.printBase64Binary(busquedaGeneradas.toString().getBytes("UTF-8"));
+			String encoded = DatatypeConverter.printBase64Binary(busquedaGeneradas.toString().getBytes(StandardCharsets.UTF_8));
 			request.getDatos().put(AppConstantes.QUERY, encoded);
 
 			return request;
@@ -112,7 +113,7 @@ public class OrdenServicio {
 			busquedaGeneradas.append(query);
 			logger.info("busqueda generada");
 			logger.info(busquedaGeneradas.toString());
-			String encoded = DatatypeConverter.printBase64Binary(busquedaGeneradas.toString().getBytes("UTF-8"));
+			String encoded = DatatypeConverter.printBase64Binary(busquedaGeneradas.toString().getBytes(StandardCharsets.UTF_8));
 			request.getDatos().put(AppConstantes.QUERY, encoded);
 
 			return request;
@@ -146,7 +147,7 @@ public class OrdenServicio {
 			queryCompleto.append(" ) datos  ORDER BY datos.id");
 			logger.info("busqueda por ODS general");
 			logger.info(queryCompleto.toString());
-			String encoded = DatatypeConverter.printBase64Binary(queryCompleto.toString().getBytes("UTF-8"));
+			String encoded = DatatypeConverter.printBase64Binary(queryCompleto.toString().getBytes(StandardCharsets.UTF_8));
 			request.getDatos().put(AppConstantes.QUERY, encoded);
 
 			return request;
@@ -184,7 +185,7 @@ public class OrdenServicio {
 		query.append("LEFT JOIN SVT_DOMICILIO domc ON (con.ID_DOMICILIO = domc.ID_DOMICILIO) \n");
 		query.append("WHERE os.ID_ORDEN_SERVICIO = " + idODS);
 
-		String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes("UTF-8"));
+		String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes(StandardCharsets.UTF_8));
 		request.getDatos().remove("id");
 		request.getDatos().put(AppConstantes.QUERY, encoded);
 		return request;
@@ -194,7 +195,7 @@ public class OrdenServicio {
 		String idODS = request.getDatos().get("id").toString();
 		String query = "SELECT COUNT(NUM_FOLIO) AS valor FROM SVT_NOTA_REMISION WHERE ID_ORDEN_SERVICIO = " + idODS;
 
-		String encoded = DatatypeConverter.printBase64Binary(query.getBytes("UTF-8"));
+		String encoded = DatatypeConverter.printBase64Binary(query.getBytes(StandardCharsets.UTF_8));
 		request.getDatos().remove("id");
 		request.getDatos().put(AppConstantes.QUERY, encoded);
 		return request;
@@ -208,7 +209,7 @@ public class OrdenServicio {
 		q.addWhere("ID_ORDEN_SERVICIO = " + this.id);
 
 		String query = q.obtenerQueryActualizar();
-		String encoded = DatatypeConverter.printBase64Binary(query.getBytes("UTF-8"));
+		String encoded = DatatypeConverter.printBase64Binary(query.getBytes(StandardCharsets.UTF_8));
 		parametro.put(AppConstantes.QUERY, encoded);
 		request.setDatos(parametro);
 		return request;
@@ -232,6 +233,7 @@ public class OrdenServicio {
 		query.append(" IFNULL(nr.ID_NOTAREMISION,0) AS idNota,");
 		query.append(" IFNULL(nr.ID_NOTAREMISION,0) AS idCancelada, ");
 		query.append(" 0 AS total");
+        query.append(", seos.DES_ESTATUS AS DesEstatus ");
 		query.append(" FROM SVC_ORDEN_SERVICIO os");
 		query.append(" JOIN SVC_CONTRATANTE con ON (os.ID_CONTRATANTE = con.ID_CONTRATANTE)");
 		query.append(" LEFT JOIN SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA)");
@@ -244,6 +246,7 @@ public class OrdenServicio {
 		query.append(
 				" JOIN SVT_NOTA_REMISION nr ON (os.ID_ORDEN_SERVICIO = nr.ID_ORDEN_SERVICIO) AND nr.ID_ESTATUS in (3) ");
 		query.append(" JOIN SVC_VELATORIO vel ON (vel.ID_VELATORIO = os.ID_VELATORIO)");
+        query.append(" JOIN SVC_ESTATUS_ORDEN_SERVICIO seos ON seos.ID_ESTATUS_ORDEN_SERVICIO = nr.ID_ESTATUS ");
 		query.append(" WHERE os.ID_ESTATUS_ORDEN_SERVICIO = 2 AND fin.ID_TIPO_ORDEN in(2,4)");
 
 		logger.info("busqueda cancelada");
@@ -254,7 +257,7 @@ public class OrdenServicio {
 	private StringBuilder busquedaGeneradas(String formatoFecha) {
 		StringBuilder query = new StringBuilder("SELECT DISTINCT os.ID_ORDEN_SERVICIO AS id,");
 		query.append(" os.CVE_FOLIO AS folioODS, ");
-		query.append(" DATE_FORMAT(os.FEC_ALTA,'" + formatoFecha + "') AS fechaODS,  \n");
+		query.append(" DATE_FORMAT(os.FEC_ALTA,'" + formatoFecha + "') AS fechaODS,   ");
 		query.append(" CASE WHEN cvn.DES_FOLIO IS NOT NULL THEN cvn.DES_FOLIO");
 		query.append(" WHEN sps.NUM_FOLIO_PLAN_SFPA IS NOT NULL THEN sps.NUM_FOLIO_PLAN_SFPA ");
 		query.append("  ELSE '' END AS folioConvenio,");
@@ -270,6 +273,7 @@ public class OrdenServicio {
 		query.append(" (SELECT COUNT(rn.ID_ORDEN_SERVICIO)");
 		query.append(" FROM SVT_NOTA_REMISION rn");
 		query.append(" WHERE rn.ID_ORDEN_SERVICIO=os.ID_ORDEN_SERVICIO) AS total");
+		query.append(", seos.DES_ESTATUS AS DesEstatus ");
 		query.append(" FROM SVC_ORDEN_SERVICIO os");
 		query.append(" JOIN SVC_CONTRATANTE con ON (os.ID_CONTRATANTE = con.ID_CONTRATANTE)");
 		query.append(" LEFT JOIN SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA)");
@@ -282,6 +286,7 @@ public class OrdenServicio {
 		query.append(
 				"  JOIN SVT_NOTA_REMISION nr ON (os.ID_ORDEN_SERVICIO = nr.ID_ORDEN_SERVICIO) AND nr.ID_ESTATUS =2");
 		query.append(" JOIN SVC_VELATORIO vel ON (vel.ID_VELATORIO = os.ID_VELATORIO)");
+		query.append("JOIN SVC_ESTATUS_ORDEN_SERVICIO seos ON seos.ID_ESTATUS_ORDEN_SERVICIO = nr.ID_ESTATUS ");
 		query.append(" WHERE os.ID_ESTATUS_ORDEN_SERVICIO = 6 AND fin.ID_TIPO_ORDEN in(2,4) ");
 
 		return query;
@@ -289,8 +294,8 @@ public class OrdenServicio {
 
 	private StringBuilder busquedaSinNota(String formatoFecha) {
 		StringBuilder query = new StringBuilder(
-				"SELECT DISTINCT os.ID_ORDEN_SERVICIO AS id, os.CVE_FOLIO AS folioODS, \n");
-		query.append(" DATE_FORMAT(os.FEC_ALTA,'" + formatoFecha + "') AS fechaODS,  \n");
+				"SELECT DISTINCT os.ID_ORDEN_SERVICIO AS id, os.CVE_FOLIO AS folioODS,  ");
+		query.append(" DATE_FORMAT(os.FEC_ALTA,'" + formatoFecha + "') AS fechaODS,   ");
 		query.append(" CASE WHEN cvn.DES_FOLIO IS NOT NULL THEN cvn.DES_FOLIO");
 		query.append(" WHEN sps.NUM_FOLIO_PLAN_SFPA IS NOT NULL THEN sps.NUM_FOLIO_PLAN_SFPA");
 		query.append(" ELSE '' END AS folioConvenio, ");
@@ -304,6 +309,7 @@ public class OrdenServicio {
 		query.append(" IFNULL(nr.ID_NOTAREMISION,0) AS idNota,");
 		query.append(" IFNULL(nr.ID_NOTAREMISION,0) AS idCancelada,");
 		query.append(" (SELECT COUNT(rn.ID_ORDEN_SERVICIO)");
+		query.append(", seos.DES_ESTATUS AS DesEstatus ");
 		query.append(" FROM SVT_NOTA_REMISION rn");
 		query.append(" WHERE rn.ID_ORDEN_SERVICIO=os.ID_ORDEN_SERVICIO) AS total");
 		query.append(" FROM SVC_ORDEN_SERVICIO os");
@@ -318,6 +324,7 @@ public class OrdenServicio {
 		query.append(
 				" LEFT JOIN SVT_NOTA_REMISION nr ON (os.ID_ORDEN_SERVICIO = nr.ID_ORDEN_SERVICIO) AND nr.ID_ESTATUS  IN (2)");
 		query.append(" JOIN SVC_VELATORIO vel ON (vel.ID_VELATORIO = os.ID_VELATORIO)");
+		query.append("JOIN SVC_ESTATUS_ORDEN_SERVICIO seos ON seos.ID_ESTATUS_ORDEN_SERVICIO = nr.ID_ESTATUS ");
 		query.append(" WHERE os.ID_ESTATUS_ORDEN_SERVICIO IN (2) AND fin.ID_TIPO_ORDEN in(2,4) ");
 
 		logger.info("busqueda sin nota");
@@ -346,7 +353,7 @@ public class OrdenServicio {
 		query.append("JOIN SVC_VELATORIO vel ON (vel.ID_VELATORIO = os.ID_VELATORIO \n");
 		query.append("LEFT JOIN SVT_NOTA_REMISION nr ON (os.ID_ORDEN_SERVICIO = nr.ID_ORDEN_SERVICIO) \n");
 		query.append(
-				"LEFT JOIN SVT_NOTA_REMISION nrc ON (os.ID_ORDEN_SERVICIO = nrc.ID_ORDEN_SERVICIO AND nrc.ID_ESTATUS = 3) \n");
+				"LEFT JOIN SVT_NOTA_REMISION nrc ON (os.ID_ORDEN_SERVICIO = nrc.ID_ORDEN_SERVICIO AND nrc.ID_ESTATUS = 3)  ");
 		query.append("WHERE os.ID_ESTATUS_ORDEN_SERVICIO =2  ");
 		query.append("AND fin.ID_TIPO_ORDEN in(2,4)");
 
