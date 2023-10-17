@@ -144,7 +144,7 @@ public class OrdenServicio {
 		query.append("JOIN SVC_CONTRATANTE con ON (os.ID_CONTRATANTE = con.ID_CONTRATANTE) \n");
 		query.append("LEFT JOIN SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA) \n");
 		query.append(
-				"LEFT JOIN SVT_CONTRATANTE_PAQUETE_CONVENIO_PF cpcf ON (con.ID_CONTRATANTE = cpcf.ID_CONTRATANTE) \n");
+				"LEFT JOIN SVT_CONTRA_PAQ_CONVENIO_PF cpcf ON (con.ID_CONTRATANTE = cpcf.ID_CONTRATANTE) \n");
 		query.append("LEFT JOIN SVT_CONVENIO_PF cvn ON (cpcf.ID_CONVENIO_PF = cvn.ID_CONVENIO_PF) \n");
 		query.append("LEFT JOIN SVC_FINADO fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO) \n");
 		query.append("LEFT JOIN SVC_PERSONA prf ON (fin.ID_PERSONA = prf.ID_PERSONA) \n");
@@ -218,7 +218,7 @@ public class OrdenServicio {
 				+ "    JOIN 		SVC_CONTRATANTE con 						ON ( con.ID_CONTRATANTE = os.ID_CONTRATANTE) 	"
 				+ "    JOIN 		SVC_CONTRATANTE con2 						ON ( con2.ID_CONTRATANTE = os.ID_CONTRATANTE_PF) 	"
 				+ "    LEFT JOIN 	SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA ) "
-				+ "    LEFT JOIN 	SVT_CONTRATANTE_PAQUETE_CONVENIO_PF cpcf ON ( con2.ID_CONTRATANTE = cpcf.ID_CONTRATANTE ) "
+				+ "    LEFT JOIN 	SVT_CONTRA_PAQ_CONVENIO_PF cpcf ON ( con2.ID_CONTRATANTE = cpcf.ID_CONTRATANTE ) "
 				+ "    JOIN 		SVT_CONVENIO_PF cvn ON   ( cpcf.ID_CONVENIO_PF = cvn.ID_CONVENIO_PF   ) "
 				+ "    LEFT JOIN 	SVC_FINADO fin ON ( os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO ) "
 				+ "    LEFT JOIN 	SVC_PERSONA prf ON ( fin.ID_PERSONA = prf.ID_PERSONA ) "
@@ -268,7 +268,7 @@ public class OrdenServicio {
 				+ "    JOIN 		SVC_CONTRATANTE con 						ON ( con.ID_CONTRATANTE = os.ID_CONTRATANTE) "
 				+ "    JOIN 		SVC_CONTRATANTE con2 						ON ( con2.ID_CONTRATANTE = os.ID_CONTRATANTE_PF)  "
 				+ "    LEFT JOIN 	SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA ) "
-				+ "    LEFT JOIN 	SVT_CONTRATANTE_PAQUETE_CONVENIO_PF cpcf ON ( con2.ID_CONTRATANTE = cpcf.ID_CONTRATANTE ) "
+				+ "    LEFT JOIN 	SVT_CONTRA_PAQ_CONVENIO_PF cpcf ON ( con2.ID_CONTRATANTE = cpcf.ID_CONTRATANTE ) "
 				+ "    JOIN 		SVT_CONVENIO_PF cvn ON   ( cpcf.ID_CONVENIO_PF = cvn.ID_CONVENIO_PF   )"
 				+ "    LEFT JOIN 	SVC_FINADO fin ON ( os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO ) "
 				+ "    LEFT JOIN 	SVC_PERSONA prf ON ( fin.ID_PERSONA = prf.ID_PERSONA ) "
@@ -315,7 +315,7 @@ public class OrdenServicio {
 				+ "    JOIN 		SVC_CONTRATANTE con 						ON ( con.ID_CONTRATANTE = os.ID_CONTRATANTE) "
 				+ "    JOIN 		SVC_CONTRATANTE con2 						ON ( con2.ID_CONTRATANTE = os.ID_CONTRATANTE_PF) "
 				+ "    LEFT JOIN 	SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA ) "
-				+ "    LEFT JOIN 	SVT_CONTRATANTE_PAQUETE_CONVENIO_PF cpcf ON ( con2.ID_CONTRATANTE = cpcf.ID_CONTRATANTE ) "
+				+ "    LEFT JOIN 	SVT_CONTRA_PAQ_CONVENIO_PF cpcf ON ( con2.ID_CONTRATANTE = cpcf.ID_CONTRATANTE ) "
 				+ "    JOIN 		SVT_CONVENIO_PF cvn ON   ( cpcf.ID_CONVENIO_PF = cvn.ID_CONVENIO_PF   ) "
 				+ "    LEFT JOIN 	SVC_FINADO fin ON ( os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO ) "
 				+ "    LEFT JOIN 	SVC_PERSONA prf ON ( fin.ID_PERSONA = prf.ID_PERSONA ) "
@@ -342,7 +342,7 @@ public class OrdenServicio {
 		query.append("FROM SVC_ORDEN_SERVICIO os \n");
 		query.append("JOIN SVC_CONTRATANTE con ON (os.ID_CONTRATANTE = con.ID_CONTRATANTE) \n");
 		query.append("LEFT JOIN SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA) \n");
-		query.append("JOIN SVT_CONTRATANTE_PAQUETE_CONVENIO_PF cpcf ON (con.ID_CONTRATANTE = cpcf.ID_CONTRATANTE) \n");
+		query.append("JOIN SVT_CONTRA_PAQ_CONVENIO_PF cpcf ON (con.ID_CONTRATANTE = cpcf.ID_CONTRATANTE) \n");
 		query.append("  JOIN SVT_CONVENIO_PF cvn ON (cpcf.ID_CONVENIO_PF = cvn.ID_CONVENIO_PF) \n");
 		query.append("LEFT JOIN SVC_FINADO fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO) \n");
 		query.append("LEFT JOIN SVC_PERSONA prf ON (fin.ID_PERSONA = prf.ID_PERSONA) \n");
