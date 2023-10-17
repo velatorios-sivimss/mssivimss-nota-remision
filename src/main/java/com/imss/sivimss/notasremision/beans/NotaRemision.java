@@ -53,7 +53,7 @@ public class NotaRemision {
 
 	public DatosRequest serviciosNotaRem(DatosRequest request) {
 		StringBuilder query = new StringBuilder(
-				"SELECT pq.DES_PAQUETE AS nomPaquete, ar.DES_ARTICULO AS nomServicio, dcp.CAN_DET_PRESUP AS cantidad \n");
+				"SELECT pq.REF_PAQUETE_DESCRIPCION AS nomPaquete, ar.REF_ARTICULO AS nomServicio, dcp.CAN_DET_PRESUP AS cantidad \n");
 		query.append("FROM SVC_CARAC_PRESUPUESTO cp \n");
 		query.append("JOIN SVT_PAQUETE pq ON (cp.ID_PAQUETE = pq.ID_PAQUETE) \n");
 		query.append("JOIN SVC_DETALLE_CARAC_PRESUP dcp ON (cp.ID_CARAC_PRESUPUESTO = dcp.ID_CARAC_PRESUPUESTO) \n");
@@ -62,7 +62,7 @@ public class NotaRemision {
 		query.append("WHERE dcp.ID_INVE_ARTICULO IS NOT NULL AND cp.ID_ORDEN_SERVICIO = " + this.idOrden + " \n");
 		query.append("UNION \n");
 		query.append(
-				"SELECT pq.DES_PAQUETE AS nomPaquete, sv.DES_SERVICIO AS nomServicio, dcp.CAN_DET_PRESUP AS cantidad \n");
+				"SELECT pq.REF_PAQUETE_DESCRIPCION AS nomPaquete, sv.DES_SERVICIO AS nomServicio, dcp.CAN_DET_PRESUP AS cantidad \n");
 		query.append("FROM SVC_CARAC_PRESUPUESTO cp \n");
 		query.append("JOIN SVT_PAQUETE pq ON (cp.ID_PAQUETE = pq.ID_PAQUETE) \n");
 		query.append("JOIN SVC_DETALLE_CARAC_PRESUP dcp ON (cp.ID_CARAC_PRESUPUESTO = dcp.ID_CARAC_PRESUPUESTO) \n");
@@ -97,7 +97,7 @@ public class NotaRemision {
 		query.append(" LEFT JOIN SVC_CONTRATANTE con ON (os.ID_CONTRATANTE = con.ID_CONTRATANTE) "); 
 		query.append(" LEFT JOIN SVC_CONTRATANTE con2 ON (os.ID_CONTRATANTE_PF = con2.ID_CONTRATANTE) "); 
 		query.append(" LEFT JOIN SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA) ");
-		query.append(" LEFT JOIN SVT_CONTRATANTE_PAQUETE_CONVENIO_PF cpcf ON (con2.ID_CONTRATANTE = cpcf.ID_CONTRATANTE) "); 
+		query.append(" LEFT JOIN SVT_CONTRA_PAQ_CONVENIO_PF cpcf ON (con2.ID_CONTRATANTE = cpcf.ID_CONTRATANTE) "); 
 		query.append(" LEFT JOIN SVT_CONVENIO_PF cvn ON (cpcf.ID_CONVENIO_PF = cvn.ID_CONVENIO_PF) ");
 		query.append(" LEFT JOIN SVT_DOMICILIO domc ON (con.ID_DOMICILIO = domc.ID_DOMICILIO) ");
 		query.append(" WHERE nr.ID_NOTAREMISION = " + this.id);
@@ -137,7 +137,7 @@ public class NotaRemision {
 		query.append(" FROM SVC_ORDEN_SERVICIO os \n");
 		query.append(" LEFT JOIN SVC_FINADO fin ON fin.ID_ORDEN_SERVICIO = os.ID_ORDEN_SERVICIO \n");
 		query.append(" LEFT JOIN SVT_CONVENIO_PF cnv ON cnv.ID_CONVENIO_PF = fin.ID_CONTRATO_PREVISION \n");
-		query.append(" LEFT JOIN SVT_CONTRATANTE_PAQUETE_CONVENIO_PF cpc ON cpc.ID_CONVENIO_PF = cnv.ID_CONVENIO_PF\n");
+		query.append(" LEFT JOIN SVT_CONTRA_PAQ_CONVENIO_PF cpc ON cpc.ID_CONVENIO_PF = cnv.ID_CONVENIO_PF\n");
 		query.append(" LEFT JOIN SVT_PLAN_SFPA sps ON sps.ID_PLAN_SFPA = fin.ID_CONTRATO_PREVISION_PA \n");
 		query.append(" LEFT JOIN SVC_CONTRATANTE con ON con.ID_PERSONA = fin.ID_PERSONA");
 		query.append(" WHERE fin.ID_TIPO_ORDEN IN (2,4) ");
@@ -162,7 +162,7 @@ public class NotaRemision {
 							+ this.idUsuarioAlta);
 			query.append(", FEC_ACTUALIZACION = CURRENT_TIMESTAMP() WHERE ID_CONVENIO_PF = "
 					+ llavesTablasUpd.getIdConvenio() + ";$$");
-			query.append(" UPDATE SVT_CONTRATANTE_PAQUETE_CONVENIO_PF SET IND_ACTIVO = 0, ID_USUARIO_MODIFICA = "
+			query.append(" UPDATE SVT_CONTRA_PAQ_CONVENIO_PF SET IND_ACTIVO = 0, ID_USUARIO_MODIFICA = "
 					+ this.idUsuarioAlta);
 			query.append(", FEC_ACTUALIZACION = CURRENT_TIMESTAMP() WHERE ID_CONTRA_PAQ_CONVENIO_PF  = "
 					+ llavesTablasUpd.getIdContratantePaquete() + ";$$");
@@ -204,7 +204,7 @@ public class NotaRemision {
 					+ this.idUsuarioModifica);
 			query.append(", FEC_ACTUALIZACION = CURRENT_TIMESTAMP() WHERE ID_CONVENIO_PF = "
 					+ llavesTablasUpd.getIdConvenio() + ";$$");
-			query.append("UPDATE SVT_CONTRATANTE_PAQUETE_CONVENIO_PF SET IND_ACTIVO = 1, ID_USUARIO_MODIFICA = "
+			query.append("UPDATE SVT_CONTRA_PAQ_CONVENIO_PF SET IND_ACTIVO = 1, ID_USUARIO_MODIFICA = "
 					+ this.idUsuarioModifica);
 			query.append(", FEC_ACTUALIZACION = CURRENT_TIMESTAMP() WHERE ID_CONTRA_PAQ_CONVENIO_PF  = "
 					+ llavesTablasUpd.getIdContratantePaquete() + ";$$");
