@@ -78,18 +78,17 @@ public class NotaRemision {
 		StringBuilder query = new StringBuilder(
 				" SELECT nr.NUM_FOLIO AS folioNota, DATE_FORMAT(nr.FEC_ALTA,'" + formatoFecha + "') AS fechaNota,  ");
 		query.append(" os.CVE_FOLIO AS folioODS, vel.DES_VELATORIO AS nomVelatorio,  ");
-		query.append(" CONCAT(IFNULL(domv.DES_CALLE,''),' ',IFNULL(domv.NUM_EXTERIOR,''),' ',IFNULL(domv.DES_COLONIA,'')) AS dirVelatorio,  ");
+		query.append(" CONCAT(IFNULL(domv.REF_CALLE,''),' ',IFNULL(domv.NUM_EXTERIOR,''),' ',IFNULL(domv.REF_COLONIA,'')) AS dirVelatorio,  ");
 		query.append(" CONCAT(prf.NOM_PERSONA,' ',prf.NOM_PRIMER_APELLIDO,' ',prf.NOM_SEGUNDO_APELLIDO) AS nomFinado,  ");
 		query.append(" par.DES_PARENTESCO AS parFinado,  ");
 		query.append(" CONCAT(prc.NOM_PERSONA,' ',prc.NOM_PRIMER_APELLIDO,' ',prc.NOM_SEGUNDO_APELLIDO) AS nomSolicitante,  ");
-		query.append(" CONCAT(IFNULL(domc.DES_CALLE,''),' ',IFNULL(domc.NUM_EXTERIOR,''),' ',IFNULL(domc.DES_COLONIA,'')) AS dirSolicitante,  ");
+		query.append(" CONCAT(IFNULL(domc.REF_CALLE,''),' ',IFNULL(domc.NUM_EXTERIOR,''),' ',IFNULL(domc.REF_COLONIA,'')) AS dirSolicitante,  ");
 		query.append(" prc.CVE_CURP AS curpSolicitante, vel.DES_VELATORIO AS velatorioOrigen, IFNULL(cvn.DES_FOLIO,0) AS folioConvenio, ");
 		query.append(" DATE_FORMAT(IFNULL(cvn.FEC_INICIO,0),'" + formatoFecha + "') AS fechaConvenio,  ");
-		query.append(" IFNULL(notr.DES_MOTIVO,'') AS motivo   ");
+		query.append(" IFNULL(nr.REF_MOTIVO,'') AS motivo   ");
 		query.append(" FROM SVT_NOTA_REMISION nr  ");
 		query.append(" JOIN SVC_ORDEN_SERVICIO os ON (nr.ID_ORDEN_SERVICIO = os.ID_ORDEN_SERVICIO)  ");
 		query.append(" JOIN SVC_FINADO fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO)  ");
-		query.append(" JOIN SVT_NOTA_REMISION notr ON (os.ID_ORDEN_SERVICIO = notr.ID_ORDEN_SERVICIO)  ");
 		query.append(" JOIN SVC_VELATORIO vel ON (vel.ID_VELATORIO = fin.ID_VELATORIO)  ");
 		query.append(" LEFT JOIN SVC_PERSONA prf ON (fin.ID_PERSONA = prf.ID_PERSONA)  ");
 		query.append(" LEFT JOIN SVT_DOMICILIO domv ON (vel.ID_DOMICILIO = domv.ID_DOMICILIO)  ");
@@ -238,7 +237,7 @@ public class NotaRemision {
 		final QueryHelper q = new QueryHelper("UPDATE SVT_NOTA_REMISION");
 		q.agregarParametroValues("ID_ESTATUS", "3");
 		q.agregarParametroValues("FEC_ACTUALIZACION", "CURRENT_TIMESTAMP()");
-		q.agregarParametroValues("DES_MOTIVO", "'" + this.motivo + "'");
+		q.agregarParametroValues("REF_MOTIVO", "'" + this.motivo + "'");
 		q.agregarParametroValues("ID_USUARIO_MODIFICA", "'" + this.idUsuarioModifica + "'");
 		q.addWhere("ID_NOTAREMISION = " + this.id);
 		logg.info(q.toString());
