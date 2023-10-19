@@ -75,10 +75,7 @@ public class OrdenServicio {
 
 	public DatosRequest buscarODS(DatosRequest request, BusquedaDto busqueda, String formatoFecha)
 			throws UnsupportedEncodingException {
-		StringBuilder query = new StringBuilder("");
-		StringBuilder busquedaCancelada = busquedaCancelada(formatoFecha);
-		StringBuilder busquedaGeneradas = busquedaGeneradas(formatoFecha);
-		StringBuilder busquedaSinNota = busquedaSinNota(formatoFecha);
+		StringBuilder query = busqueda(formatoFecha);
 		
 		if (busqueda.getIdVelatorio() != null) {
 			query.append(" AND os.ID_VELATORIO = ").append(busqueda.getIdVelatorio());
@@ -95,35 +92,72 @@ public class OrdenServicio {
 		if (busqueda.getFecIniODS() != null && busqueda.getFecFinODS() != null) {
 			query.append(" AND DATE(nr.FEC_ALTA) BETWEEN STR_TO_DATE('" + busqueda.getFecIniODS() + "','" + formatoFecha
 					+ "') AND STR_TO_DATE('" + busqueda.getFecFinODS() + "','" + formatoFecha + "')");
-			busquedaGeneradas.append(query);
-			logger.info("busqueda generada");
-			logger.info(busquedaGeneradas.toString());
-			String encoded = DatatypeConverter.printBase64Binary(busquedaGeneradas.toString().getBytes("UTF-8"));
+			
+			query.append(" AND nr.IND_ESTATUS is NULL");
+			logger.info("busqueda generadas");
+			logger.info(query.toString());
+			String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes("UTF-8"));
 			request.getDatos().put(AppConstantes.QUERY, encoded);
+			
 		}else {
 			
-			busquedaCancelada.append(query);
-			busquedaSinNota.append(query);
-			busquedaGeneradas.append(query);
-			
-			StringBuilder queryCompleto = new StringBuilder("");
-			queryCompleto.append("SELECT  * FROM ( ");
-			queryCompleto.append(busquedaCancelada);
-			queryCompleto.append(" UNION ALL ");
-			queryCompleto.append(busquedaSinNota);
-			queryCompleto.append(" UNION ALL ");
-			queryCompleto.append(busquedaGeneradas);
-			queryCompleto.append(" ) datos  ORDER BY datos.id");
 			logger.info("busqueda por ODS general");
-			logger.info(queryCompleto.toString());
-			String encoded = DatatypeConverter.printBase64Binary(queryCompleto.toString().getBytes("UTF-8"));
+			logger.info(query.toString());
+			String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes("UTF-8"));
 			request.getDatos().put(AppConstantes.QUERY, encoded);
+			
 		}
 		
 			return request;
 
 	}
 
+	private StringBuilder busqueda(String formatoFecha) {
+		StringBuilder query = new StringBuilder();
+		query.append("SELECT \r\n"
+				+ "os.ID_ORDEN_SERVICIO AS id,\r\n"
+				+ "DATE_FORMAT(os.FEC_ALTA, '");
+		query.append(formatoFecha);
+		query.append("') AS fechaODS,\r\n"
+				+ "os.CVE_FOLIO AS folioODS,\r\n"
+				+ "cvn.DES_FOLIO AS folioConvenio,\r\n"
+				+ "os.ID_CONTRATANTE AS idContratante,\r\n"
+				+ "CONCAT(\r\n"
+				+ "IFNULL(prc.NOM_PERSONA, ''), ' ',\r\n"
+				+ "IFNULL(prc.NOM_PRIMER_APELLIDO, ''), ' ',\r\n"
+				+ "IFNULL(prc.NOM_SEGUNDO_APELLIDO, '')\r\n"
+				+ ") AS nomContratante,\r\n"
+				+ "fin.ID_FINADO AS idFinado,\r\n"
+				+ "CONCAT(\r\n"
+				+ "prf.NOM_PERSONA,\r\n"
+				+ "' ',\r\n"
+				+ "prf.NOM_PRIMER_APELLIDO,\r\n"
+				+ "' ',\r\n"
+				+ "prf.NOM_SEGUNDO_APELLIDO\r\n"
+				+ ") AS nomFinado,\r\n"
+				+ "IFNULL(nr.IND_ESTATUS, 1) AS estatus,\r\n"
+				+ "IFNULL(nr.ID_NOTAREMISION, 0) AS idNota,\r\n"
+				+ "IFNULL(nr.ID_NOTAREMISION, 0) AS idCancelada,\r\n"
+				+ "0 AS total,\r\n"
+				+ "IFNULL(ENR.DES_ESTATUS, 'Sin nota') AS DesEstatus,\r\n"
+				+ "os.ID_VELATORIO AS idVelatorio,\r\n"
+				+ "vel.ID_DELEGACION AS idDelegacion\r\n"
+				+ "FROM\r\n"
+				+ "SVC_ORDEN_SERVICIO os\r\n"
+				+ "INNER JOIN SVC_FINADO fin ON ( os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO )\r\n"
+				+ "INNER JOIN SVT_CONVENIO_PF cvn ON ( cvn.ID_CONVENIO_PF = fin.ID_CONTRATO_PREVISION   )\r\n"
+				+ "INNER JOIN SVC_CONTRATANTE con ON ( con.ID_CONTRATANTE = os.ID_CONTRATANTE)\r\n"
+				+ "INNER JOIN SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA )\r\n"
+				+ "INNER JOIN SVC_PERSONA prf ON ( fin.ID_PERSONA = prf.ID_PERSONA )\r\n"
+				+ "JOIN SVC_VELATORIO vel ON (os.ID_VELATORIO = vel.ID_VELATORIO)\r\n"
+				+ "LEFT JOIN SVT_NOTA_REMISION nr ON ( os.ID_ORDEN_SERVICIO = nr.ID_ORDEN_SERVICIO )\r\n"
+				+ "LEFT JOIN SVC_ESTATUS_NOTA_REM ENR ON ( ENR.ID_ESTATUS_NOTA_REM = nr.IND_ESTATUS )\r\n"
+				+ "WHERE os.ID_ESTATUS_ORDEN_SERVICIO IN (2,6)\r\n"
+				+ "AND fin.ID_TIPO_ORDEN in(2) ");
+		
+		return query;
+	}
+	
 	public DatosRequest detalleODS(DatosRequest request) throws UnsupportedEncodingException {
 		String idODS = request.getDatos().get("id").toString();
 		StringBuilder query = new StringBuilder(
@@ -182,150 +216,6 @@ public class OrdenServicio {
 		parametro.put(AppConstantes.QUERY, encoded);
 		request.setDatos(parametro);
 		return request;
-	}
-
-	private StringBuilder busquedaCancelada(String formatoFecha) {
-		StringBuilder query = new StringBuilder();
-		query.append("SELECT 	DISTINCT "
-				+ "            os.ID_ORDEN_SERVICIO AS id, "
-				+ "            os.CVE_FOLIO AS folioODS, "
-				+ "            DATE_FORMAT(os.FEC_ALTA, '%d/%m/%Y') AS fechaODS, "
-				+ "            CASE  "
-				+ "				WHEN cvn.DES_FOLIO IS NOT NULL THEN cvn.DES_FOLIO  "
-				+ "				WHEN sps.NUM_FOLIO_PLAN_SFPA IS NOT NULL THEN sps.NUM_FOLIO_PLAN_SFPA  "
-				+ "				ELSE '' "
-				+ "			END AS folioConvenio, "
-				+ "			os.ID_CONTRATANTE AS idContratante, "
-				+ "			CONCAT( "
-				+ "				IFNULL(prc.NOM_PERSONA, ' '), ' ', "
-				+ "				IFNULL(prc.NOM_PRIMER_APELLIDO, ' '), ' ', "
-				+ "				IFNULL(prc.NOM_SEGUNDO_APELLIDO, ' ') "
-				+ "			) AS nomContratante, "
-				+ "			fin.ID_FINADO AS idFinado, "
-				+ "			CONCAT( "
-				+ "				prf.NOM_PERSONA, "
-				+ "				' ', "
-				+ "				prf.NOM_PRIMER_APELLIDO, "
-				+ "				' ', "
-				+ "				prf.NOM_SEGUNDO_APELLIDO "
-				+ "			) AS nomFinado, "
-				+ "			IFNULL(nr.IND_ESTATUS, 1) AS estatus, "
-				+ "			IFNULL(nr.ID_NOTAREMISION, 0) AS idNota, "
-				+ "			IFNULL(nr.ID_NOTAREMISION, 0) AS idCancelada, "
-				+ "			0 AS total "
-        		+ ", seos.DES_ESTATUS AS DesEstatus "
-				+ "    FROM 		SVC_ORDEN_SERVICIO os "
-				+ "    JOIN 		SVC_CONTRATANTE con 						ON ( con.ID_CONTRATANTE = os.ID_CONTRATANTE) 	"
-				+ "    JOIN 		SVC_CONTRATANTE con2 						ON ( con2.ID_CONTRATANTE = os.ID_CONTRATANTE_PF) 	"
-				+ "    LEFT JOIN 	SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA ) "
-				+ "    LEFT JOIN 	SVT_CONTRA_PAQ_CONVENIO_PF cpcf ON ( con2.ID_CONTRATANTE = cpcf.ID_CONTRATANTE ) "
-				+ "    JOIN 		SVT_CONVENIO_PF cvn ON   ( cpcf.ID_CONVENIO_PF = cvn.ID_CONVENIO_PF   ) "
-				+ "    LEFT JOIN 	SVC_FINADO fin ON ( os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO ) "
-				+ "    LEFT JOIN 	SVC_PERSONA prf ON ( fin.ID_PERSONA = prf.ID_PERSONA ) "
-				+ "    LEFT JOIN 	SVT_PLAN_SFPA sps ON	 sps.ID_PLAN_SFPA = fin.ID_CONTRATO_PREVISION_PA  "
-				+ "    JOIN 		SVT_NOTA_REMISION nr ON ( os.ID_ORDEN_SERVICIO = nr.ID_ORDEN_SERVICIO ) AND nr.IND_ESTATUS IN(3) "
-				+ "    JOIN 		SVC_VELATORIO vel ON( vel.ID_VELATORIO = os.ID_VELATORIO ) "
-				+ " JOIN SVC_ESTATUS_ORDEN_SERVICIO seos ON seos.ID_ESTATUS_ORDEN_SERVICIO = nr.IND_ESTATUS "
-				+ "    WHERE os.ID_ESTATUS_ORDEN_SERVICIO IN (2) AND fin.ID_TIPO_ORDEN IN(2, 4)");
-
-		logger.info("busqueda cancelada");
-		logger.info(query.toString());
-		return query;
-	}
-
-	private StringBuilder busquedaGeneradas(String formatoFecha) {
-		
-		StringBuilder query = new StringBuilder();
-		query.append("SELECT 	DISTINCT "
-				+ "            os.ID_ORDEN_SERVICIO AS id, "
-				+ "            os.CVE_FOLIO AS folioODS, "
-				+ "            DATE_FORMAT(os.FEC_ALTA, '%d/%m/%Y') AS fechaODS, "
-				+ "            CASE  "
-				+ "				WHEN cvn.DES_FOLIO IS NOT NULL THEN cvn.DES_FOLIO  "
-				+ "				WHEN sps.NUM_FOLIO_PLAN_SFPA IS NOT NULL THEN sps.NUM_FOLIO_PLAN_SFPA  "
-				+ "				ELSE '' "
-				+ "			END AS folioConvenio, "
-				+ "			os.ID_CONTRATANTE AS idContratante, "
-				+ "			CONCAT( "
-				+ "				IFNULL(prc.NOM_PERSONA, ' '), ' ', "
-				+ "				IFNULL(prc.NOM_PRIMER_APELLIDO, ' '), ' ', "
-				+ "				IFNULL(prc.NOM_SEGUNDO_APELLIDO, ' ') "
-				+ "			) AS nomContratante, "
-				+ "			fin.ID_FINADO AS idFinado, "
-				+ "			CONCAT( "
-				+ "				prf.NOM_PERSONA, "
-				+ "				' ', "
-				+ "				prf.NOM_PRIMER_APELLIDO, "
-				+ "				' ', "
-				+ "				prf.NOM_SEGUNDO_APELLIDO "
-				+ "			) AS nomFinado, "
-				+ "			IFNULL(nr.IND_ESTATUS, 1) AS estatus, "
-				+ "			IFNULL(nr.ID_NOTAREMISION, 0) AS idNota, "
-				+ "			IFNULL(nr.ID_NOTAREMISION, 0) AS idCancelada, "
-				+ "			0 AS total "
-				+ ", seos.DES_ESTATUS AS DesEstatus "
-				+ "    FROM 		SVC_ORDEN_SERVICIO os "
-				+ "    JOIN 		SVC_CONTRATANTE con 						ON ( con.ID_CONTRATANTE = os.ID_CONTRATANTE) "
-				+ "    JOIN 		SVC_CONTRATANTE con2 						ON ( con2.ID_CONTRATANTE = os.ID_CONTRATANTE_PF)  "
-				+ "    LEFT JOIN 	SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA ) "
-				+ "    LEFT JOIN 	SVT_CONTRA_PAQ_CONVENIO_PF cpcf ON ( con2.ID_CONTRATANTE = cpcf.ID_CONTRATANTE ) "
-				+ "    JOIN 		SVT_CONVENIO_PF cvn ON   ( cpcf.ID_CONVENIO_PF = cvn.ID_CONVENIO_PF   )"
-				+ "    LEFT JOIN 	SVC_FINADO fin ON ( os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO ) "
-				+ "    LEFT JOIN 	SVC_PERSONA prf ON ( fin.ID_PERSONA = prf.ID_PERSONA ) "
-				+ "    LEFT JOIN 	SVT_PLAN_SFPA sps ON	 sps.ID_PLAN_SFPA = fin.ID_CONTRATO_PREVISION_PA  "
-				+ "    JOIN 		SVT_NOTA_REMISION nr ON ( os.ID_ORDEN_SERVICIO = nr.ID_ORDEN_SERVICIO ) AND nr.IND_ESTATUS IN(2) "
-				+ "    JOIN 		SVC_VELATORIO vel ON( vel.ID_VELATORIO = os.ID_VELATORIO ) "
-				+ " JOIN SVC_ESTATUS_ORDEN_SERVICIO seos ON seos.ID_ESTATUS_ORDEN_SERVICIO = nr.IND_ESTATUS "
-				+ "    WHERE os.ID_ESTATUS_ORDEN_SERVICIO IN (6) AND fin.ID_TIPO_ORDEN IN(2, 4)");		
-
-		return query;
-	}
-
-	private StringBuilder busquedaSinNota(String formatoFecha) {
-		
-		StringBuilder query = new StringBuilder("SELECT 	DISTINCT "
-				+ "            os.ID_ORDEN_SERVICIO AS id, "
-				+ "            os.CVE_FOLIO AS folioODS, "
-				+ "            DATE_FORMAT(os.FEC_ALTA, '%d/%m/%Y') AS fechaODS, "
-				+ "            CASE  "
-				+ "				WHEN cvn.DES_FOLIO IS NOT NULL THEN cvn.DES_FOLIO  "
-				+ "				WHEN sps.NUM_FOLIO_PLAN_SFPA IS NOT NULL THEN sps.NUM_FOLIO_PLAN_SFPA  "
-				+ "				ELSE '' "
-				+ "			END AS folioConvenio, "
-				+ "			os.ID_CONTRATANTE AS idContratante, "
-				+ "			CONCAT( "
-				+ "				IFNULL(prc.NOM_PERSONA, ' '), ' ', "
-				+ "				IFNULL(prc.NOM_PRIMER_APELLIDO, ' '), ' ', "
-				+ "				IFNULL(prc.NOM_SEGUNDO_APELLIDO, ' ') "
-				+ "			) AS nomContratante, "
-				+ "			fin.ID_FINADO AS idFinado, "
-				+ "			CONCAT( "
-				+ "				prf.NOM_PERSONA, "
-				+ "				' ', "
-				+ "				prf.NOM_PRIMER_APELLIDO, "
-				+ "				' ', "
-				+ "				prf.NOM_SEGUNDO_APELLIDO "
-				+ "			) AS nomFinado, "
-				+ "			IFNULL(nr.IND_ESTATUS, 1) AS estatus, "
-				+ "			IFNULL(nr.ID_NOTAREMISION, 0) AS idNota, "
-				+ "			IFNULL(nr.ID_NOTAREMISION, 0) AS idCancelada, "
-				+ "			0 AS total "
-				+ ", seos.DES_ESTATUS AS DesEstatus "
-				+ "    FROM 		SVC_ORDEN_SERVICIO os "
-				+ "    JOIN 		SVC_CONTRATANTE con 						ON ( con.ID_CONTRATANTE = os.ID_CONTRATANTE) "
-				+ "    JOIN 		SVC_CONTRATANTE con2 						ON ( con2.ID_CONTRATANTE = os.ID_CONTRATANTE_PF) "
-				+ "    LEFT JOIN 	SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA ) "
-				+ "    LEFT JOIN 	SVT_CONTRA_PAQ_CONVENIO_PF cpcf ON ( con2.ID_CONTRATANTE = cpcf.ID_CONTRATANTE ) "
-				+ "    JOIN 		SVT_CONVENIO_PF cvn ON   ( cpcf.ID_CONVENIO_PF = cvn.ID_CONVENIO_PF   ) "
-				+ "    LEFT JOIN 	SVC_FINADO fin ON ( os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO ) "
-				+ "    LEFT JOIN 	SVC_PERSONA prf ON ( fin.ID_PERSONA = prf.ID_PERSONA ) "
-				+ "    LEFT JOIN 	SVT_PLAN_SFPA sps ON	 sps.ID_PLAN_SFPA = fin.ID_CONTRATO_PREVISION_PA "
-				+ "    JOIN 		SVT_NOTA_REMISION nr ON ( os.ID_ORDEN_SERVICIO = nr.ID_ORDEN_SERVICIO ) AND nr.IND_ESTATUS IN(2) "
-				+ "    JOIN 		SVC_VELATORIO vel ON( vel.ID_VELATORIO = os.ID_VELATORIO ) "
-				+ " JOIN SVC_ESTATUS_ORDEN_SERVICIO seos ON seos.ID_ESTATUS_ORDEN_SERVICIO = nr.IND_ESTATUS "
-				+ "    WHERE os.ID_ESTATUS_ORDEN_SERVICIO IN (2) AND fin.ID_TIPO_ORDEN IN(2, 4)");
-		
-		return query;
 	}
 
 	private StringBuilder armaQuery(String formatoFecha) {
