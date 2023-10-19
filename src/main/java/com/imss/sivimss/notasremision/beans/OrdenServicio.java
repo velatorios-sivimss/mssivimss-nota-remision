@@ -209,7 +209,7 @@ public class OrdenServicio {
 				+ "				' ', "
 				+ "				prf.NOM_SEGUNDO_APELLIDO "
 				+ "			) AS nomFinado, "
-				+ "			IFNULL(nr.ID_ESTATUS, 1) AS estatus, "
+				+ "			IFNULL(nr.IND_ESTATUS, 1) AS estatus, "
 				+ "			IFNULL(nr.ID_NOTAREMISION, 0) AS idNota, "
 				+ "			IFNULL(nr.ID_NOTAREMISION, 0) AS idCancelada, "
 				+ "			0 AS total "
@@ -223,9 +223,9 @@ public class OrdenServicio {
 				+ "    LEFT JOIN 	SVC_FINADO fin ON ( os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO ) "
 				+ "    LEFT JOIN 	SVC_PERSONA prf ON ( fin.ID_PERSONA = prf.ID_PERSONA ) "
 				+ "    LEFT JOIN 	SVT_PLAN_SFPA sps ON	 sps.ID_PLAN_SFPA = fin.ID_CONTRATO_PREVISION_PA  "
-				+ "    JOIN 		SVT_NOTA_REMISION nr ON ( os.ID_ORDEN_SERVICIO = nr.ID_ORDEN_SERVICIO ) AND nr.ID_ESTATUS IN(3) "
+				+ "    JOIN 		SVT_NOTA_REMISION nr ON ( os.ID_ORDEN_SERVICIO = nr.ID_ORDEN_SERVICIO ) AND nr.IND_ESTATUS IN(3) "
 				+ "    JOIN 		SVC_VELATORIO vel ON( vel.ID_VELATORIO = os.ID_VELATORIO ) "
-				+ " JOIN SVC_ESTATUS_ORDEN_SERVICIO seos ON seos.ID_ESTATUS_ORDEN_SERVICIO = nr.ID_ESTATUS "
+				+ " JOIN SVC_ESTATUS_ORDEN_SERVICIO seos ON seos.ID_ESTATUS_ORDEN_SERVICIO = nr.IND_ESTATUS "
 				+ "    WHERE os.ID_ESTATUS_ORDEN_SERVICIO IN (2) AND fin.ID_TIPO_ORDEN IN(2, 4)");
 
 		logger.info("busqueda cancelada");
@@ -259,7 +259,7 @@ public class OrdenServicio {
 				+ "				' ', "
 				+ "				prf.NOM_SEGUNDO_APELLIDO "
 				+ "			) AS nomFinado, "
-				+ "			IFNULL(nr.ID_ESTATUS, 1) AS estatus, "
+				+ "			IFNULL(nr.IND_ESTATUS, 1) AS estatus, "
 				+ "			IFNULL(nr.ID_NOTAREMISION, 0) AS idNota, "
 				+ "			IFNULL(nr.ID_NOTAREMISION, 0) AS idCancelada, "
 				+ "			0 AS total "
@@ -273,9 +273,9 @@ public class OrdenServicio {
 				+ "    LEFT JOIN 	SVC_FINADO fin ON ( os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO ) "
 				+ "    LEFT JOIN 	SVC_PERSONA prf ON ( fin.ID_PERSONA = prf.ID_PERSONA ) "
 				+ "    LEFT JOIN 	SVT_PLAN_SFPA sps ON	 sps.ID_PLAN_SFPA = fin.ID_CONTRATO_PREVISION_PA  "
-				+ "    JOIN 		SVT_NOTA_REMISION nr ON ( os.ID_ORDEN_SERVICIO = nr.ID_ORDEN_SERVICIO ) AND nr.ID_ESTATUS IN(2) "
+				+ "    JOIN 		SVT_NOTA_REMISION nr ON ( os.ID_ORDEN_SERVICIO = nr.ID_ORDEN_SERVICIO ) AND nr.IND_ESTATUS IN(2) "
 				+ "    JOIN 		SVC_VELATORIO vel ON( vel.ID_VELATORIO = os.ID_VELATORIO ) "
-				+ " JOIN SVC_ESTATUS_ORDEN_SERVICIO seos ON seos.ID_ESTATUS_ORDEN_SERVICIO = nr.ID_ESTATUS "
+				+ " JOIN SVC_ESTATUS_ORDEN_SERVICIO seos ON seos.ID_ESTATUS_ORDEN_SERVICIO = nr.IND_ESTATUS "
 				+ "    WHERE os.ID_ESTATUS_ORDEN_SERVICIO IN (6) AND fin.ID_TIPO_ORDEN IN(2, 4)");		
 
 		return query;
@@ -306,7 +306,7 @@ public class OrdenServicio {
 				+ "				' ', "
 				+ "				prf.NOM_SEGUNDO_APELLIDO "
 				+ "			) AS nomFinado, "
-				+ "			IFNULL(nr.ID_ESTATUS, 1) AS estatus, "
+				+ "			IFNULL(nr.IND_ESTATUS, 1) AS estatus, "
 				+ "			IFNULL(nr.ID_NOTAREMISION, 0) AS idNota, "
 				+ "			IFNULL(nr.ID_NOTAREMISION, 0) AS idCancelada, "
 				+ "			0 AS total "
@@ -320,9 +320,9 @@ public class OrdenServicio {
 				+ "    LEFT JOIN 	SVC_FINADO fin ON ( os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO ) "
 				+ "    LEFT JOIN 	SVC_PERSONA prf ON ( fin.ID_PERSONA = prf.ID_PERSONA ) "
 				+ "    LEFT JOIN 	SVT_PLAN_SFPA sps ON	 sps.ID_PLAN_SFPA = fin.ID_CONTRATO_PREVISION_PA "
-				+ "    JOIN 		SVT_NOTA_REMISION nr ON ( os.ID_ORDEN_SERVICIO = nr.ID_ORDEN_SERVICIO ) AND nr.ID_ESTATUS IN(2) "
+				+ "    JOIN 		SVT_NOTA_REMISION nr ON ( os.ID_ORDEN_SERVICIO = nr.ID_ORDEN_SERVICIO ) AND nr.IND_ESTATUS IN(2) "
 				+ "    JOIN 		SVC_VELATORIO vel ON( vel.ID_VELATORIO = os.ID_VELATORIO ) "
-				+ " JOIN SVC_ESTATUS_ORDEN_SERVICIO seos ON seos.ID_ESTATUS_ORDEN_SERVICIO = nr.ID_ESTATUS "
+				+ " JOIN SVC_ESTATUS_ORDEN_SERVICIO seos ON seos.ID_ESTATUS_ORDEN_SERVICIO = nr.IND_ESTATUS "
 				+ "    WHERE os.ID_ESTATUS_ORDEN_SERVICIO IN (2) AND fin.ID_TIPO_ORDEN IN(2, 4)");
 		
 		return query;
@@ -338,7 +338,7 @@ public class OrdenServicio {
 		query.append(
 				"fin.ID_FINADO AS idFinado, CONCAT(prf.NOM_PERSONA,' ',prf.NOM_PRIMER_APELLIDO,' ',prf.NOM_SEGUNDO_APELLIDO) AS nomFinado, \n");
 		query.append(
-				"IFNULL(nr.ID_ESTATUS,1) AS estatus, IFNULL(nr.ID_NOTAREMISION,0) AS idNota, IFNULL(nrc.ID_NOTAREMISION,0) AS idCancelada \n");
+				"IFNULL(nr.IND_ESTATUS,1) AS estatus, IFNULL(nr.ID_NOTAREMISION,0) AS idNota, IFNULL(nrc.ID_NOTAREMISION,0) AS idCancelada \n");
 		query.append("FROM SVC_ORDEN_SERVICIO os \n");
 		query.append("JOIN SVC_CONTRATANTE con ON (os.ID_CONTRATANTE = con.ID_CONTRATANTE) \n");
 		query.append("LEFT JOIN SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA) \n");
