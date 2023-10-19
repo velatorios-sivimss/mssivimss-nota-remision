@@ -354,7 +354,12 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 				formatoNotaDto.setParFinado(datos1.get(0).get("parFinado").toString());
 				formatoNotaDto.setFolioODS(datos1.get(0).get("folioODS").toString());
 				formatoNotaDto.setFolioConvenio(datos1.get(0).get("folioConvenio").toString());
-				formatoNotaDto.setFechaConvenio(datos1.get(0).get("fechaConvenio").toString());
+				if( datos1.get(0).get("fechaConvenio") == null) {
+					formatoNotaDto.setFechaConvenio( " " );
+				}else {
+					formatoNotaDto.setFechaConvenio(datos1.get(0).get("fechaConvenio").toString());
+				}
+				
 			}
 		} else {
 			formatoNotaDto = gson.fromJson(datosJson, FormatoNotaDto.class);
