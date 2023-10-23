@@ -17,7 +17,7 @@ public class LogUtil {
     @Value("${ruta-log}")
     private String rutaLog;
     
-    @Value("$(spring.application.name)")
+    @Value("${spring.application.name}")
     private String nombreApp;
 
     private String formatoFechaLog = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss").format(new Date());
