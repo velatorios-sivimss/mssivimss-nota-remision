@@ -57,6 +57,10 @@ public class OrdenServicio {
 		query.append("FROM SVC_ORDEN_SERVICIO os  ");
 		query.append("JOIN SVC_FINADO fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO)  ");
 		query.append("JOIN SVC_VELATORIO vel ON (os.ID_VELATORIO = vel.ID_VELATORIO)  ");
+		query.append("INNER JOIN SVT_CONVENIO_PF cvn ON ( cvn.ID_CONVENIO_PF = fin.ID_CONTRATO_PREVISION   )\r\n"
+				+ "INNER JOIN SVC_CONTRATANTE con ON ( con.ID_CONTRATANTE = os.ID_CONTRATANTE)\r\n"
+				+ "INNER JOIN SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA )\r\n"
+				+ "INNER JOIN SVC_PERSONA prf ON ( fin.ID_PERSONA = prf.ID_PERSONA ) ");
 		query.append("WHERE os.ID_ESTATUS_ORDEN_SERVICIO = 2 ");
 		query.append("AND fin.ID_TIPO_ORDEN in(2,4) ");
 
