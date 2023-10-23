@@ -161,7 +161,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 			log.error(e.getMessage());
 			logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(),
 					this.getClass().getPackage().toString(), e.getMessage(), CONSULTA, authentication);
-			return null;
+			throw new IOException("Error al ejectuar el Query", e.getCause());
 		}
 	}
 

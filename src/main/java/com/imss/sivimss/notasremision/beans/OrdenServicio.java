@@ -167,14 +167,14 @@ public class OrdenServicio {
 		StringBuilder query = new StringBuilder(
 				"SELECT os.CVE_FOLIO AS folioODS, vel.DES_VELATORIO AS nomVelatorio, \n");
 		query.append(
-				"CONCAT(IFNULL(domv.DES_CALLE,''),' ',IFNULL(domv.NUM_EXTERIOR,''),' ',IFNULL(domv.DES_COLONIA,'')) AS dirVelatorio, \n");
+				"CONCAT(IFNULL(domv.REF_CALLE,''),' ',IFNULL(domv.NUM_EXTERIOR,''),' ',IFNULL(domv.REF_COLONIA,'')) AS dirVelatorio, \n");
 		query.append(
 				"CONCAT(prf.NOM_PERSONA,' ',prf.NOM_PRIMER_APELLIDO,' ',prf.NOM_SEGUNDO_APELLIDO) AS nomFinado, \n");
 		query.append("par.DES_PARENTESCO AS parFinado, vel. NOM_RESPO_SANITARIO AS nomResponsable, \n");
 		query.append(
 				"CONCAT(prc.NOM_PERSONA,' ',prc.NOM_PRIMER_APELLIDO,' ',prc.NOM_SEGUNDO_APELLIDO) AS nomSolicitante, \n");
 		query.append(
-				"CONCAT(IFNULL(domc.DES_CALLE,''),' ',IFNULL(domc.NUM_EXTERIOR,''),' ',IFNULL(domc.DES_COLONIA,'')) AS dirSolicitante, \n");
+				"CONCAT(IFNULL(domc.REF_CALLE,''),' ',IFNULL(domc.NUM_EXTERIOR,''),' ',IFNULL(domc.REF_COLONIA,'')) AS dirSolicitante, \n");
 		query.append("prc.CVE_CURP AS curpSolicitante, vel.DES_VELATORIO AS velatorioOrigen, \n");
 		query.append("IFNULL(cvn.DES_FOLIO,0) AS folioConvenio, IFNULL(cvn.FEC_INICIO,0) AS fechaConvenio, \n");
 		query.append("(SELECT LPAD(IFNULL(MAX(NUM_FOLIO+1),1),6,'0') FROM SVT_NOTA_REMISION) AS folioNota \n");
