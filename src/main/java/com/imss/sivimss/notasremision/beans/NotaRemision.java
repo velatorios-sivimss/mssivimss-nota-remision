@@ -1,6 +1,5 @@
 package com.imss.sivimss.notasremision.beans;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,7 +43,13 @@ public class NotaRemision {
 	}
 
 	public DatosRequest ultimoFolioNota(DatosRequest request) {
-		String query = "SELECT IFNULL(MAX(NUM_FOLIO),0) AS folio FROM SVT_NOTA_REMISION";
+		String query = "SELECT \r\n"
+				+ "IFNULL(\r\n"
+				+ "MAX(\r\n"
+				+ "CAST( NUM_FOLIO AS double)\r\n"
+				+ ")\r\n"
+				+ ",0) AS folio \r\n"
+				+ "FROM SVT_NOTA_REMISION";
 		logg.info(query);
 		String encoded = DatatypeConverter.printBase64Binary(query.getBytes(StandardCharsets.UTF_8));
 		request.getDatos().put(AppConstantes.QUERY, encoded);
@@ -85,6 +90,7 @@ public class NotaRemision {
 		query.append(" CONCAT(IFNULL(domc.REF_CALLE,''),' ',IFNULL(domc.NUM_EXTERIOR,''),' ',IFNULL(domc.REF_COLONIA,'')) AS dirSolicitante,  ");
 		query.append(" prc.CVE_CURP AS curpSolicitante, vel.DES_VELATORIO AS velatorioOrigen, IFNULL(cvn.DES_FOLIO,0) AS folioConvenio, ");
 		query.append(" DATE_FORMAT(IFNULL(cvn.FEC_INICIO,0),'" + formatoFecha + "') AS fechaConvenio,  ");
+		query.append(" DATE_FORMAT(IFNULL(os.FEC_ALTA,0),'" + formatoFecha + "') AS fechaODS,  ");
 		query.append(" IFNULL(nr.REF_MOTIVO,'') AS motivo   ");
 		query.append(" FROM SVT_NOTA_REMISION nr  ");
 		query.append(" JOIN SVC_ORDEN_SERVICIO os ON (nr.ID_ORDEN_SERVICIO = os.ID_ORDEN_SERVICIO)  ");
@@ -108,11 +114,11 @@ public class NotaRemision {
 		return request;
 	}
 
-	public DatosRequest generarNotaRem(String ultimoFolio) {
+	public DatosRequest generarNotaRem(Integer ultimoFolio) {
 		DatosRequest request = new DatosRequest();
 		Map<String, Object> parametro = new HashMap<>();
 		final QueryHelper q = new QueryHelper("INSERT INTO SVT_NOTA_REMISION");
-		q.agregarParametroValues("NUM_FOLIO", "'" + String.format("%06d", Integer.parseInt(ultimoFolio) + 1) + "'");
+		q.agregarParametroValues("NUM_FOLIO", "'" + String.format("%06d", ultimoFolio + 1) + "'");
 		q.agregarParametroValues("ID_ORDEN_SERVICIO", "'" + this.idOrden + "'");
 		q.agregarParametroValues("IND_ESTATUS", "2");
 		q.agregarParametroValues("FEC_ALTA", "CURRENT_TIMESTAMP()");
@@ -261,7 +267,8 @@ public class NotaRemision {
 		envioDatos.put("nomFinado", formatoDto.getNomFinado());
 		envioDatos.put("parFinado", formatoDto.getParFinado());
 		envioDatos.put("folioODS", formatoDto.getFolioODS());
-		envioDatos.put("convenio", formatoDto.getFolioConvenio());
+		envioDatos.put("fechaODS", formatoDto.getFechaODS());
+		envioDatos.put("folioConvenio", formatoDto.getFolioConvenio());
 		envioDatos.put("fechaConvenio", formatoDto.getFechaConvenio());
 		envioDatos.put("condicion", " AND cp.ID_ORDEN_SERVICIO = " + this.idOrden);
 		envioDatos.put("tipoReporte", formatoDto.getTipoReporte());
