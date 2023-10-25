@@ -114,7 +114,7 @@ public class NotaRemision {
 		final QueryHelper q = new QueryHelper("INSERT INTO SVT_NOTA_REMISION");
 		q.agregarParametroValues("NUM_FOLIO", "'" + String.format("%06d", Integer.parseInt(ultimoFolio) + 1) + "'");
 		q.agregarParametroValues("ID_ORDEN_SERVICIO", "'" + this.idOrden + "'");
-		q.agregarParametroValues("ID_ESTATUS", "2");
+		q.agregarParametroValues("IND_ESTATUS", "2");
 		q.agregarParametroValues("FEC_ALTA", "CURRENT_TIMESTAMP()");
 		q.agregarParametroValues("ID_USUARIO_ALTA", "'" + this.idUsuarioAlta + "'");
 		logg.info(q.toString());
@@ -235,7 +235,7 @@ public class NotaRemision {
 		DatosRequest request = new DatosRequest();
 		Map<String, Object> parametro = new HashMap<>();
 		final QueryHelper q = new QueryHelper("UPDATE SVT_NOTA_REMISION");
-		q.agregarParametroValues("ID_ESTATUS", "3");
+		q.agregarParametroValues("IND_ESTATUS", "3");
 		q.agregarParametroValues("FEC_ACTUALIZACION", "CURRENT_TIMESTAMP()");
 		q.agregarParametroValues("REF_MOTIVO", "'" + this.motivo + "'");
 		q.agregarParametroValues("ID_USUARIO_MODIFICA", "'" + this.idUsuarioModifica + "'");
