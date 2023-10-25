@@ -25,6 +25,7 @@ public class FormatoNotaDto {
 	private String nomFinado;
 	private String parFinado;
 	private String folioODS;
+	private String fechaODS;
 	
 	// Convenio
 	private String folioConvenio;

@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
 import com.imss.sivimss.notasremision.security.jwt.JwtTokenProvider;
-
+import com.imss.sivimss.notasremision.util.ProviderServiceRestTemplate;
 
 @Service
 public class ProviderServiceRestTemplate {
@@ -27,10 +27,10 @@ public class ProviderServiceRestTemplate {
 
 	private static final Logger log = LoggerFactory.getLogger(ProviderServiceRestTemplate.class);
 
-	public Response<?> consumirServicio(Map<String, Object> dato, String url, Authentication authentication)
+	public Response<Object> consumirServicio(Map<String, Object> dato, String url, Authentication authentication)
 			throws IOException {
 		try {
-			Response respuestaGenerado = restTemplateUtil.sendPostRequestByteArrayToken(url,
+			Response<Object> respuestaGenerado = restTemplateUtil.sendPostRequestByteArrayToken(url,
 					new EnviarDatosRequest(dato), jwtTokenProvider.createToken((String) authentication.getPrincipal()),
 					Response.class);
 			return validarResponse(respuestaGenerado);
@@ -39,21 +39,35 @@ public class ProviderServiceRestTemplate {
 			throw exception;
 		}
 	}
+	
+	public Response<Object> consumirServicioActMult( Object dato, String url, Authentication authentication)
+			throws IOException {
+		try {
+			Response<Object> respuestaGenerado = restTemplateUtil.sendPostRequestByteArrayToken(url,
+					dato, jwtTokenProvider.createToken((String) authentication.getPrincipal()),
+					Response.class);
+			return validarResponse(respuestaGenerado);
+		} catch (IOException exception) {
+			log.error("Ha ocurrido un error al recuperar la informacion");
+			throw exception;
+		}
+	}
+	
 
-	public Response<?> consumirServicioReportes(Map<String, Object> dato,
+	public Response<Object> consumirServicioReportes(Map<String, Object> dato,
 			String url, Authentication authentication) throws IOException {
 		try {
-			Response respuestaGenerado = restTemplateUtil.sendPostRequestByteArrayReportesToken(url,
+			Response<Object> respuestaGenerado = restTemplateUtil.sendPostRequestByteArrayReportesToken(url,
 					new DatosReporteDTO(dato),
 					jwtTokenProvider.createToken((String) authentication.getPrincipal()), Response.class);
 			return validarResponse(respuestaGenerado);
-		} catch (Exception exception) {
-			log.error("Ha ocurrido un error al recuperar la informacion " + exception.getMessage());
+		} catch (IOException exception) {
+			log.error("Ha ocurrido un error al recuperar la informacion");
 			throw exception;
 		}
 	}
 
-	public Response<?> validarResponse(Response respuestaGenerado) {
+	public Response<Object> validarResponse(Response<Object> respuestaGenerado) {
 		String codigo = respuestaGenerado.getMensaje().substring(0, 3);
 		if (codigo.equals("500") || codigo.equals("404") || codigo.equals("400") || codigo.equals("403")) {
 			Gson gson = new Gson();
@@ -68,17 +82,20 @@ public class ProviderServiceRestTemplate {
 		return respuestaGenerado;
 	}
 
-	public Response<?> respuestaProvider(String e) {
+	@SuppressWarnings("unchecked")
+	public Response<Object> respuestaProvider(String e) {
 		StringTokenizer exeception = new StringTokenizer(e, ":");
 		Gson gson = new Gson();
-		int i = 0;
 		int totalToken = exeception.countTokens();
-		StringBuilder mensaje = new StringBuilder("");
+		StringBuilder error = new StringBuilder("");
+		int i = 0;
 		int codigoError = HttpStatus.INTERNAL_SERVER_ERROR.value();
+
 		int isExceptionResponseMs = 0;
 		while (exeception.hasMoreTokens()) {
 			String str = exeception.nextToken();
 			i++;
+
 			if (i == 2) {
 				String[] palabras = str.split("\\.");
 				for (String palabra : palabras) {
@@ -89,37 +106,32 @@ public class ProviderServiceRestTemplate {
 
 					}
 				}
-			} else if (i == 3) {
+			}else if (i == 3) {
 
 				if (str.trim().chars().allMatch( Character::isDigit )) {
 					isExceptionResponseMs = 1;
 				}
 
-				mensaje.append(codigoError == HttpStatus.REQUEST_TIMEOUT.value()
-						?AppConstantes.CIRCUITBREAKER
-						: str);
+				error.append(codigoError == HttpStatus.REQUEST_TIMEOUT.value() ? AppConstantes.CIRCUITBREAKER : str);
 
 			} else if (i >= 4 && isExceptionResponseMs == 1) {
 				if (i == 4) {
-					mensaje.delete(0, mensaje.length());
+					error.delete(0, error.length());
 				}
-				mensaje.append(str).append(i != totalToken ? ":" : "");
+				error.append(str).append(i != totalToken ? ":" : "");
 
 			}
 		}
-		
-		Response response;
+		Response<Object> response;
 		try {
-			if(mensaje.length() < 3)
-				response = new Response<>(true, codigoError, mensaje.toString().trim(), Collections.emptyList());
-			else {
-			response = isExceptionResponseMs == 1 ? gson.fromJson(mensaje.substring(2, mensaje.length() - 1), Response.class)
-				: new Response<>(true, codigoError, mensaje.toString().trim(), Collections.emptyList());
-			}
+			response = isExceptionResponseMs == 1 ? gson.fromJson(error.substring(2, error.length() - 1), Response.class)
+				: new Response<>(true, codigoError, error.toString().trim(), Collections.emptyList());
+			log.info("respuestaProvider error: {}",e);
 		} catch (Exception e2) {
+			log.info("respuestaProvider error: {}",e);
 			return new Response<>(true, HttpStatus.REQUEST_TIMEOUT.value(), AppConstantes.CIRCUITBREAKER, Collections.emptyList());
 		}
-		
-		return response;
+		 return MensajeResponseUtil.mensajeResponse(response, "");
 	}
+
 }

@@ -1,6 +1,7 @@
 package com.imss.sivimss.notasremision.service.impl;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -35,8 +36,10 @@ import com.imss.sivimss.notasremision.model.response.ODSGeneradaResponse;
 import com.imss.sivimss.notasremision.service.NotasRemisionService;
 import com.imss.sivimss.notasremision.util.DatosRequest;
 import com.imss.sivimss.notasremision.util.Response;
+import com.imss.sivimss.notasremision.model.request.ActualizarMultiRequest;
 import com.imss.sivimss.notasremision.util.LogUtil;
 import com.imss.sivimss.notasremision.util.MensajeResponseUtil;
+import com.imss.sivimss.notasremision.util.NotaUtil;
 
 @Service
 public class NotasRemisionServiceImpl implements NotasRemisionService {
@@ -53,7 +56,8 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 	private static final String CREAR = "/crear";
 
 	private static final String MULTIPLE = "/insertarMultiple";
-
+	private static final String ACTUALIZAR_MULTIPLES = "/actualizar/multiples";
+	
 	@Value("${endpoints.generico-reportes}")
 	private String urlReportes;
 
@@ -73,7 +77,6 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 	private static final String GENERADA = "2";
 
 	private static final String ALTA = "alta";
-	private static final String BAJA = "baja";
 
 	@Autowired
 	private ProviderServiceRestTemplate providerRestTemplate;
@@ -262,9 +265,11 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 			log.info("se registro la nota de remision");
 			datos1 = (ArrayList) request1.getDatos();
 			String ultimoFolio = datos1.get(0).get("folio").toString();
-
+			Double folioD = Double.parseDouble(ultimoFolio);
+			Integer folioI = folioD.intValue();
+			
 			Response<?> salida = providerRestTemplate.consumirServicio(
-					notaRemision.generarNotaRem(ultimoFolio).getDatos(),
+					notaRemision.generarNotaRem(folioI).getDatos(),
 					urlDominioGenerico + CREAR, authentication);
 			log.info("{}", salida);
 			return salida;
@@ -276,51 +281,73 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Response<?> cancelarNotaRem(DatosRequest request, Authentication authentication) throws IOException {
+		
 		Gson gson = new Gson();
-
+		ActualizarMultiRequest actualizarMultiRequest = new ActualizarMultiRequest();
 		String datosJson = String.valueOf(request.getDatos().get(AppConstantes.DATOS));
+		UsuarioDto usuarioDto = gson.fromJson((String) authentication.getPrincipal(), UsuarioDto.class);
 		NotaRemisionDto notaDto = gson.fromJson(datosJson, NotaRemisionDto.class);
+		NotaUtil notaUtil = new NotaUtil();
+		String encoded;
+		String query;
+		ArrayList<String> querys = new ArrayList<>();
+		Response<Object> request1;
+		List<Map<String, Object>> datos1;
+		NotaRemision notaRemision = new NotaRemision(notaDto.getIdNota(), notaDto.getIdOrden());
+		Response<Object> response;
+		
 		if (notaDto.getIdNota() == null) {
 			throw new BadRequestException(HttpStatus.BAD_REQUEST, "Informacion incompleta");
 		}
-		OrdenServicio ordenServicio = new OrdenServicio();
-		ordenServicio.setId(notaDto.getIdOrden());
-		// Se regresa el estatus de la ODS a generada
-		providerRestTemplate.consumirServicio(ordenServicio.actualizaEstatus(GENERADA).getDatos(),
-				urlDominioGenerico + ACTUALIZAR, authentication);
+		
+		/**
+		 * Se busca el ultimo folio
+		 */
+		request1 = providerRestTemplate.consumirServicio(notaRemision.ultimoFolioNota(request).getDatos(),
+				urlDominioGenerico + CONSULTA,
+				authentication);
+		log.info("se registro la nota de remision");
+		datos1 = Arrays.asList(modelMapper.map(request1.getDatos(), Map[].class));
+		String ultimoFolio = datos1.get(0).get("folio").toString();
+		Double folioD = Double.parseDouble(ultimoFolio);
+		Integer folioI = folioD.intValue();
+		
+		/**
+		 * Se crea Query para actualizar la Orden de Servicio a Generada
+		 */
+		query = notaUtil.actEstatusOds( GENERADA, notaDto.getIdOrden());
+		logUtil.crearArchivoLog(Level.INFO.toString(), this.getClass().getSimpleName(), 
+				this.getClass().getPackage().toString(), "",CONSULTA +" " + query, authentication);
+		encoded = DatatypeConverter.printBase64Binary(query.getBytes(StandardCharsets.UTF_8));
+		querys.add( encoded );
 
-		UsuarioDto usuarioDto = gson.fromJson((String) authentication.getPrincipal(), UsuarioDto.class);
-		NotaRemision notaRemision = new NotaRemision(notaDto.getIdNota(), notaDto.getIdOrden());
-		notaRemision.setMotivo(notaDto.getMotivo());
-		notaRemision.setIdUsuarioModifica(usuarioDto.getIdUsuario());
-
-		// Actualizar estatus de convenio
-		Response<?> request1 = providerRestTemplate.consumirServicio(
-				notaRemision.obtenTipoPrevision(request).getDatos(), urlDominioGenerico + CONSULTA, authentication);
-		ArrayList<LinkedHashMap> datos1 = (ArrayList) request1.getDatos();
-		LlavesTablasUpd llavesTablasUpd = new LlavesTablasUpd((Integer) datos1.get(0).get("idTipoPrevision"),
-				(Integer) datos1.get(0).get("idContratante"),
-				(Integer) datos1.get(0).get("idConvenio"),
-				(Integer) datos1.get(0).get("idContratantePaquete"),
-				(Integer) datos1.get(0).get("idPersona"),
-				(Integer) datos1.get(0).get("idTipoOrden"),
-				(Integer) datos1.get(0).get("idConvenioSFPA"));
-
-		// Cancelación de la nota de remisión
-		providerRestTemplate.consumirServicio(notaRemision.actualizaEstatusCancelar(llavesTablasUpd).getDatos(),
-				urlDominioGenerico + MULTIPLE, authentication);
-
-		try {
-			return providerRestTemplate.consumirServicio(notaRemision.cancelarNotaRem().getDatos(),
-					urlDominioGenerico + ACTUALIZAR, authentication);
-		} catch (Exception e) {
-			log.error(e.getMessage());
-			logUtil.crearArchivoLog(Level.SEVERE.toString(), this.getClass().getSimpleName(),
-					this.getClass().getPackage().toString(), e.getMessage(), BAJA, authentication);
-			return null;
-		}
+		/**
+		 * Se crea Query para cancelar la Nota de Remision
+		 */
+		query = notaUtil.cancelarNotaRem(notaDto.getMotivo(), usuarioDto.getIdUsuario(), notaDto.getIdNota() );
+		logUtil.crearArchivoLog(Level.INFO.toString(), this.getClass().getSimpleName(), 
+				this.getClass().getPackage().toString(), "",CONSULTA +" " + query, authentication);
+		encoded = DatatypeConverter.printBase64Binary(query.getBytes(StandardCharsets.UTF_8));
+		querys.add( encoded );
+		
+		/**
+		 * Se crea Query para crear la nueva Nota de Remision
+		 */
+		query = notaUtil.generarNotaRem(folioI, notaDto.getIdOrden(), usuarioDto.getIdUsuario() );
+		logUtil.crearArchivoLog(Level.INFO.toString(), this.getClass().getSimpleName(), 
+				this.getClass().getPackage().toString(), "",CONSULTA +" " + query, authentication);
+		encoded = DatatypeConverter.printBase64Binary(query.getBytes(StandardCharsets.UTF_8));
+		querys.add( encoded );
+		
+		actualizarMultiRequest.setUpdates(querys);
+		
+		response = providerRestTemplate.consumirServicioActMult(actualizarMultiRequest, urlDominioGenerico + ACTUALIZAR_MULTIPLES, 
+				authentication);
+		
+		return response;
 	}
 
 	@Override
@@ -354,24 +381,32 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 				formatoNotaDto.setParFinado(datos1.get(0).get("parFinado").toString());
 				formatoNotaDto.setFolioODS(datos1.get(0).get("folioODS").toString());
 				formatoNotaDto.setFolioConvenio(datos1.get(0).get("folioConvenio").toString());
+				
 				if( datos1.get(0).get("fechaConvenio") == null) {
 					formatoNotaDto.setFechaConvenio( " " );
 				}else {
 					formatoNotaDto.setFechaConvenio(datos1.get(0).get("fechaConvenio").toString());
 				}
 				
+				if( datos1.get(0).get("fechaODS") == null) {
+					formatoNotaDto.setFechaODS( " " );
+				}else {
+					formatoNotaDto.setFechaODS(datos1.get(0).get("fechaODS").toString());
+				}
+				
 			}
 		} else {
 			formatoNotaDto = gson.fromJson(datosJson, FormatoNotaDto.class);
 		}
+		
 		Map<String, Object> envioDatos = notaRemision.imprimirNotaRem(formatoNotaDto, NOMBREPDFNOTAREM);
-		Response<?> response = providerRestTemplate.consumirServicioReportes(envioDatos, urlReportes, authentication);
+		Response<Object> response = providerRestTemplate.consumirServicioReportes(envioDatos, urlReportes, authentication);
 
 		return MensajeResponseUtil.mensajeConsultaResponse(response, ERROR_DESCARGA);
 	}
 
 	@Override
-	public Response<?> descargarDocumento(DatosRequest request, Authentication authentication) throws IOException {
+	public Response<Object> descargarDocumento(DatosRequest request, Authentication authentication) throws IOException {
 		Gson gson = new Gson();
 		String datosJson = String.valueOf(request.getDatos().get(AppConstantes.DATOS));
 		BusquedaDto reporteDto = gson.fromJson(datosJson, BusquedaDto.class);
@@ -383,7 +418,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		if (reporteDto.getTipoReporte().equals("xls")) {
 			envioDatos.put("IS_IGNORE_PAGINATION", true);
 		}
-		Response<?> response =  providerRestTemplate.consumirServicioReportes(envioDatos, urlReportes, authentication);
+		Response<Object> response =  providerRestTemplate.consumirServicioReportes(envioDatos, urlReportes, authentication);
 	
 		return MensajeResponseUtil.mensajeConsultaResponse(response, ERROR_DESCARGA);
 	}
