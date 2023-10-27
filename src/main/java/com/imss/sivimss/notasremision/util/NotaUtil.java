@@ -29,7 +29,7 @@ public class NotaUtil {
 		QueryHelper q = new QueryHelper("INSERT INTO SVT_NOTA_REMISION");
 		q.agregarParametroValues("NUM_FOLIO", "'" + String.format("%06d", ultimoFolio + 1) + "'");
 		q.agregarParametroValues("ID_ORDEN_SERVICIO", "'" + idOds + "'");
-		q.agregarParametroValues("IND_ESTATUS", "2");
+		q.agregarParametroValues("IND_ESTATUS", "1");
 		q.agregarParametroValues("FEC_ALTA", "CURRENT_TIMESTAMP()");
 		q.agregarParametroValues("ID_USUARIO_ALTA", "'" + idUsuario + "'");
 		

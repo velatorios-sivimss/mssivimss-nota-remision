@@ -268,9 +268,18 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 			Double folioD = Double.parseDouble(ultimoFolio);
 			Integer folioI = folioD.intValue();
 			
-			Response<?> salida = providerRestTemplate.consumirServicio(
-					notaRemision.generarNotaRem(folioI).getDatos(),
-					urlDominioGenerico + CREAR, authentication);
+			Response<?> salida;
+			
+			if( notaDto.getIdNota() == null ) {
+				salida = providerRestTemplate.consumirServicio(
+						notaRemision.generarNotaRem(folioI).getDatos(),
+						urlDominioGenerico + CREAR, authentication);
+			}else {
+				salida = providerRestTemplate.consumirServicio(
+						notaRemision.actNota(GENERADA, notaDto.getIdNota(), usuarioDto.getIdUsuario()).getDatos(),
+						urlDominioGenerico + CREAR, authentication);
+			}
+			
 			log.info("{}", salida);
 			return salida;
 		} catch (Exception e) {
