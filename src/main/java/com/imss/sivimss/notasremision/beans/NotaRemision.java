@@ -86,7 +86,6 @@ public class NotaRemision {
 		query.append(formatoFecha);
 		query.append("') AS fechaNota,\r\n"
 				+ "os.CVE_FOLIO AS folioODS,\r\n"
-				+ "os.FEC_ALTA AS fechaODS,\r\n"
 				+ "vel.DES_VELATORIO AS nomVelatorio,\r\n"
 				+ "CONCAT(\r\n"
 				+ "IFNULL(domv.REF_CALLE,''),' ',IFNULL(domv.NUM_EXTERIOR,''),' ',IFNULL(domv.REF_COLONIA,'')\r\n"
@@ -94,7 +93,7 @@ public class NotaRemision {
 				+ "CONCAT(\r\n"
 				+ "prf.NOM_PERSONA,' ',prf.NOM_PRIMER_APELLIDO,' ',prf.NOM_SEGUNDO_APELLIDO\r\n"
 				+ ") AS nomFinado,\r\n"
-				+ "par.DES_PARENTESCO AS parFinado,\r\n"
+				+ "IFNULL(par.DES_PARENTESCO, ' ') AS parFinado,\r\n"
 				+ "CONCAT(\r\n"
 				+ "prc.NOM_PERSONA,' ',prc.NOM_PRIMER_APELLIDO,' ',prc.NOM_SEGUNDO_APELLIDO\r\n"
 				+ ") AS nomSolicitante,\r\n"
