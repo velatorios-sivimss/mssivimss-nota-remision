@@ -80,31 +80,49 @@ public class NotaRemision {
 	}
 
 	public DatosRequest detalleNotaRem(DatosRequest request, String formatoFecha) {
-		StringBuilder query = new StringBuilder(
-				" SELECT nr.NUM_FOLIO AS folioNota, DATE_FORMAT(nr.FEC_ALTA,'" + formatoFecha + "') AS fechaNota,  ");
-		query.append(" os.CVE_FOLIO AS folioODS, vel.DES_VELATORIO AS nomVelatorio,  ");
-		query.append(" CONCAT(IFNULL(domv.REF_CALLE,''),' ',IFNULL(domv.NUM_EXTERIOR,''),' ',IFNULL(domv.REF_COLONIA,'')) AS dirVelatorio,  ");
-		query.append(" CONCAT(prf.NOM_PERSONA,' ',prf.NOM_PRIMER_APELLIDO,' ',prf.NOM_SEGUNDO_APELLIDO) AS nomFinado,  ");
-		query.append(" par.DES_PARENTESCO AS parFinado,  ");
-		query.append(" CONCAT(prc.NOM_PERSONA,' ',prc.NOM_PRIMER_APELLIDO,' ',prc.NOM_SEGUNDO_APELLIDO) AS nomSolicitante,  ");
-		query.append(" CONCAT(IFNULL(domc.REF_CALLE,''),' ',IFNULL(domc.NUM_EXTERIOR,''),' ',IFNULL(domc.REF_COLONIA,'')) AS dirSolicitante,  ");
-		query.append(" prc.CVE_CURP AS curpSolicitante, vel.DES_VELATORIO AS velatorioOrigen, IFNULL(cvn.DES_FOLIO,0) AS folioConvenio, ");
-		query.append(" DATE_FORMAT(IFNULL(cvn.FEC_INICIO,0),'" + formatoFecha + "') AS fechaConvenio,  ");
-		query.append(" DATE_FORMAT(IFNULL(os.FEC_ALTA,0),'" + formatoFecha + "') AS fechaODS,  ");
-		query.append(" IFNULL(nr.REF_MOTIVO,'') AS motivo   ");
-		query.append(" FROM SVT_NOTA_REMISION nr  ");
-		query.append(" JOIN SVC_ORDEN_SERVICIO os ON (nr.ID_ORDEN_SERVICIO = os.ID_ORDEN_SERVICIO)  ");
-		query.append(" JOIN SVC_FINADO fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO)  ");
-		query.append(" JOIN SVC_VELATORIO vel ON (vel.ID_VELATORIO = fin.ID_VELATORIO)  ");
-		query.append(" LEFT JOIN SVC_PERSONA prf ON (fin.ID_PERSONA = prf.ID_PERSONA)  ");
-		query.append(" LEFT JOIN SVT_DOMICILIO domv ON (vel.ID_DOMICILIO = domv.ID_DOMICILIO)  ");
-		query.append(" LEFT JOIN SVC_PARENTESCO par ON (os.ID_PARENTESCO = par.ID_PARENTESCO)  ");
-		query.append(" LEFT JOIN SVC_CONTRATANTE con ON (os.ID_CONTRATANTE = con.ID_CONTRATANTE) "); 
-		query.append(" LEFT JOIN SVC_CONTRATANTE con2 ON (os.ID_CONTRATANTE_PF = con2.ID_CONTRATANTE) "); 
-		query.append(" LEFT JOIN SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA) ");
-		query.append(" LEFT JOIN SVT_CONTRA_PAQ_CONVENIO_PF cpcf ON (con2.ID_CONTRATANTE = cpcf.ID_CONTRATANTE) "); 
-		query.append(" LEFT JOIN SVT_CONVENIO_PF cvn ON (cpcf.ID_CONVENIO_PF = cvn.ID_CONVENIO_PF) ");
-		query.append(" LEFT JOIN SVT_DOMICILIO domc ON (con.ID_DOMICILIO = domc.ID_DOMICILIO) ");
+		StringBuilder query = new StringBuilder("SELECT\r\n"
+				+ "nr.NUM_FOLIO AS folioNota,\r\n"
+				+ "DATE_FORMAT(nr.FEC_ALTA,'");
+		query.append(formatoFecha);
+		query.append("') AS fechaNota,\r\n"
+				+ "os.CVE_FOLIO AS folioODS,\r\n"
+				+ "os.FEC_ALTA AS fechaODS,\r\n"
+				+ "vel.DES_VELATORIO AS nomVelatorio,\r\n"
+				+ "CONCAT(\r\n"
+				+ "IFNULL(domv.REF_CALLE,''),' ',IFNULL(domv.NUM_EXTERIOR,''),' ',IFNULL(domv.REF_COLONIA,'')\r\n"
+				+ ") AS dirVelatorio,\r\n"
+				+ "CONCAT(\r\n"
+				+ "prf.NOM_PERSONA,' ',prf.NOM_PRIMER_APELLIDO,' ',prf.NOM_SEGUNDO_APELLIDO\r\n"
+				+ ") AS nomFinado,\r\n"
+				+ "par.DES_PARENTESCO AS parFinado,\r\n"
+				+ "CONCAT(\r\n"
+				+ "prc.NOM_PERSONA,' ',prc.NOM_PRIMER_APELLIDO,' ',prc.NOM_SEGUNDO_APELLIDO\r\n"
+				+ ") AS nomSolicitante,\r\n"
+				+ "CONCAT(\r\n"
+				+ "IFNULL(domc.REF_CALLE,''),' ',IFNULL(domc.NUM_EXTERIOR,''),' ',IFNULL(domc.REF_COLONIA,'')\r\n"
+				+ ") AS dirSolicitante,\r\n"
+				+ "prc.CVE_CURP AS curpSolicitante,\r\n"
+				+ "vel.DES_VELATORIO AS velatorioOrigen,\r\n"
+				+ "IFNULL(cvn.DES_FOLIO,0) AS folioConvenio,\r\n"
+				+ "DATE_FORMAT(IFNULL(cvn.FEC_INICIO,0),'");
+		query.append(formatoFecha);
+		query.append("') AS fechaConvenio,\r\n"
+				+ "DATE_FORMAT(IFNULL(os.FEC_ALTA,0),'");
+		query.append(formatoFecha);
+		query.append("') AS fechaODS,\r\n"
+				+ "IFNULL(nr.REF_MOTIVO,'') AS motivo\r\n"
+				+ "FROM\r\n"
+				+ "SVT_NOTA_REMISION nr\r\n"
+				+ "JOIN SVC_ORDEN_SERVICIO os ON (nr.ID_ORDEN_SERVICIO = os.ID_ORDEN_SERVICIO)\r\n"
+				+ "JOIN SVC_FINADO fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO)\r\n"
+				+ "LEFT JOIN SVT_CONVENIO_PF cvn ON (cvn.ID_CONVENIO_PF = fin.ID_CONTRATO_PREVISION)\r\n"
+				+ "JOIN SVC_VELATORIO vel ON (vel.ID_VELATORIO = os.ID_VELATORIO)\r\n"
+				+ "LEFT JOIN SVC_PERSONA prf ON (fin.ID_PERSONA = prf.ID_PERSONA)\r\n"
+				+ "LEFT JOIN SVT_DOMICILIO domv ON (vel.ID_DOMICILIO = domv.ID_DOMICILIO)\r\n"
+				+ "LEFT JOIN SVC_PARENTESCO par ON (os.ID_PARENTESCO = par.ID_PARENTESCO)\r\n"
+				+ "LEFT JOIN SVC_CONTRATANTE con ON (os.ID_CONTRATANTE = con.ID_CONTRATANTE)\r\n"
+				+ "LEFT JOIN SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA)\r\n"
+				+ "LEFT JOIN SVT_DOMICILIO domc ON (con.ID_DOMICILIO = domc.ID_DOMICILIO)\r\n");
 		query.append(" WHERE nr.ID_NOTAREMISION = " + this.id);
 		logg.info(query.toString());
 		String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes(StandardCharsets.UTF_8));
