@@ -270,7 +270,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 			
 			Response<?> salida;
 			
-			if( notaDto.getIdNota() == null ) {
+			if( notaDto.getIdNota() == null || notaDto.getIdNota().equals(0)) {
 				salida = providerRestTemplate.consumirServicio(
 						notaRemision.generarNotaRem(folioI).getDatos(),
 						urlDominioGenerico + CREAR, authentication);

@@ -119,9 +119,8 @@ public class OrdenServicio {
 		StringBuilder query = new StringBuilder();
 		query.append("SELECT \r\n"
 				+ "os.ID_ORDEN_SERVICIO AS id,\r\n"
-				+ "nr.ID_NOTAREMISION AS idNota,\r\n"
 				+ "nr.NUM_FOLIO AS folioNota,\r\n"
-				+ "DATE_FORMAT(os.FEC_ALTA, ''");
+				+ "DATE_FORMAT(os.FEC_ALTA, '");
 		query.append(formatoFecha);
 		query.append("') AS fechaODS,\r\n"
 				+ "os.CVE_FOLIO AS folioODS,\r\n"
