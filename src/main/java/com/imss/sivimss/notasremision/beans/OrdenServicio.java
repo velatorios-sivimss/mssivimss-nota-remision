@@ -94,9 +94,9 @@ public class OrdenServicio {
 		}
 		
 		if (busqueda.getFecIniODS() != null && busqueda.getFecFinODS() != null) {
-			query.append( " AND FAC.FEC_FACTURACION BETWEEN '" + busqueda.getFecIniODS() + "' AND '" + busqueda.getFecFinODS() + "' " );
+			query.append( " AND nr.FEC_ALTA BETWEEN '" + busqueda.getFecIniODS() + "' AND '" + busqueda.getFecFinODS() + "' " );
 			
-			query.append(" AND nr.IND_ESTATUS is NULL");
+			query.append(" AND nr.IND_ESTATUS in (2, 3)");
 			logger.info("busqueda generadas");
 			logger.info(query.toString());
 			String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes("UTF-8"));
