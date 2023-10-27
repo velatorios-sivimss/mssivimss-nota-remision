@@ -94,8 +94,7 @@ public class OrdenServicio {
 		}
 		
 		if (busqueda.getFecIniODS() != null && busqueda.getFecFinODS() != null) {
-			query.append(" AND DATE(nr.FEC_ALTA) BETWEEN STR_TO_DATE('" + busqueda.getFecIniODS() + "','" + formatoFecha
-					+ "') AND STR_TO_DATE('" + busqueda.getFecFinODS() + "','" + formatoFecha + "')");
+			query.append( " AND FAC.FEC_FACTURACION BETWEEN '" + busqueda.getFecIniODS() + "' AND '" + busqueda.getFecFinODS() + "' " );
 			
 			query.append(" AND nr.IND_ESTATUS is NULL");
 			logger.info("busqueda generadas");
@@ -120,7 +119,9 @@ public class OrdenServicio {
 		StringBuilder query = new StringBuilder();
 		query.append("SELECT \r\n"
 				+ "os.ID_ORDEN_SERVICIO AS id,\r\n"
-				+ "DATE_FORMAT(os.FEC_ALTA, '");
+				+ "nr.ID_NOTAREMISION AS idNota,\r\n"
+				+ "nr.NUM_FOLIO AS folioNota,\r\n"
+				+ "DATE_FORMAT(os.FEC_ALTA, ''");
 		query.append(formatoFecha);
 		query.append("') AS fechaODS,\r\n"
 				+ "os.CVE_FOLIO AS folioODS,\r\n"
@@ -142,7 +143,15 @@ public class OrdenServicio {
 				+ "IFNULL(nr.IND_ESTATUS, 1) AS estatus,\r\n"
 				+ "IFNULL(nr.ID_NOTAREMISION, 0) AS idNota,\r\n"
 				+ "IFNULL(nr.ID_NOTAREMISION, 0) AS idCancelada,\r\n"
-				+ "0 AS total,\r\n"
+				+ "( \r\n"
+				+ "SELECT COUNT(ID_NOTAREMISION)\r\n"
+				+ "FROM\r\n"
+				+ "SVT_NOTA_REMISION\r\n"
+				+ "WHERE\r\n"
+				+ "ID_ORDEN_SERVICIO = id\r\n"
+				+ "AND\r\n"
+				+ "IND_ESTATUS = 3\r\n"
+				+ ") AS total,\r\n"
 				+ "IFNULL(ENR.DES_ESTATUS, 'Sin nota') AS DesEstatus,\r\n"
 				+ "os.ID_VELATORIO AS idVelatorio,\r\n"
 				+ "vel.ID_DELEGACION AS idDelegacion\r\n"
