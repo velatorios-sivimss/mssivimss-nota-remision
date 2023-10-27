@@ -165,7 +165,7 @@ public class OrdenServicio {
 	public DatosRequest detalleODS(DatosRequest request) throws UnsupportedEncodingException {
 		String idODS = request.getDatos().get("id").toString();
 		StringBuilder query = new StringBuilder(
-				"SELECT os.CVE_FOLIO AS folioODS, vel.DES_VELATORIO AS nomVelatorio, \n");
+				"SELECT os.CVE_FOLIO AS folioODS, os.FEC_ALTA AS fechaODS, vel.DES_VELATORIO AS nomVelatorio, \n");
 		query.append(
 				"CONCAT(IFNULL(domv.REF_CALLE,''),' ',IFNULL(domv.NUM_EXTERIOR,''),' ',IFNULL(domv.REF_COLONIA,'')) AS dirVelatorio, \n");
 		query.append(
