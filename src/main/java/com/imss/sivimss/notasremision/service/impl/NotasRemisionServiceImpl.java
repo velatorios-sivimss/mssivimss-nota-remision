@@ -157,7 +157,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		OrdenServicio ordenServicio = new OrdenServicio();
 
 		try {
-			return providerRestTemplate.consumirServicio(ordenServicio.detalleODS(request).getDatos(),
+			return providerRestTemplate.consumirServicio(ordenServicio.detalleODS(request, formatoFecha).getDatos(),
 					urlDominioGenerico + CONSULTA,
 					authentication);
 		} catch (Exception e) {
@@ -276,7 +276,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 						urlDominioGenerico + CREAR, authentication);
 			}else {
 				salida = providerRestTemplate.consumirServicio(
-						notaRemision.actNota(GENERADA, notaDto.getIdNota(), usuarioDto.getIdUsuario()).getDatos(),
+						notaRemision.actNotaFolio(GENERADA, notaDto.getIdNota(), usuarioDto.getIdUsuario(), folioI).getDatos(),
 						urlDominioGenerico + CREAR, authentication);
 			}
 			
@@ -290,7 +290,6 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public Response<?> cancelarNotaRem(DatosRequest request, Authentication authentication) throws IOException {
 		
@@ -303,26 +302,11 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		String encoded;
 		String query;
 		ArrayList<String> querys = new ArrayList<>();
-		Response<Object> request1;
-		List<Map<String, Object>> datos1;
-		NotaRemision notaRemision = new NotaRemision(notaDto.getIdNota(), notaDto.getIdOrden());
 		Response<Object> response;
 		
 		if (notaDto.getIdNota() == null) {
 			throw new BadRequestException(HttpStatus.BAD_REQUEST, "Informacion incompleta");
 		}
-		
-		/**
-		 * Se busca el ultimo folio
-		 */
-		request1 = providerRestTemplate.consumirServicio(notaRemision.ultimoFolioNota(request).getDatos(),
-				urlDominioGenerico + CONSULTA,
-				authentication);
-		log.info("se registro la nota de remision");
-		datos1 = Arrays.asList(modelMapper.map(request1.getDatos(), Map[].class));
-		String ultimoFolio = datos1.get(0).get("folio").toString();
-		Double folioD = Double.parseDouble(ultimoFolio);
-		Integer folioI = folioD.intValue();
 		
 		/**
 		 * Se crea Query para actualizar la Orden de Servicio a Generada
@@ -345,7 +329,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		/**
 		 * Se crea Query para crear la nueva Nota de Remision
 		 */
-		query = notaUtil.generarNotaRem(folioI, notaDto.getIdOrden(), usuarioDto.getIdUsuario() );
+		query = notaUtil.generarNotaRem(notaDto.getIdOrden(), usuarioDto.getIdUsuario() );
 		logUtil.crearArchivoLog(Level.INFO.toString(), this.getClass().getSimpleName(), 
 				this.getClass().getPackage().toString(), "",CONSULTA +" " + query, authentication);
 		encoded = DatatypeConverter.printBase64Binary(query.getBytes(StandardCharsets.UTF_8));
