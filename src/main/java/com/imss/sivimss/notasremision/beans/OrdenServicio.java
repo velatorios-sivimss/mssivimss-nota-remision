@@ -94,7 +94,8 @@ public class OrdenServicio {
 		}
 		
 		if (busqueda.getFecIniODS() != null && busqueda.getFecFinODS() != null) {
-			query.append( " AND nr.FEC_ALTA BETWEEN '" + busqueda.getFecIniODS() + "' AND '" + busqueda.getFecFinODS() + "' " );
+			query.append(" AND DATE(nr.FEC_ALTA) BETWEEN STR_TO_DATE('" + busqueda.getFecIniODS() + "','" + formatoFecha
+					+ "') AND STR_TO_DATE('" + busqueda.getFecFinODS() + "','" + formatoFecha + "')");
 			
 			query.append(" AND nr.IND_ESTATUS in (2, 3)");
 			logger.info("busqueda generadas");
