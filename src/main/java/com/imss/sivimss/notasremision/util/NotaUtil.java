@@ -24,10 +24,9 @@ public class NotaUtil {
 		
 	}
 	
-	public String generarNotaRem(Integer ultimoFolio, Integer idOds, Integer idUsuario) {
+	public String generarNotaRem(Integer idOds, Integer idUsuario) {
 		
 		QueryHelper q = new QueryHelper("INSERT INTO SVT_NOTA_REMISION");
-		q.agregarParametroValues("NUM_FOLIO", "'" + String.format("%06d", ultimoFolio + 1) + "'");
 		q.agregarParametroValues("ID_ORDEN_SERVICIO", "'" + idOds + "'");
 		q.agregarParametroValues("IND_ESTATUS", "1");
 		q.agregarParametroValues("FEC_ALTA", "CURRENT_TIMESTAMP()");

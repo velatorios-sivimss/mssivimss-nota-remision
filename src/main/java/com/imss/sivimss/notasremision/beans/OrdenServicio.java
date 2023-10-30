@@ -170,34 +170,46 @@ public class OrdenServicio {
 		return query;
 	}
 	
-	public DatosRequest detalleODS(DatosRequest request) throws UnsupportedEncodingException {
+	public DatosRequest detalleODS(DatosRequest request, String formatoFecha) throws UnsupportedEncodingException {
 		String idODS = request.getDatos().get("id").toString();
-		StringBuilder query = new StringBuilder(
-				"SELECT os.CVE_FOLIO AS folioODS, os.FEC_ALTA AS fechaODS, vel.DES_VELATORIO AS nomVelatorio, \n");
-		query.append(
-				"CONCAT(IFNULL(domv.REF_CALLE,''),' ',IFNULL(domv.NUM_EXTERIOR,''),' ',IFNULL(domv.REF_COLONIA,'')) AS dirVelatorio, \n");
-		query.append(
-				"CONCAT(prf.NOM_PERSONA,' ',prf.NOM_PRIMER_APELLIDO,' ',prf.NOM_SEGUNDO_APELLIDO) AS nomFinado, \n");
-		query.append("par.DES_PARENTESCO AS parFinado, vel. NOM_RESPO_SANITARIO AS nomResponsable, \n");
-		query.append(
-				"CONCAT(prc.NOM_PERSONA,' ',prc.NOM_PRIMER_APELLIDO,' ',prc.NOM_SEGUNDO_APELLIDO) AS nomSolicitante, \n");
-		query.append(
-				"CONCAT(IFNULL(domc.REF_CALLE,''),' ',IFNULL(domc.NUM_EXTERIOR,''),' ',IFNULL(domc.REF_COLONIA,'')) AS dirSolicitante, \n");
-		query.append("prc.CVE_CURP AS curpSolicitante, vel.DES_VELATORIO AS velatorioOrigen, \n");
-		query.append("IFNULL(cvn.DES_FOLIO,0) AS folioConvenio, IFNULL(cvn.FEC_INICIO,0) AS fechaConvenio, \n");
-		query.append("(SELECT LPAD(IFNULL(MAX(NUM_FOLIO+1),1),6,'0') FROM SVT_NOTA_REMISION) AS folioNota \n");
-		query.append("FROM SVC_ORDEN_SERVICIO os \n");
-		query.append("JOIN SVC_CONTRATANTE con ON (os.ID_CONTRATANTE = con.ID_CONTRATANTE) \n");
-		query.append("LEFT JOIN SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA) \n");
-		query.append(
-				"LEFT JOIN SVT_CONTRA_PAQ_CONVENIO_PF cpcf ON (con.ID_CONTRATANTE = cpcf.ID_CONTRATANTE) \n");
-		query.append("LEFT JOIN SVT_CONVENIO_PF cvn ON (cpcf.ID_CONVENIO_PF = cvn.ID_CONVENIO_PF) \n");
-		query.append("LEFT JOIN SVC_FINADO fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO) \n");
-		query.append("LEFT JOIN SVC_PERSONA prf ON (fin.ID_PERSONA = prf.ID_PERSONA) \n");
-		query.append("JOIN SVC_VELATORIO vel ON (vel.ID_VELATORIO = os.ID_VELATORIO) \n");
-		query.append("LEFT JOIN SVT_DOMICILIO domv ON (vel.ID_DOMICILIO = domv.ID_DOMICILIO) \n");
-		query.append("LEFT JOIN SVC_PARENTESCO par ON (os.ID_PARENTESCO = par.ID_PARENTESCO) \n");
-		query.append("LEFT JOIN SVT_DOMICILIO domc ON (con.ID_DOMICILIO = domc.ID_DOMICILIO) \n");
+		StringBuilder query = new StringBuilder("SELECT\r\n"
+				+ "os.CVE_FOLIO AS folioODS,\r\n"
+				+ "DATE_FORMAT(IFNULL(os.FEC_ALTA,0),'");
+		query.append(formatoFecha);
+		query.append("') AS fechaODS,\r\n"
+				+ "vel.DES_VELATORIO AS nomVelatorio, \r\n"
+				+ "CONCAT(IFNULL(domv.REF_CALLE,''),' ',IFNULL(domv.NUM_EXTERIOR,''),' ',IFNULL(domv.REF_COLONIA,'')) AS dirVelatorio, \r\n"
+				+ "CONCAT(prf.NOM_PERSONA,' ',prf.NOM_PRIMER_APELLIDO,' ',prf.NOM_SEGUNDO_APELLIDO) AS nomFinado, \r\n"
+				+ "IFNULL(par.DES_PARENTESCO, ' ') AS parFinado, \r\n"
+				+ "vel. NOM_RESPO_SANITARIO AS nomResponsable, \r\n"
+				+ "CONCAT(prc.NOM_PERSONA,' ',prc.NOM_PRIMER_APELLIDO,' ',prc.NOM_SEGUNDO_APELLIDO) AS nomSolicitante, \r\n"
+				+ "CONCAT(IFNULL(domc.REF_CALLE,''),' ',IFNULL(domc.NUM_EXTERIOR,''),' ',IFNULL(domc.REF_COLONIA,'')) AS dirSolicitante, \r\n"
+				+ "prc.CVE_CURP AS curpSolicitante,\r\n"
+				+ "vel.DES_VELATORIO AS velatorioOrigen, \r\n"
+				+ "IFNULL(cvn.DES_FOLIO,0) AS folioConvenio,\r\n"
+				+ "DATE_FORMAT(IFNULL(cvn.FEC_INICIO,0),'");
+		query.append(formatoFecha);
+		query.append("') AS fechaConvenio,\r\n"
+				+ "(\r\n"
+				+ "SELECT LPAD\r\n"
+				+ "(\r\n"
+				+ "IFNULL(\r\n"
+				+ "MAX(\r\n"
+				+ "CAST( NUM_FOLIO AS double)+1\r\n"
+				+ "),1\r\n"
+				+ "),6,'0'\r\n"
+				+ ") FROM SVT_NOTA_REMISION) AS folioNota \r\n"
+				+ "FROM SVC_ORDEN_SERVICIO os \r\n"
+				+ "INNER JOIN SVC_VELATORIO vel ON (vel.ID_VELATORIO = os.ID_VELATORIO)\r\n"
+				+ "LEFT JOIN SVT_DOMICILIO domv ON (vel.ID_DOMICILIO = domv.ID_DOMICILIO) \r\n"
+				+ "INNER JOIN SVC_FINADO fin ON (os.ID_ORDEN_SERVICIO = fin.ID_ORDEN_SERVICIO)\r\n"
+				+ "LEFT JOIN SVC_PARENTESCO par ON (os.ID_PARENTESCO = par.ID_PARENTESCO)\r\n"
+				+ "LEFT JOIN SVT_CONVENIO_PF cvn ON (cvn.ID_CONVENIO_PF = fin.ID_CONTRATO_PREVISION) \r\n"
+				+ "LEFT JOIN SVC_PERSONA prf ON (fin.ID_PERSONA = prf.ID_PERSONA)\r\n"
+				+ "JOIN SVC_CONTRATANTE con ON (os.ID_CONTRATANTE = con.ID_CONTRATANTE) \r\n"
+				+ "LEFT JOIN SVC_PERSONA prc ON (con.ID_PERSONA = prc.ID_PERSONA)\r\n"
+				+ "LEFT JOIN SVT_DOMICILIO domc ON (con.ID_DOMICILIO = domc.ID_DOMICILIO)");
+		
 		query.append("WHERE os.ID_ORDEN_SERVICIO = " + idODS);
 
 		String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes(StandardCharsets.UTF_8));

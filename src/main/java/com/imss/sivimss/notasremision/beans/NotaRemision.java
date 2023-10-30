@@ -166,6 +166,24 @@ public class NotaRemision {
 		return request;
 	}
 	
+	public DatosRequest actNotaFolio(String estatus, Integer idNota, Integer idUsuario, Integer ultimoFolio) {
+		DatosRequest request = new DatosRequest();
+		Map<String, Object> parametro = new HashMap<>();
+		QueryHelper q = new QueryHelper("UPDATE SVT_NOTA_REMISION");
+		q.agregarParametroValues("IND_ESTATUS", estatus);
+		q.agregarParametroValues("NUM_FOLIO", "'" + String.format("%06d", ultimoFolio + 1) + "'");
+		q.agregarParametroValues("ID_USUARIO_MODIFICA", "'" + idUsuario + "'");
+		q.agregarParametroValues("FEC_ACTUALIZACION", "CURRENT_TIMESTAMP()");
+		q.addWhere("ID_NOTAREMISION = " + idNota);
+		logg.info(q.toString());
+		String query = q.obtenerQueryActualizar();
+		String encoded = DatatypeConverter.printBase64Binary(query.getBytes(StandardCharsets.UTF_8));
+		parametro.put(AppConstantes.QUERY, encoded);
+		request.setDatos(parametro);
+
+		return request;
+	}
+	
 	
 	public DatosRequest obtenTipoPrevision(DatosRequest request) {
 		StringBuilder query = new StringBuilder(
