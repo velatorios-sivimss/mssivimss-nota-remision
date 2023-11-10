@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.imss.sivimss</groupId>
 	<artifactId>notasremision</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.48-SNAPSHOT</version>
 	<name>mx.gob.imss.nota-remision</name>
 	<description>Ms notas de remision</description>
 	<properties>

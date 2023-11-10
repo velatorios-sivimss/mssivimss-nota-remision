@@ -32,6 +32,7 @@ import com.imss.sivimss.notasremision.model.request.BusquedaDto;
 import com.imss.sivimss.notasremision.model.request.FormatoNotaDto;
 import com.imss.sivimss.notasremision.model.request.LlavesTablasUpd;
 import com.imss.sivimss.notasremision.model.request.NotaRemisionDto;
+import com.imss.sivimss.notasremision.model.response.BeneficiarioResponse;
 import com.imss.sivimss.notasremision.model.response.ODSGeneradaResponse;
 import com.imss.sivimss.notasremision.service.NotasRemisionService;
 import com.imss.sivimss.notasremision.util.DatosRequest;
@@ -219,33 +220,60 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 	@Override
 	public Response<?> generarNotaRem(DatosRequest request, Authentication authentication) throws IOException {
 		Gson gson = new Gson();
-		log.info("generando nota de remision");
+		
+		logUtil.crearArchivoLog(Level.INFO.toString(), this.getClass().getSimpleName(), 
+				this.getClass().getPackage().toString(), "",CONSULTA +" " + "generando nota de remision", authentication);
+		
+		
 		String datosJson = String.valueOf(request.getDatos().get(AppConstantes.DATOS));
 		NotaRemisionDto notaDto = gson.fromJson(datosJson, NotaRemisionDto.class);
 		UsuarioDto usuarioDto = gson.fromJson((String) authentication.getPrincipal(), UsuarioDto.class);
 		if (notaDto.getIdOrden() == null) {
 			log.error("fallo");
+			
+			logUtil.crearArchivoLog(Level.INFO.toString(), this.getClass().getSimpleName(), 
+					this.getClass().getPackage().toString(), "","No se envio idOrden", authentication);
+			
 			throw new BadRequestException(HttpStatus.BAD_REQUEST, "Informacion incompleta");
 		}
 		try {
 			OrdenServicio ordenServicio = new OrdenServicio();
 			ordenServicio.setId(notaDto.getIdOrden());
-			log.info("ods actualizada");
+			
+			logUtil.crearArchivoLog(Level.INFO.toString(), this.getClass().getSimpleName(), 
+					this.getClass().getPackage().toString(), "",CONSULTA +" " + "ods actualizada", authentication);
+			
 			NotaRemision notaRemision = new NotaRemision(0, notaDto.getIdOrden());
 			notaRemision.setIdUsuarioAlta(usuarioDto.getIdUsuario());
-			log.info("obteniendo datos tipo prevision y psfpa");
+			
+			logUtil.crearArchivoLog(Level.INFO.toString(), this.getClass().getSimpleName(), 
+					this.getClass().getPackage().toString(), "",CONSULTA +" " + "obteniendo datos tipo prevision y psfpa", authentication);
+			
 			Response<?> request1 = providerRestTemplate.consumirServicio(
 					notaRemision.obtenTipoPrevision(request).getDatos(), urlDominioGenerico + CONSULTA, authentication);
-			log.info("informacion extraida");
-			ArrayList<LinkedHashMap> datos1 = (ArrayList) request1.getDatos();
-			LlavesTablasUpd llavesTablasUpd = new LlavesTablasUpd((Integer) datos1.get(0).get("idTipoPrevision"),
-					(Integer) datos1.get(0).get("idContratante"),
-					(Integer) datos1.get(0).get("idConvenio"),
-					(Integer) datos1.get(0).get("idContratantePaquete"),
-					(Integer) datos1.get(0).get("idPersona"),
-					(Integer) datos1.get(0).get("idTipoOrden"),
-					(Integer) datos1.get(0).get("idConvenioSFPA"));
-
+			logUtil.crearArchivoLog(Level.INFO.toString(), this.getClass().getSimpleName(), 
+					this.getClass().getPackage().toString(), "",CONSULTA +" " + "informacion extraida", authentication);
+			
+			
+			ArrayList<LinkedHashMap> datos1 = (ArrayList<LinkedHashMap>) request1.getDatos();
+			
+			LlavesTablasUpd llavesTablasUpd = new LlavesTablasUpd();
+			llavesTablasUpd.setIdContratante( (Integer) datos1.get(0).get("idContratante") );
+			llavesTablasUpd.setIdContratantePaquete( (Integer) datos1.get(0).get("idContratantePaquete") );
+			llavesTablasUpd.setIdConvenioPF( (Integer) datos1.get(0).get("idConvenioPF") );
+			llavesTablasUpd.setIdConvenioSFPA( (Integer) datos1.get(0).get("idConvenioSFPA") );
+			llavesTablasUpd.setIdPerContratante( (Integer) datos1.get(0).get("idPerContratante") );
+			llavesTablasUpd.setIdPerFinado( (Integer) datos1.get(0).get("idPerFinado") );
+			llavesTablasUpd.setIdTipoOrden( (Integer) datos1.get(0).get("idTipoOrden") );
+			llavesTablasUpd.setIdTipoPrevision( (Integer) datos1.get(0).get("idTipoPrevision") );
+			String estatus = (String) datos1.get(0).get("idEstatusConvenio");
+			llavesTablasUpd.setIdEstatusConvenio( Integer.parseInt(estatus) );
+			
+			request1 = providerRestTemplate.consumirServicio(
+					notaRemision.obtBeneficiarios(request, llavesTablasUpd.getIdContratantePaquete()).getDatos(), urlDominioGenerico + CONSULTA, authentication);
+			
+			List<BeneficiarioResponse> beneficiarios =  Arrays.asList(modelMapper.map(request1.getDatos(), BeneficiarioResponse[].class));
+			
 			// Actualiza estatus de la ODS
 			log.info("actualizando estatus ods");
 			providerRestTemplate.consumirServicio(ordenServicio.actualizaEstatus(CONCLUIDA).getDatos(),
@@ -254,8 +282,13 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 			// Actualizar estatus de convenio
 
 			log.info("extraccion de informacion correcta");
-			providerRestTemplate.consumirServicio(notaRemision.actualizaEstatusCrear(llavesTablasUpd).getDatos(),
-					urlDominioGenerico + MULTIPLE, authentication);
+			DatosRequest request2 = notaRemision.actualizaEstatusCrear(llavesTablasUpd, beneficiarios);
+			
+			if( request2 != null) {
+				providerRestTemplate.consumirServicio(request2.getDatos(),
+						urlDominioGenerico + MULTIPLE, authentication);
+			}
+			
 			log.info("se actualizo en estatus");
 
 			// Registro de nota de remisión
@@ -263,7 +296,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 					urlDominioGenerico + CONSULTA,
 					authentication);
 			log.info("se registro la nota de remision");
-			datos1 = (ArrayList) request1.getDatos();
+			datos1 = (ArrayList<LinkedHashMap>) request1.getDatos();
 			String ultimoFolio = datos1.get(0).get("folio").toString();
 			Double folioD = Double.parseDouble(ultimoFolio);
 			Integer folioI = folioD.intValue();
@@ -307,6 +340,33 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 		if (notaDto.getIdNota() == null) {
 			throw new BadRequestException(HttpStatus.BAD_REQUEST, "Informacion incompleta");
 		}
+		
+		NotaRemision notaRemision = new NotaRemision(0, notaDto.getIdOrden());
+		notaRemision.setIdUsuarioAlta(usuarioDto.getIdUsuario());
+		Response<?> request1 = providerRestTemplate.consumirServicio(
+				notaRemision.obtenTipoPrevision(request).getDatos(), urlDominioGenerico + CONSULTA, authentication);
+		log.info("informacion extraida");
+		ArrayList<LinkedHashMap> datos1 = (ArrayList<LinkedHashMap>) request1.getDatos();
+		
+		LlavesTablasUpd llavesTablasUpd = new LlavesTablasUpd();
+		llavesTablasUpd.setIdContratante( (Integer) datos1.get(0).get("idContratante") );
+		llavesTablasUpd.setIdContratantePaquete( (Integer) datos1.get(0).get("idContratantePaquete") );
+		llavesTablasUpd.setIdConvenioPF( (Integer) datos1.get(0).get("idConvenioPF") );
+		llavesTablasUpd.setIdConvenioSFPA( (Integer) datos1.get(0).get("idConvenioSFPA") );
+		llavesTablasUpd.setIdPerContratante( (Integer) datos1.get(0).get("idPerContratante") );
+		llavesTablasUpd.setIdPerFinado( (Integer) datos1.get(0).get("idPerFinado") );
+		llavesTablasUpd.setIdTipoOrden( (Integer) datos1.get(0).get("idTipoOrden") );
+		llavesTablasUpd.setIdTipoPrevision( (Integer) datos1.get(0).get("idTipoPrevision") );
+		String estatus = (String) datos1.get(0).get("idEstatusConvenio");
+		llavesTablasUpd.setIdEstatusConvenio( Integer.parseInt(estatus) );
+		
+		request1 = providerRestTemplate.consumirServicio(
+				notaRemision.obtBeneficiarios(request, llavesTablasUpd.getIdContratantePaquete()).getDatos(), urlDominioGenerico + CONSULTA, authentication);
+		
+		List<BeneficiarioResponse> beneficiarios =  Arrays.asList(modelMapper.map(request1.getDatos(), BeneficiarioResponse[].class));
+		
+		querys =  notaRemision.actualizaEstatusCancelar(llavesTablasUpd, beneficiarios);
+		
 		
 		/**
 		 * Se crea Query para actualizar la Orden de Servicio a Generada
@@ -359,7 +419,7 @@ public class NotasRemisionServiceImpl implements NotasRemisionService {
 			Response<?> response1 = providerRestTemplate.consumirServicio(
 					notaRemision.detalleNotaRem(request, formatoFecha).getDatos(), urlDominioGenerico + CONSULTA,
 					authentication);
-			ArrayList<LinkedHashMap> datos1 = (ArrayList) response1.getDatos();
+			ArrayList<LinkedHashMap> datos1 = (ArrayList<LinkedHashMap>) response1.getDatos();
 
 			formatoNotaDto.setTipoReporte(notaDto.getTipoReporte());
 			if (datos1.size() > 0) {

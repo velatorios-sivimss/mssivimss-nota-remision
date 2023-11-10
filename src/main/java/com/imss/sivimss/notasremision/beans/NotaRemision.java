@@ -1,7 +1,9 @@
 package com.imss.sivimss.notasremision.beans;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.bind.DatatypeConverter;
@@ -12,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import com.imss.sivimss.notasremision.util.QueryHelper;
 import com.imss.sivimss.notasremision.model.request.FormatoNotaDto;
 import com.imss.sivimss.notasremision.model.request.LlavesTablasUpd;
+import com.imss.sivimss.notasremision.model.response.BeneficiarioResponse;
 import com.imss.sivimss.notasremision.util.AppConstantes;
 import com.imss.sivimss.notasremision.util.DatosRequest;
 
@@ -186,19 +189,23 @@ public class NotaRemision {
 	
 	
 	public DatosRequest obtenTipoPrevision(DatosRequest request) {
-		StringBuilder query = new StringBuilder(
-				"SELECT cnv.ID_TIPO_PREVISION AS idTipoPrevision, con.ID_CONTRATANTE AS idContratante,  cnv.ID_CONVENIO_PF AS idConvenio,"
-						+
-						" cpc.ID_CONTRA_PAQ_CONVENIO_PF  AS idContratantePaquete," +
-						" fin.ID_PERSONA AS idPersona,");
-		query.append(" fin.ID_TIPO_ORDEN AS idTipoOrden, sps.ID_PLAN_SFPA AS idConvenioSFPA");
-		query.append(" FROM SVC_ORDEN_SERVICIO os \n");
-		query.append(" LEFT JOIN SVC_FINADO fin ON fin.ID_ORDEN_SERVICIO = os.ID_ORDEN_SERVICIO \n");
-		query.append(" LEFT JOIN SVT_CONVENIO_PF cnv ON cnv.ID_CONVENIO_PF = fin.ID_CONTRATO_PREVISION \n");
-		query.append(" LEFT JOIN SVT_CONTRA_PAQ_CONVENIO_PF cpc ON cpc.ID_CONVENIO_PF = cnv.ID_CONVENIO_PF\n");
-		query.append(" LEFT JOIN SVT_PLAN_SFPA sps ON sps.ID_PLAN_SFPA = fin.ID_CONTRATO_PREVISION_PA \n");
-		query.append(" LEFT JOIN SVC_CONTRATANTE con ON con.ID_PERSONA = fin.ID_PERSONA");
-		query.append(" WHERE fin.ID_TIPO_ORDEN IN (2,4) ");
+		StringBuilder query = new StringBuilder("SELECT \r\n"
+				+ "cnv.ID_TIPO_PREVISION AS idTipoPrevision,\r\n"
+				+ "cnv.ID_ESTATUS_CONVENIO AS idEstatusConvenio,\r\n"
+				+ "con.ID_CONTRATANTE AS idContratante,\r\n"
+				+ "con.ID_PERSONA AS idPerContratante,\r\n"
+				+ "fin.ID_PERSONA AS idPerFinado,\r\n"
+				+ "cnv.ID_CONVENIO_PF AS idConvenioPF,\r\n"
+				+ "cpc.ID_CONTRA_PAQ_CONVENIO_PF  AS idContratantePaquete,\r\n"
+				+ "fin.ID_TIPO_ORDEN AS idTipoOrden,\r\n"
+				+ "sps.ID_PLAN_SFPA AS idConvenioSFPA\r\n"
+				+ "FROM SVC_ORDEN_SERVICIO os \r\n"
+				+ "LEFT JOIN SVC_FINADO fin ON fin.ID_ORDEN_SERVICIO = os.ID_ORDEN_SERVICIO \r\n"
+				+ "LEFT JOIN SVT_CONVENIO_PF cnv ON cnv.ID_CONVENIO_PF = fin.ID_CONTRATO_PREVISION \r\n"
+				+ "LEFT JOIN SVT_CONTRA_PAQ_CONVENIO_PF cpc ON cpc.ID_CONVENIO_PF = cnv.ID_CONVENIO_PF\r\n"
+				+ "LEFT JOIN SVT_PLAN_SFPA sps ON sps.ID_PLAN_SFPA = fin.ID_CONTRATO_PREVISION_PA \r\n"
+				+ "LEFT JOIN SVC_CONTRATANTE con ON con.ID_PERSONA = fin.ID_PERSONA\r\n"
+				+ "WHERE fin.ID_TIPO_ORDEN IN (2,4) \r\n");
 		query.append(" AND os.ID_ORDEN_SERVICIO = " + this.idOrden);
 		query.append(" GROUP BY os.ID_ORDEN_SERVICIO");
 		logg.info(query.toString());
@@ -207,33 +214,65 @@ public class NotaRemision {
 		return request;
 	}
 
-	public DatosRequest actualizaEstatusCrear(LlavesTablasUpd llavesTablasUpd) {
+	
+	public DatosRequest obtBeneficiarios(DatosRequest request, Integer idContratantePaquete) {
+		
+		StringBuilder query = new StringBuilder("SELECT\r\n"
+				+ "BEN.ID_PERSONA AS idPerBeneficiario,\r\n"
+				+ "BEN.ID_CONTRATANTE_BENEFICIARIOS AS idConBenef,\r\n"
+				+ "BEN.IND_ACTIVO AS activo\r\n"
+				+ "FROM\r\n"
+				+ "SVT_CONTRATANTE_BENEFICIARIOS BEN\r\n"
+				+ "INNER JOIN SVT_CONTRA_PAQ_CONVENIO_PF PAQ ON PAQ.ID_CONTRA_PAQ_CONVENIO_PF = BEN.ID_CONTRA_PAQ_CONVENIO_PF\r\n"
+				+ "WHERE\r\n"
+				+ "BEN.ID_CONTRA_PAQ_CONVENIO_PF = ");
+		query.append(idContratantePaquete);
+		query.append(" ORDER BY BEN.FEC_BAJA DESC");
+		
+		logg.info(query.toString());
+		String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes(StandardCharsets.UTF_8));
+		request.getDatos().put(AppConstantes.QUERY, encoded);
+		return request;
+	}
+	
+	public DatosRequest actualizaEstatusCrear(LlavesTablasUpd llavesTablasUpd, List<BeneficiarioResponse> beneficiarios) {
+		
 		DatosRequest request = new DatosRequest();
 		Map<String, Object> parametro = new HashMap<>();
-
 		StringBuilder query = new StringBuilder("");
+		
+		Integer beneficiario = existeBenef(beneficiarios, llavesTablasUpd.getIdPerFinado(), true);
+		Integer contratante = llavesTablasUpd.getIdPerContratante();
+		Integer finado = llavesTablasUpd.getIdPerFinado();
 		Integer tipoOrden = llavesTablasUpd.getIdTipoOrden();
-
+		boolean vigente = false;
+		
+		if( llavesTablasUpd.getIdEstatusConvenio() == 2 ) {
+			vigente = true;
+		}
+		
 		if (tipoOrden == 2) {
-			query.append(
-					"UPDATE SVT_CONVENIO_PF SET ID_ESTATUS_CONVENIO = 4, ID_USUARIO_MODIFICA = "
-							+ this.idUsuarioAlta);
-			query.append(", FEC_ACTUALIZACION = CURRENT_TIMESTAMP() WHERE ID_CONVENIO_PF = "
-					+ llavesTablasUpd.getIdConvenio() + ";$$");
-			query.append(" UPDATE SVT_CONTRA_PAQ_CONVENIO_PF SET IND_ACTIVO = 0, ID_USUARIO_MODIFICA = "
-					+ this.idUsuarioAlta);
-			query.append(", FEC_ACTUALIZACION = CURRENT_TIMESTAMP() WHERE ID_CONTRA_PAQ_CONVENIO_PF  = "
-					+ llavesTablasUpd.getIdContratantePaquete() + ";$$");
-
-			if (llavesTablasUpd.getIdTipoPrevision() == 1) {
+		
+			if( 
+				(contratante.equals(finado) && (beneficiario>0) && vigente)
+				||
+				(contratante.equals(finado) && !vigente )
+			) {
+				
 				query.append(
-						"UPDATE SVT_CONTRATANTE_BENEFICIARIOS SET IND_SINIESTROS = 1, IND_ACTIVO = 0, ID_USUARIO_MODIFICA = "
+						"UPDATE SVT_CONVENIO_PF SET ID_ESTATUS_CONVENIO = 4, ID_USUARIO_MODIFICA = "
 								+ this.idUsuarioAlta);
-				query.append(", FEC_ACTUALIZACION = CURRENT_TIMESTAMP() WHERE ID_CONTRA_PAQ_CONVENIO_PF  = "
-						+ llavesTablasUpd.getIdContratantePaquete());
-				query.append(" AND ID_PERSONA = " + llavesTablasUpd.getIdPersona() + ";$$");
-			}
-
+				query.append(", FEC_ACTUALIZACION = CURRENT_TIMESTAMP() WHERE ID_CONVENIO_PF = "
+						+ llavesTablasUpd.getIdConvenioPF() + ";$$");
+				
+			} else if( beneficiario > 0 && vigente) {
+				query.append(
+						"UPDATE SVT_CONTRATANTE_BENEFICIARIOS SET IND_ACTIVO = b'0', ID_USUARIO_MODIFICA = "
+								+ this.idUsuarioAlta);
+				query.append(", FEC_ACTUALIZACION = CURRENT_TIMESTAMP() WHERE ID_CONTRATANTE_BENEFICIARIOS  = ");
+				query.append(beneficiario);
+				query.append(";$$");
+			} 
 		} else if (tipoOrden == 4) {
 			query.append("update SVT_PLAN_SFPA SET ID_ESTATUS_PLAN_SFPA=4 ,");
 			query.append(" ID_USUARIO_MODIFICA=" + this.idUsuarioAlta);
@@ -241,53 +280,77 @@ public class NotaRemision {
 			query.append("  WHERE ID_PLAN_SFPA =" + llavesTablasUpd.getIdConvenioSFPA() + ";$$");
 		}
 
-		logg.info(query.toString());
-		String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes(StandardCharsets.UTF_8));
-		parametro.put(AppConstantes.QUERY, encoded);
-		parametro.put("separador", "$$");
-		request.setDatos(parametro);
+		if( query.toString().isEmpty() ) {
+			request = null;
+		}else {
+			logg.info(query.toString());
+			String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes(StandardCharsets.UTF_8));
+			parametro.put(AppConstantes.QUERY, encoded);
+			parametro.put("separador", "$$");
+			request.setDatos(parametro);
+		}
 
 		return request;
 	}
 
-	public DatosRequest actualizaEstatusCancelar(LlavesTablasUpd llavesTablasUpd) {
-		DatosRequest request = new DatosRequest();
-		Map<String, Object> parametro = new HashMap<>();
-
-		StringBuilder query = new StringBuilder("");
+	public ArrayList<String> actualizaEstatusCancelar(LlavesTablasUpd llavesTablasUpd, 
+			List<BeneficiarioResponse> beneficiarios) {
+		ArrayList<String> querys = new ArrayList<>();
+		StringBuilder query;
 		Integer tipoOrden = llavesTablasUpd.getIdTipoOrden();
-
+		String encoded;
+		
+		
 		if (tipoOrden == 2 && llavesTablasUpd.getIdContratante() > 0) {
+			
+			Integer contratante = llavesTablasUpd.getIdPerContratante();
+			Integer finado = llavesTablasUpd.getIdPerFinado();
+			Integer beneficiario = existeBenef(beneficiarios, llavesTablasUpd.getIdPerFinado(), false);
+			
+			query = new StringBuilder("");
 			query.append("UPDATE SVT_CONVENIO_PF SET ID_ESTATUS_CONVENIO = 2, ID_USUARIO_MODIFICA = "
 					+ this.idUsuarioModifica);
 			query.append(", FEC_ACTUALIZACION = CURRENT_TIMESTAMP() WHERE ID_CONVENIO_PF = "
-					+ llavesTablasUpd.getIdConvenio() + ";$$");
-			query.append("UPDATE SVT_CONTRA_PAQ_CONVENIO_PF SET IND_ACTIVO = 1, ID_USUARIO_MODIFICA = "
-					+ this.idUsuarioModifica);
-			query.append(", FEC_ACTUALIZACION = CURRENT_TIMESTAMP() WHERE ID_CONTRA_PAQ_CONVENIO_PF  = "
-					+ llavesTablasUpd.getIdContratantePaquete() + ";$$");
-			if (llavesTablasUpd.getIdTipoPrevision() == 1) {
+					+ llavesTablasUpd.getIdConvenioPF() + "");
+			
+			logg.info(query.toString());
+			
+			encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes(StandardCharsets.UTF_8));
+			querys.add( encoded );
+			
+			if( !contratante.equals(finado) && (beneficiario>0) ) {
+				
+				query = new StringBuilder("");
 				query.append(
-						"UPDATE SVT_CONTRATANTE_BENEFICIARIOS SET IND_SINIESTROS = 0, IND_ACTIVO = 1, ID_USUARIO_MODIFICA = "
-								+ this.idUsuarioModifica);
-				query.append(", FEC_ACTUALIZACION = CURRENT_TIMESTAMP() WHERE ID_CONTRA_PAQ_CONVENIO_PF  = "
-						+ llavesTablasUpd.getIdContratantePaquete());
-				query.append(" AND ID_PERSONA = " + llavesTablasUpd.getIdPersona() + ";$$");
+						"UPDATE SVT_CONTRATANTE_BENEFICIARIOS SET IND_ACTIVO = b'1', ID_USUARIO_MODIFICA = "
+								+ this.idUsuarioAlta);
+				query.append(", FEC_ACTUALIZACION = CURRENT_TIMESTAMP() WHERE ID_CONTRATANTE_BENEFICIARIOS  = ");
+				query.append(beneficiario);
+				
+				logg.info(query.toString());
+				
+				encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes(StandardCharsets.UTF_8));
+				querys.add( encoded );
+				
 			}
+					
 		} else if (tipoOrden == 4) {
+			
+			query = new StringBuilder("");
+			
 			query.append("update SVT_PLAN_SFPA SET ID_ESTATUS_PLAN_SFPA=4 ,");
 			query.append(" ID_USUARIO_MODIFICA=" + this.idUsuarioAlta);
 			query.append(" , FEC_ACTUALIZACION = CURRENT_TIMESTAMP() ");
-			query.append(" WHERE ID_PLAN_SFPA =" + llavesTablasUpd.getIdConvenioSFPA() + ";$$");
+			query.append(" WHERE ID_PLAN_SFPA =" + llavesTablasUpd.getIdConvenioSFPA() );
+			
+			logg.info(query.toString());
+			
+			encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes(StandardCharsets.UTF_8));
+			querys.add( encoded );
 		}
 
-		logg.info(query.toString());
-		String encoded = DatatypeConverter.printBase64Binary(query.toString().getBytes(StandardCharsets.UTF_8));
-		parametro.put(AppConstantes.QUERY, encoded);
-		parametro.put("separador", "$$");
-		request.setDatos(parametro);
 
-		return request;
+		return querys;
 	}
 
 	public DatosRequest cancelarNotaRem() {
@@ -330,4 +393,21 @@ public class NotaRemision {
 		return envioDatos;
 	}
 
+	private Integer existeBenef( List<BeneficiarioResponse> beneficiarios, 
+			Integer idPerFinado, Boolean estatus) {
+		
+		Integer idConBenef = 0;
+		
+		for(BeneficiarioResponse benef: beneficiarios) {
+			
+			if( benef.getIdPerBeneficiario().equals(idPerFinado) 
+					&& benef.getActivo().equals( estatus) ) {
+				idConBenef = benef.getIdConBenef();
+			}
+		}
+		
+		
+		return idConBenef;
+	}
+	
 }
