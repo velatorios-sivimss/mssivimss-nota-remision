@@ -204,7 +204,7 @@ public class NotaRemision {
 				+ "LEFT JOIN SVT_CONVENIO_PF cnv ON cnv.ID_CONVENIO_PF = fin.ID_CONTRATO_PREVISION \r\n"
 				+ "LEFT JOIN SVT_CONTRA_PAQ_CONVENIO_PF cpc ON cpc.ID_CONVENIO_PF = cnv.ID_CONVENIO_PF\r\n"
 				+ "LEFT JOIN SVT_PLAN_SFPA sps ON sps.ID_PLAN_SFPA = fin.ID_CONTRATO_PREVISION_PA \r\n"
-				+ "LEFT JOIN SVC_CONTRATANTE con ON con.ID_PERSONA = fin.ID_PERSONA\r\n"
+				+ "LEFT JOIN SVC_CONTRATANTE con ON con.ID_CONTRATANTE = cpc.ID_CONTRATANTE\r\n"
 				+ "WHERE fin.ID_TIPO_ORDEN IN (2,4) \r\n");
 		query.append(" AND os.ID_ORDEN_SERVICIO = " + this.idOrden);
 		query.append(" GROUP BY os.ID_ORDEN_SERVICIO");
